@@ -46,21 +46,23 @@
             z-index: 1;
         }
 
-        /* 感謝卡片設計（玻璃擬態 Glassmorphism） */
+        /* 感謝卡片設計（玻璃擬態 + 加大字體版） */
         .message-card {
             position: absolute;
-            background: rgba(255, 255, 255, 0.65);
+            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 20px 30px;
+            padding: 25px 35px; /* 加大內邊距 */
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #4a4a4a;
-            font-weight: 600;
+            font-weight: 700; /* 加粗字體讓閱讀更清晰 */
+            font-size: 22px; /* 基礎字體加大 */
+            line-height: 1.5;
             letter-spacing: 1px;
             transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-            max-width: 250px;
+            max-width: 320px; /* 放寬最大寬度 */
             word-wrap: break-word;
             text-align: center;
         }
@@ -74,10 +76,10 @@
             z-index: 10;
             display: flex;
             gap: 15px;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             padding: 15px 25px;
             border-radius: 50px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             width: 90%;
             max-width: 600px;
         }
@@ -86,7 +88,7 @@
             flex: 1;
             border: none;
             background: transparent;
-            font-size: 16px;
+            font-size: 18px; /* 輸入框字體同步加大 */
             outline: none;
             color: #333;
         }
@@ -94,19 +96,20 @@
         button {
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
             border: none;
-            padding: 10px 25px;
+            padding: 12px 28px;
             border-radius: 30px;
             color: #fff;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
             cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.4);
+            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.5);
             transition: transform 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
         }
 
         button:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 154, 158, 0.6);
+            box-shadow: 0 6px 20px rgba(255, 154, 158, 0.7);
         }
     </style>
 </head>
@@ -121,7 +124,7 @@
 
     <!-- 輸入區 -->
     <div class="input-container">
-        <input type="text" id="msgInput" placeholder="寫下你想感謝的人或事... (例如：謝謝小明幫我debug！)" autocomplete="off">
+        <input type="text" id="msgInput" placeholder="寫下你想感謝的人或事..." autocomplete="off">
         <button onclick="submitMessage()">送出感謝</button>
     </div>
 
@@ -157,30 +160,37 @@
             
             const total = messages.length;
 
+            // 動態豐富度演算法：根據留言總數決定畫面的基礎放大倍率
+            let richnessScale = 1;
+            if (total <= 3) {
+                richnessScale = 1.8; // 留言極少時，超級放大
+            } else if (total <= 10) {
+                richnessScale = 1.4; // 留言偏少時，適度放大
+            } else {
+                richnessScale = 1.1; // 留言豐富時，維持標準大小
+            }
+
             messages.forEach((msg, index) => {
                 const card = document.createElement('div');
                 card.className = 'message-card';
                 card.innerText = msg.text;
 
-                // 核心演算法：根據新舊程度 (index) 決定大小與位置
-                // index = 0 是最新，數值越大越舊
-                const ageRatio = total > 1 ? index / (total - 1) : 0; // 介於 0 (最新) 到 1 (最舊) 之間
+                // 新舊比例：介於 0 (最新) 到 1 (最舊) 之間
+                const ageRatio = total > 1 ? index / (total - 1) : 0; 
 
-                // 1. 決定大小 (Scale)：最新 1.5 倍，最舊 0.6 倍
-                const scale = 1.5 - (ageRatio * 0.9);
+                // 1. 決定大小：(最新 1.5 倍，最舊 0.6 倍) * 動態豐富度倍率
+                const scale = (1.5 - (ageRatio * 0.9)) * richnessScale;
 
-                // 2. 決定位置 (Position)：最新的在中心，舊的往外推 (極座標轉換)
-                // 產生一個隨機角度
+                // 2. 決定位置：最新的在中心，舊的往外推
                 const angle = Math.random() * Math.PI * 2; 
-                // 距離中心的距離：越舊越遠。0% 是正中心，45% 是邊緣。
-                const distance = (ageRatio * 40) + (Math.random() * 5); 
+                const distance = (ageRatio * 38) + (Math.random() * 8); // 稍微調整擴散距離
                 
                 const leftPercent = 50 + distance * Math.cos(angle);
-                const topPercent = 45 + distance * Math.sin(angle); // 中心稍微偏上，避開底部輸入框
+                const topPercent = 45 + distance * Math.sin(angle); 
 
-                // 3. 決定透明度 (Opacity) 與層級 (Z-index)
-                const opacity = 1 - (ageRatio * 0.4); // 舊的稍微變透明，增加層次感
-                const zIndex = total - index; // 新的蓋在舊的上面
+                // 3. 決定透明度與層級
+                const opacity = 1 - (ageRatio * 0.35); // 讓舊留言不要太透明，維持豐富感
+                const zIndex = total - index; 
 
                 // 套用樣式
                 card.style.left = `${leftPercent}%`;
@@ -190,7 +200,7 @@
                 card.style.zIndex = zIndex;
 
                 // 隨機微調一點旋轉角度，更有塗鴉牆的隨興感
-                const randomRotate = (Math.random() - 0.5) * 20; 
+                const randomRotate = (Math.random() - 0.5) * 16; 
                 card.style.transform += ` rotate(${randomRotate}deg)`;
 
                 wall.appendChild(card);
