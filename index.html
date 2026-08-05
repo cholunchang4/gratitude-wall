@@ -52,17 +52,17 @@
             background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 25px 35px; /* 加大內邊距 */
+            padding: 25px 35px;
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
             color: #4a4a4a;
-            font-weight: 700; /* 加粗字體讓閱讀更清晰 */
-            font-size: 22px; /* 基礎字體加大 */
+            font-weight: 700;
+            font-size: 22px;
             line-height: 1.5;
             letter-spacing: 1px;
-            transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-            max-width: 320px; /* 放寬最大寬度 */
+            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+            max-width: 320px;
             word-wrap: break-word;
             text-align: center;
         }
@@ -88,7 +88,7 @@
             flex: 1;
             border: none;
             background: transparent;
-            font-size: 18px; /* 輸入框字體同步加大 */
+            font-size: 18px;
             outline: none;
             color: #333;
         }
@@ -115,21 +115,16 @@
 </head>
 <body>
 
-    <!-- 幾何背景裝飾 -->
     <div class="geometry-bg"></div>
     <div class="geometry-bg right"></div>
-
-    <!-- 感謝牆 -->
     <div id="wall"></div>
 
-    <!-- 輸入區 -->
     <div class="input-container">
         <input type="text" id="msgInput" placeholder="寫下你想感謝的人或事..." autocomplete="off">
         <button onclick="submitMessage()">送出感謝</button>
     </div>
 
     <script>
-        // 暫時使用瀏覽器的 LocalStorage 來儲存資料，方便你立刻預覽效果
         let messages = JSON.parse(localStorage.getItem('company_gratitude')) || [];
 
         function submitMessage() {
@@ -137,75 +132,112 @@
             const text = input.value.trim();
             if (text === '') return;
 
-            // 將新留言加入陣列最前方（最新的在前面）
-            messages.unshift({
-                text: text,
-                id: Date.now()
-            });
-
-            // 儲存並重新渲染
+            messages.unshift({ text: text, id: Date.now() });
             localStorage.setItem('company_gratitude', JSON.stringify(messages));
             input.value = '';
             renderWall();
         }
 
-        // 綁定 Enter 鍵送出
         document.getElementById('msgInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') submitMessage();
         });
 
         function renderWall() {
             const wall = document.getElementById('wall');
-            wall.innerHTML = ''; // 清空牆面
+            wall.innerHTML = '';
             
             const total = messages.length;
+            if (total === 0) return;
 
-            // 動態豐富度演算法：根據留言總數決定畫面的基礎放大倍率
+            // 動態豐富度
             let richnessScale = 1;
-            if (total <= 3) {
-                richnessScale = 1.8; // 留言極少時，超級放大
-            } else if (total <= 10) {
-                richnessScale = 1.4; // 留言偏少時，適度放大
-            } else {
-                richnessScale = 1.1; // 留言豐富時，維持標準大小
-            }
+            if (total <= 3) richnessScale = 1.8;
+            else if (total <= 10) richnessScale = 1.4;
+            else richnessScale = 1.1;
+
+            const placedRects = []; // 記錄已經放置的卡片位置與大小，用來防碰撞
+            const screenW = window.innerWidth;
+            const screenH = window.innerHeight;
+            const centerX = screenW / 2;
+            const centerY = screenH * 0.45; 
+            
+            // 基礎的推移半徑（確保不會一開始就推到螢幕外）
+            const maxRadius = Math.min(screenW, screenH) / 2 - 80;
 
             messages.forEach((msg, index) => {
                 const card = document.createElement('div');
                 card.className = 'message-card';
                 card.innerText = msg.text;
 
-                // 新舊比例：介於 0 (最新) 到 1 (最舊) 之間
-                const ageRatio = total > 1 ? index / (total - 1) : 0; 
-
-                // 1. 決定大小：(最新 1.5 倍，最舊 0.6 倍) * 動態豐富度倍率
+                const ageRatio = total > 1 ? index / (total - 1) : 0;
                 const scale = (1.5 - (ageRatio * 0.9)) * richnessScale;
+                const opacity = 1 - (ageRatio * 0.35);
+                const randomRotate = (Math.random() - 0.5) * 16;
+                const zIndex = total - index;
 
-                // 2. 決定位置：最新的在中心，舊的往外推
-                const angle = Math.random() * Math.PI * 2; 
-                const distance = (ageRatio * 38) + (Math.random() * 8); // 稍微調整擴散距離
+                // 為了測量卡片實際大小，先將其加入畫面但不顯示
+                card.style.visibility = 'hidden';
+                card.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${randomRotate}deg)`;
+                wall.appendChild(card);
+
+                // 取得卡片縮放後的長寬
+                const cardW = card.offsetWidth * scale;
+                const cardH = card.offsetHeight * scale;
+
+                // 碰撞偵測演算法：尋找空位
+                let placedX = centerX;
+                let placedY = centerY;
+                let foundSpot = false;
+                const distanceBase = ageRatio * maxRadius;
                 
-                const leftPercent = 50 + distance * Math.cos(angle);
-                const topPercent = 45 + distance * Math.sin(angle); 
+                // 最多嘗試 200 次尋找空位
+                for (let attempt = 0; attempt < 200; attempt++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    // 如果找不到位置，就逐漸往外擴散尋找 (attempt * 2)
+                    const currentDistance = distanceBase + (attempt * 2); 
+                    
+                    const testX = centerX + currentDistance * Math.cos(angle);
+                    const testY = centerY + currentDistance * Math.sin(angle);
 
-                // 3. 決定透明度與層級
-                const opacity = 1 - (ageRatio * 0.35); // 讓舊留言不要太透明，維持豐富感
-                const zIndex = total - index; 
+                    // 檢查是否超出螢幕邊界 (避開底部的輸入框)
+                    if (testX - cardW/2 < 20 || testX + cardW/2 > screenW - 20 || 
+                        testY - cardH/2 < 20 || testY + cardH/2 > screenH - 120) {
+                        continue; 
+                    }
 
-                // 套用樣式
-                card.style.left = `${leftPercent}%`;
-                card.style.top = `${topPercent}%`;
-                card.style.transform = `translate(-50%, -50%) scale(${scale})`;
+                    // 檢查是否與已放置的卡片重疊
+                    let hasCollision = false;
+                    for (let rect of placedRects) {
+                        // 加上 20px 的間距 Padding
+                        if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + 20 &&
+                            Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + 20) {
+                            hasCollision = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasCollision) {
+                        placedX = testX;
+                        placedY = testY;
+                        foundSpot = true;
+                        break;
+                    }
+                }
+
+                // 紀錄最終放置的位置供後續卡片參考
+                placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
+
+                // 正式套用位置與顯示
+                card.style.left = `${placedX}px`;
+                card.style.top = `${placedY}px`;
                 card.style.opacity = opacity;
                 card.style.zIndex = zIndex;
-
-                // 隨機微調一點旋轉角度，更有塗鴉牆的隨興感
-                const randomRotate = (Math.random() - 0.5) * 16; 
-                card.style.transform += ` rotate(${randomRotate}deg)`;
-
-                wall.appendChild(card);
+                card.style.visibility = 'visible'; // 恢復顯示
             });
         }
+
+        // 監聽視窗大小改變，自動重新排版，確保視窗縮放時不會破圖
+        window.addEventListener('resize', renderWall);
 
         // 初始渲染
         renderWall();
