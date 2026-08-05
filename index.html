@@ -2,10 +2,10 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>公司感謝牆 Gratitude Wall</title>
     <style>
-        /* 基礎設定與溫馨漸層背景 */
+        /* ================= 基礎與背景 ================= */
         body {
             margin: 0;
             padding: 0;
@@ -17,48 +17,37 @@
             flex-direction: column;
         }
 
-        /* 裝飾性幾何背景 */
         .geometry-bg {
             position: absolute;
-            top: -10%;
-            left: -10%;
-            width: 400px;
-            height: 400px;
+            top: -10%; left: -10%;
+            width: 400px; height: 400px;
             background: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             filter: blur(40px);
             z-index: 0;
         }
         .geometry-bg.right {
-            top: auto;
-            bottom: -10%;
-            left: auto;
-            right: -10%;
+            top: auto; bottom: -10%; left: auto; right: -10%;
             background: rgba(255, 182, 193, 0.3);
         }
 
-        /* 感謝牆主體 */
         #wall {
             flex: 1;
             position: relative;
-            width: 100%;
-            height: 100%;
+            width: 100%; height: 100%;
             z-index: 1;
         }
 
-        /* 感謝卡片設計（玻璃擬態 + 加大字體版） */
+        /* ================= 感謝卡片共用樣式 ================= */
         .message-card {
             position: absolute;
-            background: rgba(255, 255, 255, 0.75);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
-            padding: 25px 35px;
+            padding: 20px 30px;
             border-radius: 20px;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            color: #4a4a4a;
             font-weight: 700;
-            font-size: 22px;
+            font-size: 20px;
             line-height: 1.5;
             letter-spacing: 1px;
             transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -67,28 +56,64 @@
             text-align: center;
         }
 
-        /* 輸入區介面 */
-        .input-container {
+        /* ================= 卡片模板主題 (Themes) ================= */
+        .theme-classic { background: rgba(255, 255, 255, 0.75); color: #4a4a4a; border: 1px solid rgba(255, 255, 255, 0.6); }
+        .theme-starry  { background: rgba(30, 41, 59, 0.75); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); }
+        .theme-breeze  { background: rgba(204, 251, 241, 0.8); color: #115e59; border: 1px solid rgba(153, 246, 228, 0.6); }
+        .theme-sunset  { background: rgba(255, 237, 213, 0.8); color: #9a3412; border: 1px solid rgba(253, 186, 116, 0.6); }
+        .theme-lemon   { background: rgba(254, 252, 216, 0.8); color: #854d0e; border: 1px solid rgba(253, 224, 71, 0.6); }
+
+        /* ================= 底部輸入區塊 ================= */
+        .bottom-panel {
             position: absolute;
-            bottom: 40px;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 10;
-            display: flex;
-            gap: 15px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 15px 25px;
-            border-radius: 50px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
             width: 90%;
             max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* 模板選擇器 UI */
+        .theme-selector {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            padding: 5px;
+        }
+        .theme-btn {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .theme-btn.active {
+            border-color: #fff;
+            transform: scale(1.25);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        /* 輸入框 UI */
+        .input-container {
+            display: flex;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 12px 20px;
+            border-radius: 50px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
         }
 
         input[type="text"] {
             flex: 1;
             border: none;
             background: transparent;
-            font-size: 18px;
+            font-size: 16px;
             outline: none;
             color: #333;
         }
@@ -96,11 +121,11 @@
         button {
             background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
             border: none;
-            padding: 12px 28px;
+            padding: 10px 24px;
             border-radius: 30px;
             color: #fff;
             font-weight: bold;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 154, 158, 0.5);
             transition: transform 0.2s, box-shadow 0.2s;
@@ -111,6 +136,20 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(255, 154, 158, 0.7);
         }
+
+        /* ================= 手機版 RWD 調整 ================= */
+        @media (max-width: 768px) {
+            .message-card {
+                font-size: 16px; /* 手機字體稍小 */
+                padding: 15px 20px;
+                max-width: 240px; /* 卡片最大寬度縮小 */
+            }
+            .bottom-panel { bottom: 20px; }
+            .input-container { padding: 8px 15px; }
+            input[type="text"] { font-size: 15px; }
+            button { padding: 8px 18px; font-size: 15px; }
+            .theme-btn { width: 24px; height: 24px; }
+        }
     </style>
 </head>
 <body>
@@ -119,20 +158,49 @@
     <div class="geometry-bg right"></div>
     <div id="wall"></div>
 
-    <div class="input-container">
-        <input type="text" id="msgInput" placeholder="寫下你想感謝的人或事..." autocomplete="off">
-        <button onclick="submitMessage()">送出感謝</button>
+    <div class="bottom-panel">
+        <!-- 模板選擇區 -->
+        <div class="theme-selector" id="themeSelector">
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
+            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;" title="星空藍"></div>
+            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;" title="晨光綠"></div>
+            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;" title="暖陽橘"></div>
+            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;" title="活力黃"></div>
+        </div>
+        
+        <!-- 輸入區 -->
+        <div class="input-container">
+            <input type="text" id="msgInput" placeholder="寫下感謝... (可先在上方選顏色)" autocomplete="off">
+            <button onclick="submitMessage()">送出</button>
+        </div>
     </div>
 
     <script>
+        // 初始化資料，支援舊版資料
         let messages = JSON.parse(localStorage.getItem('company_gratitude')) || [];
+        let currentTheme = 'theme-classic';
+
+        // 綁定模板選擇點擊事件
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTheme = this.getAttribute('data-theme');
+            });
+        });
 
         function submitMessage() {
             const input = document.getElementById('msgInput');
             const text = input.value.trim();
             if (text === '') return;
 
-            messages.unshift({ text: text, id: Date.now() });
+            // 存入時，將選擇的顏色模板一併記錄
+            messages.unshift({ 
+                text: text, 
+                id: Date.now(),
+                theme: currentTheme 
+            });
+            
             localStorage.setItem('company_gratitude', JSON.stringify(messages));
             input.value = '';
             renderWall();
@@ -149,68 +217,75 @@
             const total = messages.length;
             if (total === 0) return;
 
+            const isMobile = window.innerWidth <= 768;
+
             // 動態豐富度
             let richnessScale = 1;
-            if (total <= 3) richnessScale = 1.8;
-            else if (total <= 10) richnessScale = 1.4;
-            else richnessScale = 1.1;
+            if (total <= 3) richnessScale = 1.6;
+            else if (total <= 10) richnessScale = 1.3;
+            else richnessScale = 1.0;
 
-            const placedRects = []; // 記錄已經放置的卡片位置與大小，用來防碰撞
+            // 手機版整體卡片縮放係數，避免手機畫面塞爆
+            const mobileScaleDown = isMobile ? 0.85 : 1.0;
+
+            const placedRects = [];
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
             const centerX = screenW / 2;
             const centerY = screenH * 0.45; 
             
-            // 基礎的推移半徑（確保不會一開始就推到螢幕外）
-            const maxRadius = Math.min(screenW, screenH) / 2 - 80;
+            const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 40 : 80);
+            
+            // 手機版的卡片防撞間距較小，允許更密集的排列
+            const collisionPadding = isMobile ? 5 : 20;
 
             messages.forEach((msg, index) => {
                 const card = document.createElement('div');
-                card.className = 'message-card';
+                // 讀取留言專屬模板，若無（舊資料）則套用經典款
+                const cardTheme = msg.theme || 'theme-classic';
+                card.className = `message-card ${cardTheme}`;
                 card.innerText = msg.text;
 
                 const ageRatio = total > 1 ? index / (total - 1) : 0;
-                const scale = (1.5 - (ageRatio * 0.9)) * richnessScale;
+                
+                // 結合新舊程度、動態豐富度、與手機縮放係數
+                const scale = (1.5 - (ageRatio * 0.9)) * richnessScale * mobileScaleDown;
                 const opacity = 1 - (ageRatio * 0.35);
                 const randomRotate = (Math.random() - 0.5) * 16;
                 const zIndex = total - index;
 
-                // 為了測量卡片實際大小，先將其加入畫面但不顯示
                 card.style.visibility = 'hidden';
                 card.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${randomRotate}deg)`;
                 wall.appendChild(card);
 
-                // 取得卡片縮放後的長寬
                 const cardW = card.offsetWidth * scale;
                 const cardH = card.offsetHeight * scale;
 
-                // 碰撞偵測演算法：尋找空位
                 let placedX = centerX;
                 let placedY = centerY;
                 let foundSpot = false;
                 const distanceBase = ageRatio * maxRadius;
                 
-                // 最多嘗試 200 次尋找空位
-                for (let attempt = 0; attempt < 200; attempt++) {
+                for (let attempt = 0; attempt < 250; attempt++) {
                     const angle = Math.random() * Math.PI * 2;
-                    // 如果找不到位置，就逐漸往外擴散尋找 (attempt * 2)
-                    const currentDistance = distanceBase + (attempt * 2); 
+                    // 擴散尋找空位，手機版因空間小，往外推的速度稍微減緩
+                    const currentDistance = distanceBase + (attempt * (isMobile ? 1.5 : 2)); 
                     
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * Math.sin(angle);
 
-                    // 檢查是否超出螢幕邊界 (避開底部的輸入框)
-                    if (testX - cardW/2 < 20 || testX + cardW/2 > screenW - 20 || 
-                        testY - cardH/2 < 20 || testY + cardH/2 > screenH - 120) {
+                    // 邊界保護 (避開底部的輸入框與主題選擇器)
+                    const bottomLimit = isMobile ? 160 : 180;
+                    if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || 
+                        testY - cardH/2 < 10 || testY + cardH/2 > screenH - bottomLimit) {
                         continue; 
                     }
 
-                    // 檢查是否與已放置的卡片重疊
+                    // 碰撞偵測
                     let hasCollision = false;
                     for (let rect of placedRects) {
-                        // 加上 20px 的間距 Padding
-                        if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + 20 &&
-                            Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + 20) {
+                        if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + collisionPadding &&
+                            Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + collisionPadding) {
                             hasCollision = true;
                             break;
                         }
@@ -224,22 +299,19 @@
                     }
                 }
 
-                // 紀錄最終放置的位置供後續卡片參考
                 placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
 
-                // 正式套用位置與顯示
                 card.style.left = `${placedX}px`;
                 card.style.top = `${placedY}px`;
                 card.style.opacity = opacity;
                 card.style.zIndex = zIndex;
-                card.style.visibility = 'visible'; // 恢復顯示
+                card.style.visibility = 'visible'; 
             });
         }
 
-        // 監聽視窗大小改變，自動重新排版，確保視窗縮放時不會破圖
+        // 確保視窗縮放或手機翻轉時會重新排版
         window.addEventListener('resize', renderWall);
 
-        // 初始渲染
         renderWall();
     </script>
 </body>
