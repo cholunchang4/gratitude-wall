@@ -4,85 +4,151 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>公司感謝牆</title>
+    
+    <!-- 引入撒花特效套件 -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
     <style>
-        /* 基礎設定 */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
-        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; filter: blur(40px); z-index: 0; }
-        .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: rgba(255, 182, 193, 0.3); }
-        
-        /* 標題區塊 */
-        .header-container { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; color: #4a4a4a; text-shadow: 0 2px 10px rgba(255,255,255,0.8); width: 90%; pointer-events: none; }
-        #mainTitle { font-size: 36px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: 2px; }
-        #subTitle { font-size: 16px; font-weight: 600; margin: 0; opacity: 0.85; }
-
-        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: 1; }
-
-        /* 卡片設計 */
-        .message-card { position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); transition: all 0.8s ease; width: max-content; max-width: 300px; min-width: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; color: #4a4a4a; margin-bottom: 10px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-author { font-size: 14px; font-weight: bold; color: #555; text-align: right; }
-        .card-date { position: absolute; bottom: 12px; right: 20px; font-size: 11px; opacity: 0.6; color: #333; }
-
-        /* 模板顏色 */
-        .theme-classic { background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.6); }
-        .theme-starry  { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.2); }
-        .theme-starry .card-text, .theme-starry .card-author, .theme-starry .card-date { color: #f8fafc; }
-        .theme-breeze  { background: rgba(204, 251, 241, 0.8); border: 1px solid rgba(153, 246, 228, 0.6); }
-        .theme-sunset  { background: rgba(255, 237, 213, 0.8); border: 1px solid rgba(253, 186, 116, 0.6); }
-        .theme-lemon   { background: rgba(254, 252, 216, 0.8); border: 1px solid rgba(253, 224, 71, 0.6); }
-
-        /* 大容量表情符號面板 */
-        .emoji-picker {
-            display: none; 
-            position: absolute;
-            bottom: calc(100% + 15px);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            padding: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            width: 280px;
-            max-height: 220px;
-            overflow-y: auto; 
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: flex-start;
-            z-index: 100;
+        /* ================= 晝夜氛圍適應 (CSS 變數) ================= */
+        :root {
+            --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --text-main: #4a4a4a;
+            --text-sub: #555;
+            --geo-bg-1: rgba(255, 255, 255, 0.2);
+            --geo-bg-2: rgba(255, 182, 193, 0.3);
+            --panel-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: transparent;
+            --name-bg: #f0f0f0;
+            --card-border: rgba(255, 255, 255, 0.6);
+            --icon-color: #333;
         }
+
+        /* 自動深色模式 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
+                --text-main: #f8fafc;
+                --text-sub: #cbd5e1;
+                --geo-bg-1: rgba(255, 255, 255, 0.05);
+                --geo-bg-2: rgba(0, 191, 255, 0.1);
+                --panel-bg: rgba(30, 41, 59, 0.95);
+                --input-bg: transparent;
+                --name-bg: #334155;
+                --card-border: rgba(255, 255, 255, 0.15);
+                --icon-color: #f8fafc;
+            }
+            
+            /* 深色模式下的卡片微調 */
+            .theme-classic { background: rgba(30, 30, 30, 0.75) !important; color: #fff !important; }
+            .theme-breeze { background: rgba(17, 94, 89, 0.75) !important; color: #ccfbf1 !important; border-color: rgba(153, 246, 228, 0.3) !important; }
+            .theme-sunset { background: rgba(154, 52, 18, 0.75) !important; color: #ffedd5 !important; border-color: rgba(253, 186, 116, 0.3) !important; }
+            .theme-lemon { background: rgba(133, 77, 14, 0.75) !important; color: #fefcd8 !important; border-color: rgba(253, 224, 71, 0.3) !important; }
+            .card-text, .card-author, .card-date { color: inherit !important; }
+        }
+
+        /* 基礎設定 */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: background 0.5s ease; }
+        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 0.5s ease; }
+        .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
+        
+        /* 標題與功能按鈕 */
+        .header-container { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; width: 90%; pointer-events: none; }
+        #mainTitle { font-size: 36px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #subTitle { font-size: 16px; font-weight: 600; margin: 0; opacity: 0.85; }
+        
+        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 20; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
+        .view-toggle-btn:hover { transform: scale(1.1); }
+
+        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: 1; transition: all 0.5s ease; }
+
+        /* ================= 雙重視角切換 (瀑布流模式) ================= */
+        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 130px 20px 150px 20px; overflow-y: auto; }
+        #wall.list-mode .message-card { 
+            position: relative !important; left: auto !important; top: auto !important; 
+            transform: none !important; animation: none !important; 
+            width: 90%; max-width: 500px; opacity: 1 !important; visibility: visible !important;
+            margin: 0 auto;
+        }
+
+        /* 卡片設計與漂浮動畫 */
+        .message-card { 
+            position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
+            padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); 
+            width: max-content; max-width: 300px; min-width: 130px; text-align: center; 
+            display: flex; flex-direction: column; justify-content: center; cursor: pointer; /* 加入指標符號 */
+            --c-scale: 1; --c-rotate: 0deg;
+            transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
+            transition: opacity 0.5s, box-shadow 0.3s;
+        }
+        .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); }
+        .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
+        
+        @keyframes floatAnim { 
+            0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 
+            100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-12px); } 
+        }
+
+        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; margin-bottom: 15px; word-wrap: break-word; white-space: pre-wrap; }
+        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.9; }
+        .card-date { position: absolute; bottom: 12px; right: 20px; font-size: 11px; opacity: 0.6; }
+
+        /* ================= 沉浸式聚焦模式 ================= */
+        .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .focus-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .message-card.focused {
+            position: fixed !important; top: 50% !important; left: 50% !important;
+            transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important;
+            z-index: 1000 !important; animation: none !important;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* 互動點讚按鈕 */
+        .like-container { position: absolute; bottom: 10px; left: 15px; z-index: 2; }
+        .like-btn { background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.5); border-radius: 20px; padding: 4px 10px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; transition: all 0.2s; color: inherit; }
+        .like-btn:hover { background: rgba(255,255,255,0.8); transform: scale(1.05); }
+        .like-btn.liked { background: rgba(233, 30, 99, 0.85); color: #fff !important; border-color: #e91e63; }
+        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+        .heart-anim { animation: heartBeat 0.4s ease-out; display: inline-block; }
+
+        /* 模板顏色 (預設亮色) */
+        .theme-classic { background: rgba(255, 255, 255, 0.85); border: 1px solid var(--card-border); color: #4a4a4a; }
+        .theme-starry  { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc; }
+        .theme-breeze  { background: rgba(204, 251, 241, 0.85); border: 1px solid rgba(153, 246, 228, 0.6); color: #115e59; }
+        .theme-sunset  { background: rgba(255, 237, 213, 0.85); border: 1px solid rgba(253, 186, 116, 0.6); color: #9a3412; }
+        .theme-lemon   { background: rgba(254, 252, 216, 0.85); border: 1px solid rgba(253, 224, 71, 0.6); color: #854d0e; }
+
+        /* 輸入區塊與表情面板 */
+        .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 100; }
         .emoji-picker::-webkit-scrollbar { width: 6px; }
         .emoji-picker::-webkit-scrollbar-track { background: transparent; }
-        .emoji-picker::-webkit-scrollbar-thumb { background: #dcdcdc; border-radius: 10px; }
-        .emoji-picker::-webkit-scrollbar-thumb:hover { background: #c0c0c0; }
+        .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
         .emoji-picker.active { display: flex; align-content: flex-start; }
         .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; width: 32px; text-align: center; }
         .emoji-item:hover { transform: scale(1.3); }
-        
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 5px; outline: none; transition: transform 0.2s; }
         .emoji-btn:hover { transform: scale(1.1); }
 
-        /* 輸入區塊 */
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
         .theme-selector { display: flex; justify-content: center; gap: 15px; padding: 5px; }
-        .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
-        .theme-btn.active { border-color: #fff; transform: scale(1.25); }
-        .input-container { position: relative; display: flex; gap: 10px; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); align-items: center; }
-        .input-name { width: 80px; border: none; background: #f0f0f0; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; }
-        .input-msg { flex: 1; border: none; background: transparent; font-size: 16px; outline: none; padding: 0 5px; }
-        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; }
+        .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
+        .theme-btn.active { border-color: #fff; transform: scale(1.25); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        
+        .input-container { position: relative; display: flex; gap: 10px; background: var(--panel-bg); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); align-items: center; border: 1px solid var(--card-border); }
+        .input-name { width: 80px; border: none; background: var(--name-bg); padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: var(--text-main); }
+        .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); }
+        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #333; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(255,154,158,0.4); }
         .send-btn:hover { transform: translateY(-2px); }
 
         @media (max-width: 768px) {
-            #mainTitle { font-size: 28px; }
-            #subTitle { font-size: 14px; }
-            .message-card { padding: 15px 20px 25px 20px; }
-            .card-text { font-size: 16px; }
+            #mainTitle { font-size: 28px; } #subTitle { font-size: 14px; }
+            .message-card.focused { transform: translate(-50%, -50%) scale(1.2) rotate(0deg) !important; width: 85%; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; }
-            .input-name { width: calc(40% - 10px); }
-            .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 5px 10px; background: #f9f9f9; border-radius: 15px;}
+            .input-name { width: calc(40% - 10px); } .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 8px 10px; background: var(--name-bg); border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
+            .view-toggle-btn { top: 15px; right: 15px; font-size: 16px; padding: 8px; }
+            #wall.list-mode { padding-top: 100px; }
         }
     </style>
 </head>
@@ -96,20 +162,25 @@
         <p id="subTitle"></p>
     </div>
 
+    <!-- 視角切換按鈕 -->
+    <button id="viewToggleBtn" class="view-toggle-btn" title="切換排版模式">📋</button>
+    
+    <!-- 聚焦模式的背景遮罩 -->
+    <div class="focus-overlay" id="focusOverlay"></div>
+
     <div id="wall"></div>
 
     <div class="bottom-panel">
         <div class="theme-selector" id="themeSelector">
-            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
-            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;" title="星空藍"></div>
-            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;" title="晨光綠"></div>
-            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;" title="暖陽橘"></div>
-            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;" title="活力黃"></div>
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;"></div>
+            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;"></div>
+            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;"></div>
+            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;"></div>
+            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;"></div>
         </div>
         <div class="input-container">
             <div class="emoji-picker" id="emojiPicker"></div>
             <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
-            
             <input type="text" id="nameInput" class="input-name" placeholder="你的名字" autocomplete="off">
             <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝..." autocomplete="off">
             <button id="sendBtn" class="send-btn">送出</button>
@@ -118,7 +189,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, query, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         // 從 config.js 引入金鑰
         import { firebaseConfig } from './config.js'; 
@@ -126,36 +197,78 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
+        // ================= 聽覺微互動 (Web Audio API 合成音效) =================
+        let audioCtx;
+        function playSound(type) {
+            try {
+                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                if (audioCtx.state === 'suspended') audioCtx.resume();
+                
+                const osc = audioCtx.createOscillator();
+                const gainNode = audioCtx.createGain();
+                osc.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                if (type === 'click') { // 開啟選單/切換視角
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+                } else if (type === 'pop') { // 點讚
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
+                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+                } else if (type === 'send') { // 送出留言 (慶祝音)
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                    gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
+                    osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                }
+            } catch(e) { console.log('Audio disabled or unsupported'); }
+        }
+
+        // ================= 雙重視角切換邏輯 =================
+        const wall = document.getElementById('wall');
+        const viewToggleBtn = document.getElementById('viewToggleBtn');
+        let isListMode = false;
+        
+        viewToggleBtn.addEventListener('click', () => {
+            playSound('click');
+            isListMode = !isListMode;
+            wall.classList.toggle('list-mode', isListMode);
+            viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; // 切換按鈕圖示
+        });
+
+        // ================= 沉浸式聚焦邏輯 =================
+        const focusOverlay = document.getElementById('focusOverlay');
+        let currentFocusedCard = null;
+
+        function closeFocus() {
+            if (currentFocusedCard) {
+                currentFocusedCard.classList.remove('focused');
+                focusOverlay.classList.remove('active');
+                currentFocusedCard = null;
+                playSound('click');
+            }
+        }
+        focusOverlay.addEventListener('click', closeFocus);
+
         // 初始化 Emoji 面板
-        const emojis = [
-            '😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃',
-            '👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋',
-            '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟',
-            '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲',
-            '🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂',
-            '✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'
-        ];
+        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂','✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'];
         
         const picker = document.getElementById('emojiPicker');
         const msgInput = document.getElementById('msgInput');
         
         emojis.forEach(e => {
-            const span = document.createElement('span');
-            span.className = 'emoji-item';
-            span.innerText = e;
-            span.onclick = () => {
-                msgInput.value += e;
-                picker.classList.remove('active'); 
-                msgInput.focus(); 
-            };
+            const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e;
+            span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); };
             picker.appendChild(span);
         });
 
-        document.getElementById('emojiBtn').addEventListener('click', (e) => {
-            e.stopPropagation();
-            picker.classList.toggle('active');
-        });
-        
+        document.getElementById('emojiBtn').addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('active'); playSound('click'); });
         document.addEventListener('click', () => picker.classList.remove('active'));
         picker.addEventListener('click', (e) => e.stopPropagation());
 
@@ -164,6 +277,7 @@
 
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', function() {
+                playSound('click');
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
                 currentTheme = this.getAttribute('data-theme');
@@ -175,18 +289,14 @@
             const text = msgInput.value.trim();
             if (text === '') return;
 
-            push(ref(db, 'messages'), {
-                text: text,
-                author: name,
-                theme: currentTheme,
-                timestamp: Date.now()
-            });
+            push(ref(db, 'messages'), { text: text, author: name, theme: currentTheme, timestamp: Date.now(), likes: 0 });
             msgInput.value = '';
+
+            playSound('send');
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
         });
 
-        msgInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('sendBtn').click();
-        });
+        msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
 
         onValue(ref(db, 'settings'), (snapshot) => {
             const data = snapshot.val();
@@ -208,9 +318,7 @@
         });
 
         function renderWall() {
-            const wall = document.getElementById('wall');
             wall.innerHTML = '';
-            
             const now = Date.now();
             const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
             const validMessages = rawMessages.filter(msg => (now - msg.timestamp) <= retentionMs).slice(0, systemSettings.maxMessages);
@@ -223,10 +331,8 @@
             const centerX = screenW / 2;
             const centerY = screenH * 0.45; 
             const aspectMultiplier = isMobile ? (screenH / screenW) * 0.85 : 1;
-
             let richnessScale = total <= 3 ? 1.6 : (total <= 10 ? 1.3 : 1.0);
             const mobileScaleDown = isMobile ? 0.75 : 1.0; 
-
             const placedRects = [];
             const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 20 : 80);
             const collisionPadding = isMobile ? 5 : 20;
@@ -237,11 +343,18 @@
                 
                 const dateObj = new Date(msg.timestamp);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+                const isLiked = localStorage.getItem(`liked_${msg.id}`);
+                const likesCount = msg.likes || 0;
 
                 card.innerHTML = `
                     <div class="card-text">${msg.text}</div>
                     <div class="card-author">- ${msg.author}</div>
                     <div class="card-date">${dateStr}</div>
+                    <div class="like-container">
+                        <button class="like-btn ${isLiked ? 'liked' : ''}" data-id="${msg.id}">
+                            <span class="heart-icon">❤️</span> <span class="like-count">${likesCount}</span>
+                        </button>
+                    </div>
                 `;
 
                 const ageRatio = total > 1 ? index / (total - 1) : 0;
@@ -249,8 +362,11 @@
                 const opacity = 1 - (ageRatio * 0.35);
                 const randomRotate = (Math.random() - 0.5) * 14;
 
-                card.style.visibility = 'hidden';
-                card.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${randomRotate}deg)`;
+                card.style.setProperty('--c-scale', scale);
+                card.style.setProperty('--c-rotate', `${randomRotate}deg`);
+                card.style.opacity = opacity; 
+                card.style.zIndex = total - index;
+                card.style.visibility = 'hidden'; 
                 wall.appendChild(card);
 
                 const cardW = card.offsetWidth * scale;
@@ -264,33 +380,54 @@
                     const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
-
-                    const topLimit = 120; 
-                    const bottomLimit = isMobile ? 180 : 150;
-                    if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || 
-                        testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) {
-                        continue; 
-                    }
-
+                    const topLimit = 120; const bottomLimit = isMobile ? 180 : 150;
+                    if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
                     let hasCollision = false;
                     for (let rect of placedRects) {
-                        if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + collisionPadding &&
-                            Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + collisionPadding) {
+                        if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + collisionPadding && Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + collisionPadding) {
                             hasCollision = true; break;
                         }
                     }
                     if (!hasCollision) { placedX = testX; placedY = testY; foundSpot = true; break; }
                 }
 
-                if (!foundSpot) {
-                    placedX = centerX + (Math.random() - 0.5) * 50;
-                    placedY = centerY + (Math.random() - 0.5) * 50;
-                }
-
+                if (!foundSpot) { placedX = centerX + (Math.random() - 0.5) * 50; placedY = centerY + (Math.random() - 0.5) * 50; }
                 placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
+                
                 card.style.left = `${placedX}px`; card.style.top = `${placedY}px`;
-                card.style.opacity = opacity; card.style.zIndex = total - index;
                 card.style.visibility = 'visible'; 
+                card.classList.add('floating');
+                card.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
+                card.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
+
+                // 綁定點擊聚焦事件
+                card.addEventListener('click', (e) => {
+                    // 如果點到的是愛心按鈕，就不觸發聚焦
+                    if(e.target.closest('.like-btn')) return;
+                    
+                    if (currentFocusedCard === card) { closeFocus(); return; }
+                    if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
+                    
+                    playSound('click');
+                    card.classList.add('focused');
+                    focusOverlay.classList.add('active');
+                    currentFocusedCard = card;
+                });
+
+                // 綁定點讚事件
+                const likeBtn = card.querySelector('.like-btn');
+                likeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    if (localStorage.getItem(`liked_${msg.id}`)) return;
+                    
+                    playSound('pop');
+                    localStorage.setItem(`liked_${msg.id}`, 'true');
+                    likeBtn.classList.add('liked');
+                    likeBtn.querySelector('.like-count').innerText = likesCount + 1;
+                    likeBtn.querySelector('.heart-icon').classList.add('heart-anim');
+                    
+                    runTransaction(ref(db, `messages/${msg.id}/likes`), (currentLikes) => (currentLikes || 0) + 1);
+                });
             });
         }
         window.addEventListener('resize', renderWall);
