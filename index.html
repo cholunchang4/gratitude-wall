@@ -9,13 +9,13 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* ================= 統一溫馨色系 (CSS 變數) ================= */
+        /* ================= 基礎設定 ================= */
         :root {
-            --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --bg-gradient: linear-gradient(135deg, #fae0d4 0%, #f7c5b9 100%); /* 配合你的玫瑰蜜桃色背景 */
             --text-main: #4a4a4a;
             --text-sub: #555;
-            --geo-bg-1: rgba(255, 255, 255, 0.2);
-            --geo-bg-2: rgba(255, 182, 193, 0.3);
+            --geo-bg-1: rgba(255, 255, 255, 0.3);
+            --geo-bg-2: rgba(255, 182, 193, 0.2);
             --panel-bg: rgba(255, 255, 255, 0.95);
             --input-bg: transparent;
             --name-bg: #f0f0f0;
@@ -23,33 +23,32 @@
             --icon-color: #333;
         }
 
-        /* 基礎設定 */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
-        /* ================= 標題華麗升級 (層級置頂) ================= */
+        /* ================= 標題華麗升級 ================= */
         .header-container { 
             position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
             z-index: 1000; 
             width: max-content; max-width: 90%; pointer-events: none; 
-            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             padding: 15px 45px; border-radius: 60px;
-            box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+            box-shadow: 0 10px 30px rgba(230, 100, 120, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
         }
         
         #mainTitle { 
             font-size: 42px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 4px; 
-            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+            background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0px 2px 2px rgba(255, 8, 68, 0.15));
+            filter: drop-shadow(0px 2px 2px rgba(230, 57, 70, 0.15));
         }
         
         #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
 
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; }
 
-        /* ================= 卡片排版與字體比例 ================= */
+        /* ================= 卡片排版與字體 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 12px 18px 22px 18px; 
@@ -70,8 +69,8 @@
         }
 
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 8px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.85; margin-bottom: 0; }
-        .card-date { position: absolute; bottom: 6px; right: 14px; font-size: 10px; opacity: 0.65; }
+        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.9; margin-bottom: 0; }
+        .card-date { position: absolute; bottom: 6px; right: 14px; font-size: 10px; opacity: 0.6; }
 
         /* ================= 沉浸式聚焦模式 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -84,17 +83,48 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* ================= 10 款玻璃質感模板 ================= */
-        .theme-classic { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.6); color: #4a4a4a; }
-        .theme-peach   { background: rgba(255, 228, 225, 0.85); border: 1px solid rgba(255, 192, 203, 0.6); color: #9c3c50; }
-        .theme-cream   { background: rgba(255, 248, 220, 0.85); border: 1px solid rgba(245, 222, 179, 0.6); color: #855c20; }
-        .theme-mint    { background: rgba(224, 255, 245, 0.85); border: 1px solid rgba(175, 238, 238, 0.6); color: #115e59; }
-        .theme-lilac   { background: rgba(240, 230, 255, 0.85); border: 1px solid rgba(216, 191, 216, 0.6); color: #4a148c; }
-        .theme-sky     { background: rgba(225, 245, 254, 0.85); border: 1px solid rgba(179, 229, 252, 0.6); color: #01579b; }
-        .theme-latte   { background: rgba(237, 224, 212, 0.85); border: 1px solid rgba(210, 180, 140, 0.6); color: #4e342e; }
-        .theme-cherry  { background: rgba(255, 218, 233, 0.85); border: 1px solid rgba(255, 182, 193, 0.6); color: #880e4f; }
-        .theme-sage    { background: rgba(220, 237, 225, 0.85); border: 1px solid rgba(143, 188, 143, 0.6); color: #1b5e20; }
-        .theme-night   { background: rgba(45, 55, 72, 0.85);    border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc; }
+        /* ================= 10 款高對比獨立風格模板 ================= */
+        
+        /* 1. 純淨白 (經典百搭，高亮度突出) */
+        .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
+        .theme-classic .card-author { color: #555555; }
+
+        /* 2. 星空黑 (最強烈對比，優雅深沉) */
+        .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; }
+        .theme-midnight .card-author { color: #A0AEC0; }
+
+        /* 3. 鼠尾草綠 (紅色的互補色，極度和諧且獨立) */
+        .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
+        .theme-sage .card-author { color: #3A6B4E; }
+
+        /* 4. 勃根地紅 (同色系但極深，像寶石般點綴) */
+        .theme-wine { background: rgba(135, 50, 65, 0.88); border: 1px solid rgba(200, 100, 110, 0.7); color: #FFF0F2; }
+        .theme-wine .card-author { color: #FFB3C1; }
+
+        /* 5. 迷霧灰 (冷調中性色，平衡畫面溫度) */
+        .theme-slate { background: rgba(226, 232, 240, 0.95); border: 1px solid rgba(255, 255, 255, 0.8); color: #2D3748; }
+        .theme-slate .card-author { color: #4A5568; }
+
+        /* 6. 薰衣草紫 (帶點夢幻感，與玫瑰背景完美過渡) */
+        .theme-lavender { background: rgba(235, 225, 245, 0.92); border: 1px solid rgba(210, 190, 235, 0.9); color: #442966; }
+        .theme-lavender .card-author { color: #6B46C1; }
+
+        /* 7. 檸檬霜 (鮮豔明亮，帶來活潑感) */
+        .theme-lemon { background: rgba(255, 249, 215, 0.95); border: 1px solid rgba(245, 228, 153, 0.9); color: #78600C; }
+        .theme-lemon .card-author { color: #9A7B16; }
+
+        /* 8. 抹茶青 (溫潤的自然色系，視覺舒適) */
+        .theme-matcha { background: rgba(235, 242, 222, 0.95); border: 1px solid rgba(200, 220, 170, 0.9); color: #455725; }
+        .theme-matcha .card-author { color: #5D7A31; }
+
+        /* 9. 陶土橘 (比背景深且飽和，復古搶眼) */
+        .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; }
+        .theme-terracotta .card-author { color: #FFD4C4; }
+
+        /* 10. 冰川藍 (強烈冷暖對比，吸睛度100%) */
+        .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
+        .theme-ice .card-author { color: #075985; }
+
 
         /* 輸入區塊與表情面板 */
         .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 100; }
@@ -109,13 +139,13 @@
 
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
-        .theme-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
-        .theme-btn.active { border-color: #fff; transform: scale(1.3); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; }
+        .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
         
-        .input-container { position: relative; display: flex; gap: 10px; background: var(--panel-bg); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); align-items: center; border: 1px solid var(--card-border); }
+        .input-container { position: relative; display: flex; gap: 10px; background: var(--panel-bg); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .input-name { width: 80px; border: none; background: var(--name-bg); padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: var(--text-main); }
         .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); }
-        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #333; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(255,154,158,0.4); }
+        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); }
         .send-btn:hover { transform: translateY(-2px); }
 
         /* 手機版排版微調 */
@@ -148,16 +178,16 @@
 
     <div class="bottom-panel">
         <div class="theme-selector" id="themeSelector">
-            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
-            <div class="theme-btn" data-theme="theme-peach" style="background: #ffe4e1;" title="蜜桃粉"></div>
-            <div class="theme-btn" data-theme="theme-cream" style="background: #fff8dc;" title="奶油黃"></div>
-            <div class="theme-btn" data-theme="theme-mint" style="background: #e0fff5;" title="薄荷綠"></div>
-            <div class="theme-btn" data-theme="theme-lilac" style="background: #f0e6ff;" title="丁香紫"></div>
-            <div class="theme-btn" data-theme="theme-sky" style="background: #e1f5fe;" title="天空藍"></div>
-            <div class="theme-btn" data-theme="theme-latte" style="background: #ede0d4;" title="拿鐵棕"></div>
-            <div class="theme-btn" data-theme="theme-cherry" style="background: #ffdae9;" title="櫻花紅"></div>
-            <div class="theme-btn" data-theme="theme-sage" style="background: #dcede1;" title="鼠尾草綠"></div>
-            <div class="theme-btn" data-theme="theme-night" style="background: #2d3748;" title="夜空灰"></div>
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
+            <div class="theme-btn" data-theme="theme-midnight" style="background: #1e232e;" title="星空黑"></div>
+            <div class="theme-btn" data-theme="theme-sage" style="background: #d7e6da;" title="鼠尾草綠"></div>
+            <div class="theme-btn" data-theme="theme-wine" style="background: #873241;" title="勃根地紅"></div>
+            <div class="theme-btn" data-theme="theme-slate" style="background: #e2e8f0;" title="迷霧灰"></div>
+            <div class="theme-btn" data-theme="theme-lavender" style="background: #ebe1f5;" title="薰衣草紫"></div>
+            <div class="theme-btn" data-theme="theme-lemon" style="background: #fff9d7;" title="檸檬霜"></div>
+            <div class="theme-btn" data-theme="theme-matcha" style="background: #ebf2de;" title="抹茶青"></div>
+            <div class="theme-btn" data-theme="theme-terracotta" style="background: #d27355;" title="陶土橘"></div>
+            <div class="theme-btn" data-theme="theme-ice" style="background: #e0f2fe;" title="冰川藍"></div>
         </div>
         <div class="input-container">
             <div class="emoji-picker" id="emojiPicker"></div>
@@ -216,7 +246,7 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
-        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','加','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂','✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'];
+        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂','✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'];
         
         const picker = document.getElementById('emojiPicker');
         const msgInput = document.getElementById('msgInput');
