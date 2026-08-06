@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>公司感謝牆</title>
     <style>
-        /* 基礎設定維持不變 */
+        /* 基礎設定 */
         body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: rgba(255, 182, 193, 0.3); }
         
-        /* 標題區塊設計 */
+        /* 標題區塊 */
         .header-container { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; color: #4a4a4a; text-shadow: 0 2px 10px rgba(255,255,255,0.8); width: 90%; pointer-events: none; }
         #mainTitle { font-size: 36px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: 2px; }
         #subTitle { font-size: 16px; font-weight: 600; margin: 0; opacity: 0.85; }
 
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: 1; }
 
-        /* 卡片設計更新：加入作者與日期排版 */
+        /* 卡片設計 */
         .message-card { position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); transition: all 0.8s ease; width: max-content; max-width: 300px; min-width: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; color: #4a4a4a; margin-bottom: 10px; word-wrap: break-word; white-space: pre-wrap; }
         .card-author { font-size: 14px; font-weight: bold; color: #555; text-align: right; }
@@ -31,27 +31,51 @@
         .theme-sunset  { background: rgba(255, 237, 213, 0.8); border: 1px solid rgba(253, 186, 116, 0.6); }
         .theme-lemon   { background: rgba(254, 252, 216, 0.8); border: 1px solid rgba(253, 224, 71, 0.6); }
 
-        /* 輸入區塊 (加入署名) */
+        /* ================= 新增：表情符號面板 ================= */
+        .emoji-picker {
+            display: none; /* 預設隱藏 */
+            position: absolute;
+            bottom: calc(100% + 15px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            width: 260px;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            z-index: 100;
+        }
+        .emoji-picker.active { display: flex; }
+        .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; }
+        .emoji-item:hover { transform: scale(1.3); }
+        
+        .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 5px; outline: none; transition: transform 0.2s; }
+        .emoji-btn:hover { transform: scale(1.1); }
+
+        /* 輸入區塊 */
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
         .theme-selector { display: flex; justify-content: center; gap: 15px; padding: 5px; }
         .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
         .theme-btn.active { border-color: #fff; transform: scale(1.25); }
-        .input-container { display: flex; gap: 10px; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); align-items: center; }
+        .input-container { position: relative; display: flex; gap: 10px; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); align-items: center; }
         .input-name { width: 80px; border: none; background: #f0f0f0; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; }
         .input-msg { flex: 1; border: none; background: transparent; font-size: 16px; outline: none; padding: 0 5px; }
-        button { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; }
+        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; }
 
         @media (max-width: 768px) {
             #mainTitle { font-size: 28px; }
             #subTitle { font-size: 14px; }
             .message-card { padding: 15px 20px 25px 20px; }
             .card-text { font-size: 16px; }
-            .card-author { font-size: 12px; }
-            .card-date { bottom: 8px; right: 15px; font-size: 9px; }
-            .input-container { flex-wrap: wrap; border-radius: 20px; }
-            .input-name { width: calc(30% - 10px); }
-            .input-msg { width: calc(70% - 10px); flex: none; }
-            button { width: 100%; margin-top: 5px; }
+            .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; }
+            .input-name { width: calc(40% - 10px); }
+            .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 5px 10px; background: #f9f9f9; border-radius: 15px;}
+            .send-btn { width: 100%; margin-top: 5px; }
+            .emoji-picker { bottom: calc(100% + 5px); width: 90%; }
         }
     </style>
 </head>
@@ -60,7 +84,6 @@
     <div class="geometry-bg"></div>
     <div class="geometry-bg right"></div>
     
-    <!-- 標題區塊 -->
     <div class="header-container">
         <h1 id="mainTitle">載入中...</h1>
         <p id="subTitle"></p>
@@ -77,19 +100,23 @@
             <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;"></div>
         </div>
         <div class="input-container">
+            <!-- Emoji 面板 -->
+            <div class="emoji-picker" id="emojiPicker"></div>
+            <!-- 笑臉按鈕 -->
+            <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
+            
             <input type="text" id="nameInput" class="input-name" placeholder="你的名字" autocomplete="off">
             <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝..." autocomplete="off">
-            <button id="sendBtn">送出</button>
+            <button id="sendBtn" class="send-btn">送出</button>
         </div>
     </div>
 
-    <!-- Firebase SDK (使用 ES Modules) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
         // ==========================================
-        // ⚠️ 請替換成你 Firebase 專案的 Config
+        // ⚠️ 請替換成你 Firebase 專案的 Config (一定要補上 databaseURL)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyAjYSBp43_8dRpGrhuTscdvbEktzogqO9o",
@@ -101,13 +128,42 @@
             appId: "1:790216418295:web:82ec771a3cb990ef39c4f2",
             measurementId: "G-LGMBXSE8XF"
         };
+
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let currentTheme = 'theme-classic';
-        let systemSettings = { maxMessages: 50, retentionDays: 30 }; // 預設值
+        // 初始化 Emoji 面板
+        const emojis = ['😀','🥰','😂','😎','🥺','🥳','🙌','👏','👍','❤️','✨','🔥','🎉','💪','💡'];
+        const picker = document.getElementById('emojiPicker');
+        const msgInput = document.getElementById('msgInput');
+        
+        emojis.forEach(e => {
+            const span = document.createElement('span');
+            span.className = 'emoji-item';
+            span.innerText = e;
+            span.onclick = () => {
+                msgInput.value += e;
+                picker.classList.remove('active'); // 點選後自動關閉面板
+                msgInput.focus(); // 將游標移回輸入框
+            };
+            picker.appendChild(span);
+        });
 
-        // 主題選擇邏輯
+        // 點擊按鈕切換 Emoji 面板
+        document.getElementById('emojiBtn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            picker.classList.toggle('active');
+        });
+        
+        // 點擊畫面其他地方隱藏 Emoji 面板
+        document.addEventListener('click', () => picker.classList.remove('active'));
+        picker.addEventListener('click', (e) => e.stopPropagation());
+
+        // 主題與推播邏輯
+        let currentTheme = 'theme-classic';
+        let systemSettings = { maxMessages: 50, retentionDays: 30 };
+
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
@@ -116,25 +172,25 @@
             });
         });
 
-        // 送出留言
         document.getElementById('sendBtn').addEventListener('click', () => {
             const name = document.getElementById('nameInput').value.trim() || '匿名';
-            const text = document.getElementById('msgInput').value.trim();
+            const text = msgInput.value.trim();
             if (text === '') return;
 
-            const newMsg = {
+            push(ref(db, 'messages'), {
                 text: text,
                 author: name,
                 theme: currentTheme,
                 timestamp: Date.now()
-            };
-
-            // 推送到 Firebase
-            push(ref(db, 'messages'), newMsg);
-            document.getElementById('msgInput').value = '';
+            });
+            msgInput.value = '';
         });
 
-        // 即時監聽設定檔 (標題、數量限制)
+        msgInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('sendBtn').click();
+        });
+
+        // 資料庫監聽與排版邏輯 (維持原樣)
         onValue(ref(db, 'settings'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -142,18 +198,14 @@
                 document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝';
                 systemSettings.maxMessages = data.maxMessages || 50;
                 systemSettings.retentionDays = data.retentionDays || 30;
-                renderWall(); // 設定改變時重新排版
+                renderWall();
             }
         });
 
-        // 即時監聽留言資料
         let rawMessages = [];
         onValue(query(ref(db, 'messages')), (snapshot) => {
             rawMessages = [];
-            snapshot.forEach((child) => {
-                rawMessages.push({ id: child.key, ...child.val() });
-            });
-            // 依照時間排序 (最新的在前面)
+            snapshot.forEach((child) => { rawMessages.push({ id: child.key, ...child.val() }); });
             rawMessages.sort((a, b) => b.timestamp - a.timestamp);
             renderWall();
         });
@@ -164,11 +216,7 @@
             
             const now = Date.now();
             const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
-
-            // 根據後台設定過濾資料：保留期限內、且不超過最大數量
-            const validMessages = rawMessages.filter(msg => (now - msg.timestamp) <= retentionMs)
-                                             .slice(0, systemSettings.maxMessages);
-
+            const validMessages = rawMessages.filter(msg => (now - msg.timestamp) <= retentionMs).slice(0, systemSettings.maxMessages);
             const total = validMessages.length;
             if (total === 0) return;
 
@@ -190,7 +238,6 @@
                 const card = document.createElement('div');
                 card.className = `message-card ${msg.theme || 'theme-classic'}`;
                 
-                // 格式化日期
                 const dateObj = new Date(msg.timestamp);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
 
@@ -221,7 +268,6 @@
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
 
-                    // 避開標題區與輸入區
                     const topLimit = 120; 
                     const bottomLimit = isMobile ? 180 : 150;
                     if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || 
