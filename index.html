@@ -28,10 +28,11 @@
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
-        /* ================= 標題華麗升級 ================= */
+        /* ================= 標題華麗升級 (層級置頂) ================= */
         .header-container { 
             position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
-            z-index: 50; width: max-content; max-width: 90%; pointer-events: none; 
+            z-index: 1000; 
+            width: max-content; max-width: 90%; pointer-events: none; 
             background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             padding: 15px 45px; border-radius: 60px;
             box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
@@ -46,26 +47,26 @@
         
         #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
         
-        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 60; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
+        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 1001; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .view-toggle-btn:hover { transform: scale(1.1); }
 
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; }
 
         /* ================= 雙重視角切換 (瀑布流模式) ================= */
-        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 150px 20px 150px 20px; overflow-y: auto; }
+        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 160px 20px 150px 20px; overflow-y: auto; }
         #wall.list-mode .message-card { 
             position: relative !important; left: auto !important; top: auto !important; 
             transform: none !important; animation: none !important; 
             width: 90%; max-width: 500px; opacity: 1 !important; visibility: visible !important; margin: 0 auto;
         }
 
-        /* ================= 優化：卡片排版收斂 ================= */
+        /* ================= 卡片排版與字體比例 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            padding: 16px 20px 26px 20px; /* 收緊上下左右的留白 */
-            border-radius: 16px; /* 圓角稍微調小，配合緊湊感 */
+            padding: 12px 18px 22px 18px; 
+            border-radius: 16px; 
             box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
-            width: max-content; max-width: 280px; min-width: 80px; /* 縮小最小寬度，避免短留言浪費空間 */
+            width: max-content; max-width: 280px; 
             text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
@@ -79,18 +80,18 @@
             100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } 
         }
 
-        .card-text { font-weight: 700; font-size: 17px; line-height: 1.4; margin-bottom: 6px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-author { font-size: 13px; font-weight: bold; text-align: right; opacity: 0.85; margin-bottom: 0; }
-        .card-date { position: absolute; bottom: 8px; right: 16px; font-size: 11px; opacity: 0.55; }
+        .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 8px; word-wrap: break-word; white-space: pre-wrap; }
+        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.85; margin-bottom: 0; }
+        .card-date { position: absolute; bottom: 6px; right: 14px; font-size: 10px; opacity: 0.55; }
 
         /* ================= 沉浸式聚焦模式 ================= */
-        .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
         
         .message-card.focused {
             position: fixed !important; top: 50% !important; left: 50% !important;
             transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important;
-            z-index: 1000 !important; animation: none !important;
+            z-index: 2000 !important; animation: none !important;
             box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
@@ -112,7 +113,7 @@
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 5px; outline: none; transition: transform 0.2s; }
         .emoji-btn:hover { transform: scale(1.1); }
 
-        .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
+        .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
         .theme-selector { display: flex; justify-content: center; gap: 15px; padding: 5px; }
         .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
         .theme-btn.active { border-color: #fff; transform: scale(1.25); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
@@ -134,7 +135,7 @@
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
             .view-toggle-btn { top: 15px; right: 15px; font-size: 16px; padding: 8px; }
-            #wall.list-mode { padding-top: 120px; }
+            #wall.list-mode { padding-top: 130px; }
         }
     </style>
 </head>
@@ -315,7 +316,11 @@
             const mobileScaleDown = isMobile ? 0.75 : 1.0; 
             const placedRects = [];
             const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 20 : 80);
-            const collisionPadding = isMobile ? 5 : 20;
+            
+            // 👉 關鍵修正：依照留言總數，動態計算「防撞距離」 (數量越多，排斥力越小，甚至允許重疊)
+            const basePadding = isMobile ? 10 : 30;
+            const dynamicPadding = basePadding - (total * 2.5);
+            const collisionPadding = Math.max(-55, dynamicPadding); // 最多允許 55px 的重疊交錯
 
             validMessages.forEach((msg, index) => {
                 const card = document.createElement('div');
@@ -346,14 +351,19 @@
                 const cardH = card.offsetHeight * scale;
 
                 let placedX = centerX, placedY = centerY, foundSpot = false;
-                const distanceBase = ageRatio * maxRadius;
+                
+                // 👉 微調散佈半徑，稍微往中間聚攏
+                const distanceBase = (ageRatio * maxRadius) * 0.85;
                 
                 for (let attempt = 0; attempt < 400; attempt++) {
                     const angle = Math.random() * Math.PI * 2;
                     const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
-                    const topLimit = 130; const bottomLimit = isMobile ? 180 : 150; 
+                    
+                    const topLimit = isMobile ? 180 : 220; 
+                    const bottomLimit = isMobile ? 200 : 180; 
+                    
                     if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
                     let hasCollision = false;
                     for (let rect of placedRects) {
@@ -373,7 +383,6 @@
                 card.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
                 card.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
 
-                // 綁定點擊聚焦事件
                 card.addEventListener('click', () => {
                     if (currentFocusedCard === card) { closeFocus(); return; }
                     if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
