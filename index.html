@@ -46,19 +46,8 @@
         }
         
         #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
-        
-        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 1001; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
-        .view-toggle-btn:hover { transform: scale(1.1); }
 
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; }
-
-        /* ================= 雙重視角切換 (瀑布流模式) ================= */
-        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 160px 20px 150px 20px; overflow-y: auto; }
-        #wall.list-mode .message-card { 
-            position: relative !important; left: auto !important; top: auto !important; 
-            transform: none !important; animation: none !important; 
-            width: 90%; max-width: 500px; opacity: 1 !important; visibility: visible !important; margin: 0 auto;
-        }
 
         /* ================= 卡片排版與字體比例 ================= */
         .message-card { 
@@ -82,7 +71,7 @@
 
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 8px; word-wrap: break-word; white-space: pre-wrap; }
         .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.85; margin-bottom: 0; }
-        .card-date { position: absolute; bottom: 6px; right: 14px; font-size: 10px; opacity: 0.55; }
+        .card-date { position: absolute; bottom: 6px; right: 14px; font-size: 10px; opacity: 0.65; }
 
         /* ================= 沉浸式聚焦模式 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -95,12 +84,17 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 模板顏色 */
-        .theme-classic { background: rgba(255, 255, 255, 0.85); border: 1px solid var(--card-border); color: #4a4a4a; }
-        .theme-starry  { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc; }
-        .theme-breeze  { background: rgba(204, 251, 241, 0.85); border: 1px solid rgba(153, 246, 228, 0.6); color: #115e59; }
-        .theme-sunset  { background: rgba(255, 237, 213, 0.85); border: 1px solid rgba(253, 186, 116, 0.6); color: #9a3412; }
-        .theme-lemon   { background: rgba(254, 252, 216, 0.85); border: 1px solid rgba(253, 224, 71, 0.6); color: #854d0e; }
+        /* ================= 10 款玻璃質感模板 ================= */
+        .theme-classic { background: rgba(255, 255, 255, 0.85); border: 1px solid rgba(255, 255, 255, 0.6); color: #4a4a4a; }
+        .theme-peach   { background: rgba(255, 228, 225, 0.85); border: 1px solid rgba(255, 192, 203, 0.6); color: #9c3c50; }
+        .theme-cream   { background: rgba(255, 248, 220, 0.85); border: 1px solid rgba(245, 222, 179, 0.6); color: #855c20; }
+        .theme-mint    { background: rgba(224, 255, 245, 0.85); border: 1px solid rgba(175, 238, 238, 0.6); color: #115e59; }
+        .theme-lilac   { background: rgba(240, 230, 255, 0.85); border: 1px solid rgba(216, 191, 216, 0.6); color: #4a148c; }
+        .theme-sky     { background: rgba(225, 245, 254, 0.85); border: 1px solid rgba(179, 229, 252, 0.6); color: #01579b; }
+        .theme-latte   { background: rgba(237, 224, 212, 0.85); border: 1px solid rgba(210, 180, 140, 0.6); color: #4e342e; }
+        .theme-cherry  { background: rgba(255, 218, 233, 0.85); border: 1px solid rgba(255, 182, 193, 0.6); color: #880e4f; }
+        .theme-sage    { background: rgba(220, 237, 225, 0.85); border: 1px solid rgba(143, 188, 143, 0.6); color: #1b5e20; }
+        .theme-night   { background: rgba(45, 55, 72, 0.85);    border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc; }
 
         /* 輸入區塊與表情面板 */
         .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 100; }
@@ -114,9 +108,9 @@
         .emoji-btn:hover { transform: scale(1.1); }
 
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
-        .theme-selector { display: flex; justify-content: center; gap: 15px; padding: 5px; }
-        .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
-        .theme-btn.active { border-color: #fff; transform: scale(1.25); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
+        .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
+        .theme-btn { width: 24px; height: 24px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(0,0,0,0.1); box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
+        .theme-btn.active { border-color: #fff; transform: scale(1.3); box-shadow: 0 0 10px rgba(255,255,255,0.8); }
         
         .input-container { position: relative; display: flex; gap: 10px; background: var(--panel-bg); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.2); align-items: center; border: 1px solid var(--card-border); }
         .input-name { width: 80px; border: none; background: var(--name-bg); padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: var(--text-main); }
@@ -134,8 +128,6 @@
             .input-name { width: calc(40% - 10px); } .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 8px 10px; background: var(--name-bg); border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
-            .view-toggle-btn { top: 15px; right: 15px; font-size: 16px; padding: 8px; }
-            #wall.list-mode { padding-top: 130px; }
         }
     </style>
 </head>
@@ -148,9 +140,6 @@
         <h1 id="mainTitle">載入中...</h1>
         <p id="subTitle"></p>
     </div>
-
-    <!-- 視角切換按鈕 -->
-    <button id="viewToggleBtn" class="view-toggle-btn" title="切換排版模式">📋</button>
     
     <!-- 聚焦模式的背景遮罩 -->
     <div class="focus-overlay" id="focusOverlay"></div>
@@ -159,11 +148,16 @@
 
     <div class="bottom-panel">
         <div class="theme-selector" id="themeSelector">
-            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;"></div>
-            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;"></div>
-            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;"></div>
-            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;"></div>
-            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;"></div>
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
+            <div class="theme-btn" data-theme="theme-peach" style="background: #ffe4e1;" title="蜜桃粉"></div>
+            <div class="theme-btn" data-theme="theme-cream" style="background: #fff8dc;" title="奶油黃"></div>
+            <div class="theme-btn" data-theme="theme-mint" style="background: #e0fff5;" title="薄荷綠"></div>
+            <div class="theme-btn" data-theme="theme-lilac" style="background: #f0e6ff;" title="丁香紫"></div>
+            <div class="theme-btn" data-theme="theme-sky" style="background: #e1f5fe;" title="天空藍"></div>
+            <div class="theme-btn" data-theme="theme-latte" style="background: #ede0d4;" title="拿鐵棕"></div>
+            <div class="theme-btn" data-theme="theme-cherry" style="background: #ffdae9;" title="櫻花紅"></div>
+            <div class="theme-btn" data-theme="theme-sage" style="background: #dcede1;" title="鼠尾草綠"></div>
+            <div class="theme-btn" data-theme="theme-night" style="background: #2d3748;" title="夜空灰"></div>
         </div>
         <div class="input-container">
             <div class="emoji-picker" id="emojiPicker"></div>
@@ -178,13 +172,11 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
-        // 從 config.js 引入金鑰
         import { firebaseConfig } from './config.js'; 
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // ================= 聽覺微互動 (Web Audio API 合成音效) =================
         let audioCtx;
         function playSound(type) {
             try {
@@ -211,19 +203,6 @@
             } catch(e) { console.log('Audio disabled or unsupported'); }
         }
 
-        // ================= 雙重視角切換邏輯 =================
-        const wall = document.getElementById('wall');
-        const viewToggleBtn = document.getElementById('viewToggleBtn');
-        let isListMode = false;
-        
-        viewToggleBtn.addEventListener('click', () => {
-            playSound('click');
-            isListMode = !isListMode;
-            wall.classList.toggle('list-mode', isListMode);
-            viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; 
-        });
-
-        // ================= 沉浸式聚焦邏輯 =================
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
 
@@ -237,8 +216,7 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
-        // 初始化 Emoji 面板
-        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂','✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'];
+        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','加','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂','✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'];
         
         const picker = document.getElementById('emojiPicker');
         const msgInput = document.getElementById('msgInput');
@@ -299,6 +277,7 @@
         });
 
         function renderWall() {
+            const wall = document.getElementById('wall');
             wall.innerHTML = '';
             const now = Date.now();
             const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
@@ -317,10 +296,9 @@
             const placedRects = [];
             const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 20 : 80);
             
-            // 👉 關鍵修正：依照留言總數，動態計算「防撞距離」 (數量越多，排斥力越小，甚至允許重疊)
             const basePadding = isMobile ? 10 : 30;
             const dynamicPadding = basePadding - (total * 2.5);
-            const collisionPadding = Math.max(-55, dynamicPadding); // 最多允許 55px 的重疊交錯
+            const collisionPadding = Math.max(-55, dynamicPadding); 
 
             validMessages.forEach((msg, index) => {
                 const card = document.createElement('div');
@@ -351,8 +329,6 @@
                 const cardH = card.offsetHeight * scale;
 
                 let placedX = centerX, placedY = centerY, foundSpot = false;
-                
-                // 👉 微調散佈半徑，稍微往中間聚攏
                 const distanceBase = (ageRatio * maxRadius) * 0.85;
                 
                 for (let attempt = 0; attempt < 400; attempt++) {
