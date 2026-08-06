@@ -3,156 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>公司感謝牆 Gratitude Wall</title>
+    <title>公司感謝牆</title>
     <style>
-        /* ================= 基礎與背景 ================= */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
+        /* 基礎設定維持不變 */
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; filter: blur(40px); z-index: 0; }
+        .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: rgba(255, 182, 193, 0.3); }
+        
+        /* 標題區塊設計 */
+        .header-container { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; color: #4a4a4a; text-shadow: 0 2px 10px rgba(255,255,255,0.8); width: 90%; pointer-events: none; }
+        #mainTitle { font-size: 36px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: 2px; }
+        #subTitle { font-size: 16px; font-weight: 600; margin: 0; opacity: 0.85; }
 
-        .geometry-bg {
-            position: absolute;
-            top: -10%; left: -10%;
-            width: 400px; height: 400px;
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%;
-            filter: blur(40px);
-            z-index: 0;
-        }
-        .geometry-bg.right {
-            top: auto; bottom: -10%; left: auto; right: -10%;
-            background: rgba(255, 182, 193, 0.3);
-        }
+        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: 1; }
 
-        #wall {
-            flex: 1;
-            position: relative;
-            width: 100%; height: 100%;
-            z-index: 1;
-        }
+        /* 卡片設計更新：加入作者與日期排版 */
+        .message-card { position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1); transition: all 0.8s ease; width: max-content; max-width: 300px; min-width: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; color: #4a4a4a; margin-bottom: 10px; word-wrap: break-word; white-space: pre-wrap; }
+        .card-author { font-size: 14px; font-weight: bold; color: #555; text-align: right; }
+        .card-date { position: absolute; bottom: 12px; right: 20px; font-size: 11px; opacity: 0.6; color: #333; }
 
-        /* ================= 感謝卡片共用樣式 ================= */
-        .message-card {
-            position: absolute;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 20px 30px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
-            font-weight: 700;
-            font-size: 20px;
-            line-height: 1.5;
-            letter-spacing: 1px;
-            transition: opacity 0.8s ease, transform 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-            
-            /* 修正文字破版：確保短文字不會被擠壓成直的 */
-            width: max-content;
-            max-width: 320px;
-            min-width: 50px;
-            word-wrap: break-word;
-            white-space: pre-wrap; /* 允許換行，但保留空白 */
-            text-align: center;
-        }
+        /* 模板顏色 */
+        .theme-classic { background: rgba(255, 255, 255, 0.75); border: 1px solid rgba(255, 255, 255, 0.6); }
+        .theme-starry  { background: rgba(30, 41, 59, 0.75); border: 1px solid rgba(255, 255, 255, 0.2); }
+        .theme-starry .card-text, .theme-starry .card-author, .theme-starry .card-date { color: #f8fafc; }
+        .theme-breeze  { background: rgba(204, 251, 241, 0.8); border: 1px solid rgba(153, 246, 228, 0.6); }
+        .theme-sunset  { background: rgba(255, 237, 213, 0.8); border: 1px solid rgba(253, 186, 116, 0.6); }
+        .theme-lemon   { background: rgba(254, 252, 216, 0.8); border: 1px solid rgba(253, 224, 71, 0.6); }
 
-        /* ================= 卡片模板主題 (Themes) ================= */
-        .theme-classic { background: rgba(255, 255, 255, 0.75); color: #4a4a4a; border: 1px solid rgba(255, 255, 255, 0.6); }
-        .theme-starry  { background: rgba(30, 41, 59, 0.75); color: #f8fafc; border: 1px solid rgba(255, 255, 255, 0.2); }
-        .theme-breeze  { background: rgba(204, 251, 241, 0.8); color: #115e59; border: 1px solid rgba(153, 246, 228, 0.6); }
-        .theme-sunset  { background: rgba(255, 237, 213, 0.8); color: #9a3412; border: 1px solid rgba(253, 186, 116, 0.6); }
-        .theme-lemon   { background: rgba(254, 252, 216, 0.8); color: #854d0e; border: 1px solid rgba(253, 224, 71, 0.6); }
+        /* 輸入區塊 (加入署名) */
+        .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 10; width: 90%; max-width: 700px; display: flex; flex-direction: column; gap: 12px; }
+        .theme-selector { display: flex; justify-content: center; gap: 15px; padding: 5px; }
+        .theme-btn { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; box-shadow: 0 4px 10px rgba(0,0,0,0.1); transition: 0.2s; }
+        .theme-btn.active { border-color: #fff; transform: scale(1.25); }
+        .input-container { display: flex; gap: 10px; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); align-items: center; }
+        .input-name { width: 80px; border: none; background: #f0f0f0; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; }
+        .input-msg { flex: 1; border: none; background: transparent; font-size: 16px; outline: none; padding: 0 5px; }
+        button { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; }
 
-        /* ================= 底部輸入區塊 ================= */
-        .bottom-panel {
-            position: absolute;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 10;
-            width: 90%;
-            max-width: 600px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .theme-selector {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            padding: 5px;
-        }
-        .theme-btn {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            transition: transform 0.2s, border-color 0.2s;
-        }
-        .theme-btn.active {
-            border-color: #fff;
-            transform: scale(1.25);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
-
-        .input-container {
-            display: flex;
-            gap: 10px;
-            background: rgba(255, 255, 255, 0.95);
-            padding: 12px 20px;
-            border-radius: 50px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
-        }
-
-        input[type="text"] {
-            flex: 1;
-            border: none;
-            background: transparent;
-            font-size: 16px;
-            outline: none;
-            color: #333;
-        }
-
-        button {
-            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-            border: none;
-            padding: 10px 24px;
-            border-radius: 30px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 16px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(255, 154, 158, 0.5);
-            transition: transform 0.2s, box-shadow 0.2s;
-            white-space: nowrap;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255, 154, 158, 0.7);
-        }
-
-        /* ================= 手機版 RWD 徹底縮小化 ================= */
         @media (max-width: 768px) {
-            .message-card {
-                font-size: 14px; /* 再度縮小字體 */
-                padding: 12px 18px; /* 減少內邊距 */
-                max-width: 75vw; /* 限制寬度比例，保留兩側空間 */
-                border-radius: 15px;
-            }
-            .bottom-panel { bottom: 20px; }
-            .input-container { padding: 8px 15px; }
-            input[type="text"] { font-size: 15px; }
-            button { padding: 8px 18px; font-size: 15px; }
-            .theme-btn { width: 24px; height: 24px; }
+            #mainTitle { font-size: 28px; }
+            #subTitle { font-size: 14px; }
+            .message-card { padding: 15px 20px 25px 20px; }
+            .card-text { font-size: 16px; }
+            .card-author { font-size: 12px; }
+            .card-date { bottom: 8px; right: 15px; font-size: 9px; }
+            .input-container { flex-wrap: wrap; border-radius: 20px; }
+            .input-name { width: calc(30% - 10px); }
+            .input-msg { width: calc(70% - 10px); flex: none; }
+            button { width: 100%; margin-top: 5px; }
         }
     </style>
 </head>
@@ -160,27 +59,54 @@
 
     <div class="geometry-bg"></div>
     <div class="geometry-bg right"></div>
+    
+    <!-- 標題區塊 -->
+    <div class="header-container">
+        <h1 id="mainTitle">載入中...</h1>
+        <p id="subTitle"></p>
+    </div>
+
     <div id="wall"></div>
 
     <div class="bottom-panel">
         <div class="theme-selector" id="themeSelector">
-            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
-            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;" title="星空藍"></div>
-            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;" title="晨光綠"></div>
-            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;" title="暖陽橘"></div>
-            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;" title="活力黃"></div>
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;"></div>
+            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;"></div>
+            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;"></div>
+            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;"></div>
+            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;"></div>
         </div>
-        
         <div class="input-container">
-            <input type="text" id="msgInput" placeholder="寫下感謝... (可先在上方選顏色)" autocomplete="off">
-            <button onclick="submitMessage()">送出</button>
+            <input type="text" id="nameInput" class="input-name" placeholder="你的名字" autocomplete="off">
+            <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝..." autocomplete="off">
+            <button id="sendBtn">送出</button>
         </div>
     </div>
 
-    <script>
-        let messages = JSON.parse(localStorage.getItem('company_gratitude')) || [];
-        let currentTheme = 'theme-classic';
+    <!-- Firebase SDK (使用 ES Modules) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getDatabase, ref, push, onValue, query, orderByChild } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
 
+        // ==========================================
+        // ⚠️ 請替換成你 Firebase 專案的 Config
+        // ==========================================
+        const firebaseConfig = {
+  apiKey: "AIzaSyAjYSBp43_8dRpGrhuTscdvbEktzogqO9o",
+  authDomain: "gratitude-wall-ad184.firebaseapp.com",
+  projectId: "gratitude-wall-ad184",
+  storageBucket: "gratitude-wall-ad184.firebasestorage.app",
+  messagingSenderId: "790216418295",
+  appId: "1:790216418295:web:82ec771a3cb990ef39c4f2",
+  measurementId: "G-LGMBXSE8XF"
+};
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let currentTheme = 'theme-classic';
+        let systemSettings = { maxMessages: 50, retentionDays: 30 }; // 預設值
+
+        // 主題選擇邏輯
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
@@ -189,61 +115,94 @@
             });
         });
 
-        function submitMessage() {
-            const input = document.getElementById('msgInput');
-            const text = input.value.trim();
+        // 送出留言
+        document.getElementById('sendBtn').addEventListener('click', () => {
+            const name = document.getElementById('nameInput').value.trim() || '匿名';
+            const text = document.getElementById('msgInput').value.trim();
             if (text === '') return;
 
-            messages.unshift({ text: text, id: Date.now(), theme: currentTheme });
-            localStorage.setItem('company_gratitude', JSON.stringify(messages));
-            input.value = '';
-            renderWall();
-        }
+            const newMsg = {
+                text: text,
+                author: name,
+                theme: currentTheme,
+                timestamp: Date.now()
+            };
 
-        document.getElementById('msgInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') submitMessage();
+            // 推送到 Firebase
+            push(ref(db, 'messages'), newMsg);
+            document.getElementById('msgInput').value = '';
+        });
+
+        // 即時監聽設定檔 (標題、數量限制)
+        onValue(ref(db, 'settings'), (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆';
+                document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝';
+                systemSettings.maxMessages = data.maxMessages || 50;
+                systemSettings.retentionDays = data.retentionDays || 30;
+                renderWall(); // 設定改變時重新排版
+            }
+        });
+
+        // 即時監聽留言資料
+        let rawMessages = [];
+        onValue(query(ref(db, 'messages')), (snapshot) => {
+            rawMessages = [];
+            snapshot.forEach((child) => {
+                rawMessages.push({ id: child.key, ...child.val() });
+            });
+            // 依照時間排序 (最新的在前面)
+            rawMessages.sort((a, b) => b.timestamp - a.timestamp);
+            renderWall();
         });
 
         function renderWall() {
             const wall = document.getElementById('wall');
             wall.innerHTML = '';
             
-            const total = messages.length;
+            const now = Date.now();
+            const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
+
+            // 根據後台設定過濾資料：保留期限內、且不超過最大數量
+            const validMessages = rawMessages.filter(msg => (now - msg.timestamp) <= retentionMs)
+                                             .slice(0, systemSettings.maxMessages);
+
+            const total = validMessages.length;
             if (total === 0) return;
 
             const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth;
             const screenH = window.innerHeight;
             const centerX = screenW / 2;
-            const centerY = screenH * (isMobile ? 0.4 : 0.45); // 手機版中心點微調偏上
-
-            // 【核心修正】：手機螢幕是長方形，計算螢幕比例，讓尋找空位時「上下拉長」成橢圓形
+            const centerY = screenH * 0.45; 
             const aspectMultiplier = isMobile ? (screenH / screenW) * 0.85 : 1;
 
-            let richnessScale = 1;
-            if (total <= 3) richnessScale = 1.6;
-            else if (total <= 10) richnessScale = 1.3;
-            else richnessScale = 1.0;
-
-            // 手機版基礎大小再調降
+            let richnessScale = total <= 3 ? 1.6 : (total <= 10 ? 1.3 : 1.0);
             const mobileScaleDown = isMobile ? 0.75 : 1.0; 
 
             const placedRects = [];
             const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 20 : 80);
-            const collisionPadding = isMobile ? 2 : 15; // 手機版允許更緊湊
+            const collisionPadding = isMobile ? 5 : 20;
 
-            messages.forEach((msg, index) => {
+            validMessages.forEach((msg, index) => {
                 const card = document.createElement('div');
-                const cardTheme = msg.theme || 'theme-classic';
-                card.className = `message-card ${cardTheme}`;
-                card.innerText = msg.text;
+                card.className = `message-card ${msg.theme || 'theme-classic'}`;
+                
+                // 格式化日期
+                const dateObj = new Date(msg.timestamp);
+                const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+
+                card.innerHTML = `
+                    <div class="card-text">${msg.text}</div>
+                    <div class="card-author">- ${msg.author}</div>
+                    <div class="card-date">${dateStr}</div>
+                `;
 
                 const ageRatio = total > 1 ? index / (total - 1) : 0;
-                
                 const scale = (1.5 - (ageRatio * 0.9)) * richnessScale * mobileScaleDown;
                 const opacity = 1 - (ageRatio * 0.35);
                 const randomRotate = (Math.random() - 0.5) * 14;
-                const zIndex = total - index;
 
                 card.style.visibility = 'hidden';
                 card.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${randomRotate}deg)`;
@@ -252,23 +211,20 @@
                 const cardW = card.offsetWidth * scale;
                 const cardH = card.offsetHeight * scale;
 
-                let placedX = centerX;
-                let placedY = centerY;
-                let foundSpot = false;
+                let placedX = centerX, placedY = centerY, foundSpot = false;
                 const distanceBase = ageRatio * maxRadius;
                 
-                // 增加搜尋次數，確保能找到縫隙
                 for (let attempt = 0; attempt < 400; attempt++) {
                     const angle = Math.random() * Math.PI * 2;
                     const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
-                    
                     const testX = centerX + currentDistance * Math.cos(angle);
-                    // 【核心修正】：Y軸乘上比例，讓擴散變成橢圓形，有效利用手機上下空間
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
 
-                    const bottomLimit = isMobile ? 150 : 180;
+                    // 避開標題區與輸入區
+                    const topLimit = 120; 
+                    const bottomLimit = isMobile ? 180 : 150;
                     if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || 
-                        testY - cardH/2 < 30 || testY + cardH/2 > screenH - bottomLimit) {
+                        testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) {
                         continue; 
                     }
 
@@ -276,37 +232,24 @@
                     for (let rect of placedRects) {
                         if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + collisionPadding &&
                             Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + collisionPadding) {
-                            hasCollision = true;
-                            break;
+                            hasCollision = true; break;
                         }
                     }
-
-                    if (!hasCollision) {
-                        placedX = testX;
-                        placedY = testY;
-                        foundSpot = true;
-                        break;
-                    }
+                    if (!hasCollision) { placedX = testX; placedY = testY; foundSpot = true; break; }
                 }
 
-                // 如果真的完全塞滿找不到空位，稍微偏移中心強行放置，避免破版消失
                 if (!foundSpot) {
                     placedX = centerX + (Math.random() - 0.5) * 50;
                     placedY = centerY + (Math.random() - 0.5) * 50;
                 }
 
                 placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
-
-                card.style.left = `${placedX}px`;
-                card.style.top = `${placedY}px`;
-                card.style.opacity = opacity;
-                card.style.zIndex = zIndex;
+                card.style.left = `${placedX}px`; card.style.top = `${placedY}px`;
+                card.style.opacity = opacity; card.style.zIndex = total - index;
                 card.style.visibility = 'visible'; 
             });
         }
-
         window.addEventListener('resize', renderWall);
-        renderWall();
     </script>
 </body>
 </html>
