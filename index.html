@@ -9,7 +9,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* ================= 晝夜氛圍適應 (CSS 變數) ================= */
+        /* ================= 統一溫馨色系 (CSS 變數) ================= */
         :root {
             --bg-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
             --text-main: #4a4a4a;
@@ -23,46 +23,61 @@
             --icon-color: #333;
         }
 
-        /* 自動深色模式 */
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-gradient: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%);
-                --text-main: #f8fafc;
-                --text-sub: #cbd5e1;
-                --geo-bg-1: rgba(255, 255, 255, 0.05);
-                --geo-bg-2: rgba(0, 191, 255, 0.1);
-                --panel-bg: rgba(30, 41, 59, 0.95);
-                --input-bg: transparent;
-                --name-bg: #334155;
-                --card-border: rgba(255, 255, 255, 0.15);
-                --icon-color: #f8fafc;
-            }
-            
-            /* 深色模式下的卡片微調 */
-            .theme-classic { background: rgba(30, 30, 30, 0.75) !important; color: #fff !important; }
-            .theme-breeze { background: rgba(17, 94, 89, 0.75) !important; color: #ccfbf1 !important; border-color: rgba(153, 246, 228, 0.3) !important; }
-            .theme-sunset { background: rgba(154, 52, 18, 0.75) !important; color: #ffedd5 !important; border-color: rgba(253, 186, 116, 0.3) !important; }
-            .theme-lemon { background: rgba(133, 77, 14, 0.75) !important; color: #fefcd8 !important; border-color: rgba(253, 224, 71, 0.3) !important; }
-            .card-text, .card-author, .card-date { color: inherit !important; }
-        }
-
         /* 基礎設定 */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; transition: background 0.5s ease; }
-        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 0.5s ease; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
-        /* 標題與功能按鈕 */
-        .header-container { position: absolute; top: 40px; left: 50%; transform: translateX(-50%); text-align: center; z-index: 10; width: 90%; pointer-events: none; }
-        #mainTitle { font-size: 36px; font-weight: 900; margin: 0 0 10px 0; letter-spacing: 2px; text-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        #subTitle { font-size: 16px; font-weight: 600; margin: 0; opacity: 0.85; }
+        /* ================= 標題華麗升級 ================= */
+        .header-container { 
+            position: absolute; 
+            top: 35px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            text-align: center; 
+            z-index: 50; /* 提高層級，不被普通卡片蓋住 */
+            width: max-content; 
+            max-width: 90%; 
+            pointer-events: none; 
+            
+            /* 新增專屬玻璃擬態保護框 */
+            background: rgba(255, 255, 255, 0.45);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 15px 45px;
+            border-radius: 60px;
+            box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
         
-        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 20; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
+        #mainTitle { 
+            font-size: 42px; 
+            font-weight: 900; 
+            margin: 0 0 8px 0; 
+            letter-spacing: 4px; 
+            
+            /* 華麗的漸層文字特效 */
+            background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 2px 2px rgba(255, 8, 68, 0.15));
+        }
+        
+        #subTitle { 
+            font-size: 17px; 
+            font-weight: 700; 
+            margin: 0; 
+            color: #d64966; /* 配合漸層的溫暖深粉紅 */
+            letter-spacing: 2px;
+            opacity: 0.9; 
+        }
+        
+        .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 60; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .view-toggle-btn:hover { transform: scale(1.1); }
 
-        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: 1; transition: all 0.5s ease; }
+        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; }
 
         /* ================= 雙重視角切換 (瀑布流模式) ================= */
-        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 130px 20px 150px 20px; overflow-y: auto; }
+        #wall.list-mode { display: flex; flex-direction: column; align-items: center; gap: 20px; padding: 150px 20px 150px 20px; overflow-y: auto; }
         #wall.list-mode .message-card { 
             position: relative !important; left: auto !important; top: auto !important; 
             transform: none !important; animation: none !important; 
@@ -75,7 +90,7 @@
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); 
             width: max-content; max-width: 300px; min-width: 130px; text-align: center; 
-            display: flex; flex-direction: column; justify-content: center; cursor: pointer; /* 加入指標符號 */
+            display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
             transition: opacity 0.5s, box-shadow 0.3s;
@@ -88,8 +103,8 @@
             100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-12px); } 
         }
 
-        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; margin-bottom: 15px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.9; }
+        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; margin-bottom: 5px; word-wrap: break-word; white-space: pre-wrap; }
+        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.9; margin-bottom: 10px; }
         .card-date { position: absolute; bottom: 12px; right: 20px; font-size: 11px; opacity: 0.6; }
 
         /* ================= 沉浸式聚焦模式 ================= */
@@ -103,15 +118,7 @@
             box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        /* 互動點讚按鈕 */
-        .like-container { position: absolute; bottom: 10px; left: 15px; z-index: 2; }
-        .like-btn { background: rgba(255,255,255,0.4); border: 1px solid rgba(255,255,255,0.5); border-radius: 20px; padding: 4px 10px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 600; transition: all 0.2s; color: inherit; }
-        .like-btn:hover { background: rgba(255,255,255,0.8); transform: scale(1.05); }
-        .like-btn.liked { background: rgba(233, 30, 99, 0.85); color: #fff !important; border-color: #e91e63; }
-        @keyframes heartBeat { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
-        .heart-anim { animation: heartBeat 0.4s ease-out; display: inline-block; }
-
-        /* 模板顏色 (預設亮色) */
+        /* 模板顏色 */
         .theme-classic { background: rgba(255, 255, 255, 0.85); border: 1px solid var(--card-border); color: #4a4a4a; }
         .theme-starry  { background: rgba(30, 41, 59, 0.85); border: 1px solid rgba(255, 255, 255, 0.2); color: #f8fafc; }
         .theme-breeze  { background: rgba(204, 251, 241, 0.85); border: 1px solid rgba(153, 246, 228, 0.6); color: #115e59; }
@@ -140,15 +147,18 @@
         .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #333; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(255,154,158,0.4); }
         .send-btn:hover { transform: translateY(-2px); }
 
+        /* 手機版排版微調 */
         @media (max-width: 768px) {
-            #mainTitle { font-size: 28px; } #subTitle { font-size: 14px; }
+            .header-container { padding: 12px 25px; top: 20px; }
+            #mainTitle { font-size: 28px; letter-spacing: 2px; } 
+            #subTitle { font-size: 14px; }
             .message-card.focused { transform: translate(-50%, -50%) scale(1.2) rotate(0deg) !important; width: 85%; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; }
             .input-name { width: calc(40% - 10px); } .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 8px 10px; background: var(--name-bg); border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
             .view-toggle-btn { top: 15px; right: 15px; font-size: 16px; padding: 8px; }
-            #wall.list-mode { padding-top: 100px; }
+            #wall.list-mode { padding-top: 120px; }
         }
     </style>
 </head>
@@ -189,7 +199,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, query, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         
         // 從 config.js 引入金鑰
         import { firebaseConfig } from './config.js'; 
@@ -209,20 +219,14 @@
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
 
-                if (type === 'click') { // 開啟選單/切換視角
+                if (type === 'click') { 
                     osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
                     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
                     gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05);
                     osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-                } else if (type === 'pop') { // 點讚
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(500, audioCtx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
-                    gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
-                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
-                    osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-                } else if (type === 'send') { // 送出留言 (慶祝音)
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
-                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); // E5
+                } else if (type === 'send') { 
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); 
+                    osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); 
                     gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime);
                     gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
                     osc.start(); osc.stop(audioCtx.currentTime + 0.3);
@@ -239,7 +243,7 @@
             playSound('click');
             isListMode = !isListMode;
             wall.classList.toggle('list-mode', isListMode);
-            viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; // 切換按鈕圖示
+            viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; 
         });
 
         // ================= 沉浸式聚焦邏輯 =================
@@ -289,7 +293,7 @@
             const text = msgInput.value.trim();
             if (text === '') return;
 
-            push(ref(db, 'messages'), { text: text, author: name, theme: currentTheme, timestamp: Date.now(), likes: 0 });
+            push(ref(db, 'messages'), { text: text, author: name, theme: currentTheme, timestamp: Date.now() });
             msgInput.value = '';
 
             playSound('send');
@@ -343,18 +347,11 @@
                 
                 const dateObj = new Date(msg.timestamp);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-                const isLiked = localStorage.getItem(`liked_${msg.id}`);
-                const likesCount = msg.likes || 0;
 
                 card.innerHTML = `
                     <div class="card-text">${msg.text}</div>
                     <div class="card-author">- ${msg.author}</div>
                     <div class="card-date">${dateStr}</div>
-                    <div class="like-container">
-                        <button class="like-btn ${isLiked ? 'liked' : ''}" data-id="${msg.id}">
-                            <span class="heart-icon">❤️</span> <span class="like-count">${likesCount}</span>
-                        </button>
-                    </div>
                 `;
 
                 const ageRatio = total > 1 ? index / (total - 1) : 0;
@@ -380,7 +377,7 @@
                     const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
-                    const topLimit = 120; const bottomLimit = isMobile ? 180 : 150;
+                    const topLimit = 130; const bottomLimit = isMobile ? 180 : 150; // 稍微增加上方防撞邊界保護標題
                     if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
                     let hasCollision = false;
                     for (let rect of placedRects) {
@@ -401,10 +398,7 @@
                 card.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
 
                 // 綁定點擊聚焦事件
-                card.addEventListener('click', (e) => {
-                    // 如果點到的是愛心按鈕，就不觸發聚焦
-                    if(e.target.closest('.like-btn')) return;
-                    
+                card.addEventListener('click', () => {
                     if (currentFocusedCard === card) { closeFocus(); return; }
                     if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
                     
@@ -412,21 +406,6 @@
                     card.classList.add('focused');
                     focusOverlay.classList.add('active');
                     currentFocusedCard = card;
-                });
-
-                // 綁定點讚事件
-                const likeBtn = card.querySelector('.like-btn');
-                likeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    if (localStorage.getItem(`liked_${msg.id}`)) return;
-                    
-                    playSound('pop');
-                    localStorage.setItem(`liked_${msg.id}`, 'true');
-                    likeBtn.classList.add('liked');
-                    likeBtn.querySelector('.like-count').innerText = likesCount + 1;
-                    likeBtn.querySelector('.heart-icon').classList.add('heart-anim');
-                    
-                    runTransaction(ref(db, `messages/${msg.id}/likes`), (currentLikes) => (currentLikes || 0) + 1);
                 });
             });
         }
