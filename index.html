@@ -30,46 +30,21 @@
         
         /* ================= 標題華麗升級 ================= */
         .header-container { 
-            position: absolute; 
-            top: 35px; 
-            left: 50%; 
-            transform: translateX(-50%); 
-            text-align: center; 
-            z-index: 50; /* 提高層級，不被普通卡片蓋住 */
-            width: max-content; 
-            max-width: 90%; 
-            pointer-events: none; 
-            
-            /* 新增專屬玻璃擬態保護框 */
-            background: rgba(255, 255, 255, 0.45);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            padding: 15px 45px;
-            border-radius: 60px;
+            position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
+            z-index: 50; width: max-content; max-width: 90%; pointer-events: none; 
+            background: rgba(255, 255, 255, 0.45); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+            padding: 15px 45px; border-radius: 60px;
             box-shadow: 0 10px 30px rgba(255, 154, 158, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
         }
         
         #mainTitle { 
-            font-size: 42px; 
-            font-weight: 900; 
-            margin: 0 0 8px 0; 
-            letter-spacing: 4px; 
-            
-            /* 華麗的漸層文字特效 */
+            font-size: 42px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 4px; 
             background: linear-gradient(135deg, #ff0844 0%, #ffb199 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0px 2px 2px rgba(255, 8, 68, 0.15));
         }
         
-        #subTitle { 
-            font-size: 17px; 
-            font-weight: 700; 
-            margin: 0; 
-            color: #d64966; /* 配合漸層的溫暖深粉紅 */
-            letter-spacing: 2px;
-            opacity: 0.9; 
-        }
+        #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
         
         .view-toggle-btn { position: absolute; top: 25px; right: 25px; z-index: 60; background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .view-toggle-btn:hover { transform: scale(1.1); }
@@ -81,16 +56,17 @@
         #wall.list-mode .message-card { 
             position: relative !important; left: auto !important; top: auto !important; 
             transform: none !important; animation: none !important; 
-            width: 90%; max-width: 500px; opacity: 1 !important; visibility: visible !important;
-            margin: 0 auto;
+            width: 90%; max-width: 500px; opacity: 1 !important; visibility: visible !important; margin: 0 auto;
         }
 
-        /* 卡片設計與漂浮動畫 */
+        /* ================= 優化：卡片排版收斂 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            padding: 20px 25px 35px 25px; border-radius: 20px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.15); 
-            width: max-content; max-width: 300px; min-width: 130px; text-align: center; 
-            display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
+            padding: 16px 20px 26px 20px; /* 收緊上下左右的留白 */
+            border-radius: 16px; /* 圓角稍微調小，配合緊湊感 */
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
+            width: max-content; max-width: 280px; min-width: 80px; /* 縮小最小寬度，避免短留言浪費空間 */
+            text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
             transition: opacity 0.5s, box-shadow 0.3s;
@@ -100,12 +76,12 @@
         
         @keyframes floatAnim { 
             0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 
-            100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-12px); } 
+            100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } 
         }
 
-        .card-text { font-weight: 700; font-size: 18px; line-height: 1.5; margin-bottom: 5px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-author { font-size: 14px; font-weight: bold; text-align: right; opacity: 0.9; margin-bottom: 10px; }
-        .card-date { position: absolute; bottom: 12px; right: 20px; font-size: 11px; opacity: 0.6; }
+        .card-text { font-weight: 700; font-size: 17px; line-height: 1.4; margin-bottom: 6px; word-wrap: break-word; white-space: pre-wrap; }
+        .card-author { font-size: 13px; font-weight: bold; text-align: right; opacity: 0.85; margin-bottom: 0; }
+        .card-date { position: absolute; bottom: 8px; right: 16px; font-size: 11px; opacity: 0.55; }
 
         /* ================= 沉浸式聚焦模式 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); backdrop-filter: blur(8px); z-index: 900; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
@@ -377,7 +353,7 @@
                     const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
                     const testX = centerX + currentDistance * Math.cos(angle);
                     const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
-                    const topLimit = 130; const bottomLimit = isMobile ? 180 : 150; // 稍微增加上方防撞邊界保護標題
+                    const topLimit = 130; const bottomLimit = isMobile ? 180 : 150; 
                     if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
                     let hasCollision = false;
                     for (let rect of placedRects) {
