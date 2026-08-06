@@ -11,7 +11,7 @@
     <style>
         /* ================= 基礎設定 ================= */
         :root {
-            --bg-gradient: linear-gradient(135deg, #fae0d4 0%, #f7c5b9 100%); /* 配合你的玫瑰蜜桃色背景 */
+            --bg-gradient: linear-gradient(135deg, #fae0d4 0%, #f7c5b9 100%);
             --text-main: #4a4a4a;
             --text-sub: #555;
             --geo-bg-1: rgba(255, 255, 255, 0.3);
@@ -84,44 +84,33 @@
         }
 
         /* ================= 10 款高對比獨立風格模板 ================= */
-        
-        /* 1. 純淨白 (經典百搭，高亮度突出) */
         .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
         .theme-classic .card-author { color: #555555; }
 
-        /* 2. 星空黑 (最強烈對比，優雅深沉) */
         .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; }
         .theme-midnight .card-author { color: #A0AEC0; }
 
-        /* 3. 鼠尾草綠 (紅色的互補色，極度和諧且獨立) */
         .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
         .theme-sage .card-author { color: #3A6B4E; }
 
-        /* 4. 勃根地紅 (同色系但極深，像寶石般點綴) */
         .theme-wine { background: rgba(135, 50, 65, 0.88); border: 1px solid rgba(200, 100, 110, 0.7); color: #FFF0F2; }
         .theme-wine .card-author { color: #FFB3C1; }
 
-        /* 5. 迷霧灰 (冷調中性色，平衡畫面溫度) */
         .theme-slate { background: rgba(226, 232, 240, 0.95); border: 1px solid rgba(255, 255, 255, 0.8); color: #2D3748; }
         .theme-slate .card-author { color: #4A5568; }
 
-        /* 6. 薰衣草紫 (帶點夢幻感，與玫瑰背景完美過渡) */
         .theme-lavender { background: rgba(235, 225, 245, 0.92); border: 1px solid rgba(210, 190, 235, 0.9); color: #442966; }
         .theme-lavender .card-author { color: #6B46C1; }
 
-        /* 7. 檸檬霜 (鮮豔明亮，帶來活潑感) */
         .theme-lemon { background: rgba(255, 249, 215, 0.95); border: 1px solid rgba(245, 228, 153, 0.9); color: #78600C; }
         .theme-lemon .card-author { color: #9A7B16; }
 
-        /* 8. 抹茶青 (溫潤的自然色系，視覺舒適) */
         .theme-matcha { background: rgba(235, 242, 222, 0.95); border: 1px solid rgba(200, 220, 170, 0.9); color: #455725; }
         .theme-matcha .card-author { color: #5D7A31; }
 
-        /* 9. 陶土橘 (比背景深且飽和，復古搶眼) */
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; }
         .theme-terracotta .card-author { color: #FFD4C4; }
 
-        /* 10. 冰川藍 (強烈冷暖對比，吸睛度100%) */
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
         .theme-ice .card-author { color: #075985; }
 
@@ -320,11 +309,16 @@
             const screenH = window.innerHeight;
             const centerX = screenW / 2;
             const centerY = screenH * 0.45; 
-            const aspectMultiplier = isMobile ? (screenH / screenW) * 0.85 : 1;
             let richnessScale = total <= 3 ? 1.6 : (total <= 10 ? 1.3 : 1.0);
             const mobileScaleDown = isMobile ? 0.75 : 1.0; 
             const placedRects = [];
-            const maxRadius = Math.min(screenW, screenH) / 2 - (isMobile ? 20 : 80);
+            
+            // 👉 關鍵修正：定義大螢幕的可用寬度與高度，取代單一半徑
+            const topLimit = isMobile ? 180 : 220; 
+            const bottomLimit = isMobile ? 200 : 180; 
+            const sideLimit = isMobile ? 15 : 50;
+            const availableW = screenW - (sideLimit * 2);
+            const availableH = screenH - topLimit - bottomLimit;
             
             const basePadding = isMobile ? 10 : 30;
             const dynamicPadding = basePadding - (total * 2.5);
@@ -359,18 +353,18 @@
                 const cardH = card.offsetHeight * scale;
 
                 let placedX = centerX, placedY = centerY, foundSpot = false;
-                const distanceBase = (ageRatio * maxRadius) * 0.85;
                 
-                for (let attempt = 0; attempt < 400; attempt++) {
+                for (let attempt = 0; attempt < 500; attempt++) {
                     const angle = Math.random() * Math.PI * 2;
-                    const currentDistance = distanceBase + (attempt * (isMobile ? 1 : 2)); 
-                    const testX = centerX + currentDistance * Math.cos(angle);
-                    const testY = centerY + currentDistance * aspectMultiplier * Math.sin(angle);
+                    // 👉 依照可用空間比例 (availableW / availableH) 呈橢圓形擴展
+                    const spreadProgress = Math.min(1, (ageRatio * 0.7) + (attempt * 0.02));
+                    const randomJitter = 0.8 + Math.random() * 0.4;
                     
-                    const topLimit = isMobile ? 180 : 220; 
-                    const bottomLimit = isMobile ? 200 : 180; 
+                    const testX = centerX + Math.cos(angle) * (availableW / 2) * spreadProgress * randomJitter;
+                    const testY = centerY + Math.sin(angle) * (availableH / 2) * spreadProgress * randomJitter;
                     
-                    if (testX - cardW/2 < 10 || testX + cardW/2 > screenW - 10 || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
+                    if (testX - cardW/2 < sideLimit || testX + cardW/2 > screenW - sideLimit || testY - cardH/2 < topLimit || testY + cardH/2 > screenH - bottomLimit) continue; 
+                    
                     let hasCollision = false;
                     for (let rect of placedRects) {
                         if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 + collisionPadding && Math.abs(testY - rect.y) < (cardH + rect.h) / 2 + collisionPadding) {
@@ -380,7 +374,12 @@
                     if (!hasCollision) { placedX = testX; placedY = testY; foundSpot = true; break; }
                 }
 
-                if (!foundSpot) { placedX = centerX + (Math.random() - 0.5) * 50; placedY = centerY + (Math.random() - 0.5) * 50; }
+                if (!foundSpot) { placedX = centerX + (Math.random() - 0.5) * (availableW*0.8); placedY = centerY + (Math.random() - 0.5) * (availableH*0.8); }
+                
+                // 確保保底位置不會超出邊界
+                placedX = Math.max(sideLimit + cardW/2, Math.min(screenW - sideLimit - cardW/2, placedX));
+                placedY = Math.max(topLimit + cardH/2, Math.min(screenH - bottomLimit - cardH/2, placedY));
+                
                 placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
                 
                 card.style.left = `${placedX}px`; card.style.top = `${placedY}px`;
