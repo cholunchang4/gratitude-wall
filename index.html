@@ -6,7 +6,7 @@
     <title>公司感謝牆</title>
     <style>
         /* 基礎設定 */
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: rgba(255, 255, 255, 0.2); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: rgba(255, 182, 193, 0.3); }
         
@@ -31,9 +31,9 @@
         .theme-sunset  { background: rgba(255, 237, 213, 0.8); border: 1px solid rgba(253, 186, 116, 0.6); }
         .theme-lemon   { background: rgba(254, 252, 216, 0.8); border: 1px solid rgba(253, 224, 71, 0.6); }
 
-        /* ================= 新增：表情符號面板 ================= */
+        /* 大容量表情符號面板 */
         .emoji-picker {
-            display: none; /* 預設隱藏 */
+            display: none; 
             position: absolute;
             bottom: calc(100% + 15px);
             left: 50%;
@@ -43,14 +43,20 @@
             border-radius: 20px;
             padding: 15px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-            width: 260px;
+            width: 280px;
+            max-height: 220px;
+            overflow-y: auto; 
             flex-wrap: wrap;
             gap: 10px;
-            justify-content: center;
+            justify-content: flex-start;
             z-index: 100;
         }
-        .emoji-picker.active { display: flex; }
-        .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; }
+        .emoji-picker::-webkit-scrollbar { width: 6px; }
+        .emoji-picker::-webkit-scrollbar-track { background: transparent; }
+        .emoji-picker::-webkit-scrollbar-thumb { background: #dcdcdc; border-radius: 10px; }
+        .emoji-picker::-webkit-scrollbar-thumb:hover { background: #c0c0c0; }
+        .emoji-picker.active { display: flex; align-content: flex-start; }
+        .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; width: 32px; text-align: center; }
         .emoji-item:hover { transform: scale(1.3); }
         
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 5px; outline: none; transition: transform 0.2s; }
@@ -64,7 +70,8 @@
         .input-container { position: relative; display: flex; gap: 10px; background: rgba(255, 255, 255, 0.95); padding: 10px 15px; border-radius: 50px; box-shadow: 0 15px 35px rgba(0,0,0,0.15); align-items: center; }
         .input-name { width: 80px; border: none; background: #f0f0f0; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; }
         .input-msg { flex: 1; border: none; background: transparent; font-size: 16px; outline: none; padding: 0 5px; }
-        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; }
+        .send-btn { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; }
+        .send-btn:hover { transform: translateY(-2px); }
 
         @media (max-width: 768px) {
             #mainTitle { font-size: 28px; }
@@ -75,7 +82,7 @@
             .input-name { width: calc(40% - 10px); }
             .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 5px 10px; background: #f9f9f9; border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
-            .emoji-picker { bottom: calc(100% + 5px); width: 90%; }
+            .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
         }
     </style>
 </head>
@@ -93,16 +100,14 @@
 
     <div class="bottom-panel">
         <div class="theme-selector" id="themeSelector">
-            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;"></div>
-            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;"></div>
-            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;"></div>
-            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;"></div>
-            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;"></div>
+            <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="經典白"></div>
+            <div class="theme-btn" data-theme="theme-starry" style="background: #1e293b;" title="星空藍"></div>
+            <div class="theme-btn" data-theme="theme-breeze" style="background: #ccfbf1;" title="晨光綠"></div>
+            <div class="theme-btn" data-theme="theme-sunset" style="background: #ffedd5;" title="暖陽橘"></div>
+            <div class="theme-btn" data-theme="theme-lemon" style="background: #fefcd8;" title="活力黃"></div>
         </div>
         <div class="input-container">
-            <!-- Emoji 面板 -->
             <div class="emoji-picker" id="emojiPicker"></div>
-            <!-- 笑臉按鈕 -->
             <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
             
             <input type="text" id="nameInput" class="input-name" placeholder="你的名字" autocomplete="off">
@@ -114,27 +119,23 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-
-        // ==========================================
-        // ⚠️ 請替換成你 Firebase 專案的 Config (一定要補上 databaseURL)
-        // ==========================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyAjYSBp43_8dRpGrhuTscdvbEktzogqO9o",
-            authDomain: "gratitude-wall-ad184.firebaseapp.com",
-            projectId: "gratitude-wall-ad184",
-            databaseURL:"https://gratitude-wall-ad184-default-rtdb.asia-southeast1.firebasedatabase.app/",
-            storageBucket: "gratitude-wall-ad184.firebasestorage.app",
-            messagingSenderId: "790216418295",
-            appId: "1:790216418295:web:82ec771a3cb990ef39c4f2",
-            measurementId: "G-LGMBXSE8XF"
-        };
-
+        
+        // 從 config.js 引入金鑰
+        import { firebaseConfig } from './config.js'; 
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
         // 初始化 Emoji 面板
-        const emojis = ['😀','🥰','😂','😎','🥺','🥳','🙌','👏','👍','❤️','✨','🔥','🎉','💪','💡'];
+        const emojis = [
+            '😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','🙂','🙃','😉','😌','😍','🥰','😘','😗','😙','😚','😋','😛','😝','😜','🤪','🤨','🧐','🤓','😎','🥸','🤩','🥳','😏','😒','😞','😔','😟','😕','🙁','☹️','😣','😖','😫','😩','🥺','😢','😭','😤','😠','😡','🤬','🤯','😳','🥵','🥶','😱','😨','😰','😥','😓','🤗','🤔','🤭','🤫','🤥','😶','😐','😑','😬','🙄','😯','😦','😧','😮','😲','🥱','😴','🤤','😪','😵','🤐','🥴','🤢','🤮','🤧','😷','🤒','🤕','🤑','🤠','😈','👿','👹','👺','🤡','💩','👻','💀','👽','👾','🤖','🎃',
+            '👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','🖕','👇','☝️','👍','👎','✊','👊','🤛','🤜','👏','🙌','👐','🤲','🤝','🙏','✍️','💪','👀','👁','👅','👄','💋',
+            '❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❤️‍🩹','❣️','💕','💞','💓','💗','💖','💘','💝','💟',
+            '🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐔','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲',
+            '🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🫒','🧄','🧅','🥔','🍠','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','🫖','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🧉','🍾','🧊','🥄','🍴','🍽','🥣','🥡','🥢','🧂',
+            '✨','🔥','🎉','💡','💯','⚠️','✅','❌','🎵','🎶','🔔','📣','💬','💭'
+        ];
+        
         const picker = document.getElementById('emojiPicker');
         const msgInput = document.getElementById('msgInput');
         
@@ -144,23 +145,20 @@
             span.innerText = e;
             span.onclick = () => {
                 msgInput.value += e;
-                picker.classList.remove('active'); // 點選後自動關閉面板
-                msgInput.focus(); // 將游標移回輸入框
+                picker.classList.remove('active'); 
+                msgInput.focus(); 
             };
             picker.appendChild(span);
         });
 
-        // 點擊按鈕切換 Emoji 面板
         document.getElementById('emojiBtn').addEventListener('click', (e) => {
             e.stopPropagation();
             picker.classList.toggle('active');
         });
         
-        // 點擊畫面其他地方隱藏 Emoji 面板
         document.addEventListener('click', () => picker.classList.remove('active'));
         picker.addEventListener('click', (e) => e.stopPropagation());
 
-        // 主題與推播邏輯
         let currentTheme = 'theme-classic';
         let systemSettings = { maxMessages: 50, retentionDays: 30 };
 
@@ -190,7 +188,6 @@
             if (e.key === 'Enter') document.getElementById('sendBtn').click();
         });
 
-        // 資料庫監聽與排版邏輯 (維持原樣)
         onValue(ref(db, 'settings'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
