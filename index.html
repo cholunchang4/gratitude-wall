@@ -114,7 +114,6 @@
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
         .theme-ice .card-author { color: #075985; }
 
-
         /* 輸入區塊與表情面板 */
         .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 100; }
         .emoji-picker::-webkit-scrollbar { width: 6px; }
@@ -147,6 +146,10 @@
             .input-name { width: calc(40% - 10px); } .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 8px 10px; background: var(--name-bg); border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
+            
+            /* 強制主題選擇器在手機版不換行，並微調大小與間距 */
+            .theme-selector { flex-wrap: nowrap; gap: 6px; }
+            .theme-btn { width: 22px; height: 22px; flex-shrink: 0; }
         }
     </style>
 </head>
@@ -313,7 +316,6 @@
             const mobileScaleDown = isMobile ? 0.75 : 1.0; 
             const placedRects = [];
             
-            // 👉 關鍵修正：定義大螢幕的可用寬度與高度，取代單一半徑
             const topLimit = isMobile ? 180 : 220; 
             const bottomLimit = isMobile ? 200 : 180; 
             const sideLimit = isMobile ? 15 : 50;
@@ -356,7 +358,6 @@
                 
                 for (let attempt = 0; attempt < 500; attempt++) {
                     const angle = Math.random() * Math.PI * 2;
-                    // 👉 依照可用空間比例 (availableW / availableH) 呈橢圓形擴展
                     const spreadProgress = Math.min(1, (ageRatio * 0.7) + (attempt * 0.02));
                     const randomJitter = 0.8 + Math.random() * 0.4;
                     
@@ -376,7 +377,6 @@
 
                 if (!foundSpot) { placedX = centerX + (Math.random() - 0.5) * (availableW*0.8); placedY = centerY + (Math.random() - 0.5) * (availableH*0.8); }
                 
-                // 確保保底位置不會超出邊界
                 placedX = Math.max(sideLimit + cardW/2, Math.min(screenW - sideLimit - cardW/2, placedX));
                 placedY = Math.max(topLimit + cardH/2, Math.min(screenH - bottomLimit - cardH/2, placedY));
                 
