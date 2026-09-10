@@ -52,12 +52,25 @@
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
-            transition: opacity 0.5s, box-shadow 0.3s;
+            transition: opacity 0.5s, box-shadow 0.3s, border 0.3s;
         }
         .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); z-index: 1900 !important; }
         .message-card.dragging { cursor: grabbing !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important; }
         .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
         @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } }
+
+        /* 👉 人氣王專屬特效 */
+        .message-card.top-liked { border: 2px solid #ffd700; animation: goldenPulse 2s infinite alternate !important; }
+        @keyframes goldenPulse { 
+            0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 32px 0 rgba(0, 0, 0, 0.12); } 
+            100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 12px 40px rgba(0, 0, 0, 0.2); } 
+        }
+        .crown-badge {
+            position: absolute; top: -14px; right: -12px;
+            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff;
+            padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px;
+            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none;
+        }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
@@ -76,7 +89,7 @@
 
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
-        .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important; z-index: 2000 !important; animation: none !important; box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; }
+        .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important; z-index: 2000 !important; animation: none !important; box-shadow: 0 25px 60px rgba(0,0,0,0.4) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; }
         .modal-box { background: rgba(255, 255, 255, 0.9); backdrop-filter: blur(15px); padding: 30px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; border: 1px solid rgba(255,255,255,0.6); transform: scale(0.8); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal-box.draw-modal { max-width: 850px; padding: 20px; }
         .focus-overlay.active .modal-box { transform: scale(1); }
@@ -182,7 +195,6 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 只保留回憶與英雄榜按鈕 -->
     <div class="top-btn-group">
         <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
@@ -547,6 +559,13 @@
                 return;
             }
 
+            // 👉 計算所有卡片中的「最高讚數」 (用於觸發人氣王特效)
+            let maxLikes = 0;
+            validMessages.forEach(msg => {
+                const c = msg.likes ? Object.keys(msg.likes).length : 0;
+                if (c > maxLikes) maxLikes = c;
+            });
+
             const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth; const screenH = window.innerHeight;
             const sideLimit = isMobile ? 15 : 30; const topLimit = isMobile ? 120 : 130; const bottomLimit = isMobile ? 180 : 160; 
@@ -556,7 +575,18 @@
             const overlapAllowance = 30; 
 
             validMessages.forEach((msg, index) => {
-                const card = document.createElement('div'); card.className = `message-card ${msg.theme || 'theme-classic'}`;
+                const likesObj = msg.likes || {};
+                const likeCount = Object.keys(likesObj).length;
+                const hasLiked = currentUser && likesObj[currentUser.uid];
+                
+                // 👉 判斷此卡片是否為人氣王 (讚數等於最高且大於0)
+                const isTopLiked = (likeCount === maxLikes && maxLikes > 0);
+                const crownHtml = isTopLiked ? '<div class="crown-badge">👑 人氣王</div>' : '';
+
+                const card = document.createElement('div'); 
+                // 將 top-liked 樣式加進 class 裡
+                card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                
                 const dateObj = new Date(msg.timestamp || Date.now());
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                 
@@ -564,16 +594,12 @@
                 const avatarHtml = msg.authorPic ? `<img src="${msg.authorPic}">` : '';
                 const attachedImgHtml = msg.image ? `<img src="${msg.image}" class="card-image" draggable="false">` : '';
 
-                const likesObj = msg.likes || {};
-                const likeCount = Object.keys(likesObj).length;
-                const hasLiked = currentUser && likesObj[currentUser.uid];
-                
-                // 👉 新增：整理並顯示按讚名單
                 const likers = Object.values(likesObj).map(val => val === true ? '某位同事' : val);
                 const tooltipText = likeCount > 0 ? likers.join(', ') + ' 覺得很讚' : '給個讚！';
                 const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="${tooltipText}">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
 
                 card.innerHTML = `
+                    ${crownHtml}
                     ${receiverHtml}
                     ${attachedImgHtml}
                     <div class="card-text">${msg.text}</div>
@@ -627,7 +653,6 @@
                     playSound('click');
                     
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
-                    // 👉 儲存時，改存使用者的名字而不是 true
                     if (hasLiked) remove(likeRef); else set(likeRef, currentUser.displayName);
                 });
 
