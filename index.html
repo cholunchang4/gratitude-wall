@@ -59,12 +59,10 @@
         .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
         @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } }
 
-        /* 人氣王徽章特效 */
         .message-card.top-liked { border: 2px solid #ffd700; animation: goldenPulse 2s infinite alternate !important; }
         @keyframes goldenPulse { 0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 32px 0 rgba(0, 0, 0, 0.12); } 100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 12px 40px rgba(0, 0, 0, 0.2); } }
         .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         
-        /* 大師徽章特效 (50則解鎖) */
         .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
@@ -79,7 +77,6 @@
         .card-likes.liked { color: #e63946; background: #ffe4e1; box-shadow: 0 2px 5px rgba(230,57,70,0.2); }
 
         /* ================= 佈景主題 ================= */
-        /* 基本款 1~9 */
         .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
         .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; } .theme-midnight .card-receiver, .theme-midnight .card-author { color: #A0AEC0; }
         .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
@@ -91,23 +88,18 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
-        /* 🚀 傳說級專屬特效外觀 (60~100則解鎖) */
-        /* 60: 霓虹幻影 */
-        .theme-neon { background: rgba(15, 15, 20, 0.9); border: 2px solid #0ff; color: #fff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3); text-shadow: 0 0 5px #0ff; }
-        .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f; text-shadow: 0 0 5px #f0f; }
-        /* 70: 極光玻璃 */
-        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-        .theme-holo .card-receiver, .theme-holo .card-author { color: #e0e0e0; text-shadow: none; }
-        /* 80: 璀璨鑽金 */
-        .theme-gold { background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%); border: 2px solid #d4af37; color: #f9f1d8; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2); }
-        .theme-gold .card-receiver, .theme-gold .card-author { color: #d4af37; }
-        /* 90: 星際宇宙 */
-        .theme-cosmic { background: radial-gradient(circle at top right, #2b1055, #000000); border: 1px solid #7b2cbf; color: #e0aaff; box-shadow: 0 0 25px rgba(123, 44, 191, 0.6); }
-        .theme-cosmic .card-receiver, .theme-cosmic .card-author { color: #9d4edd; }
-        /* 100: 傳說神話 */
-        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); background-size: 400%; animation: ultimateBg 8s linear infinite; color: #fff; border: 2px solid #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        /* 隱藏版彩蛋特效外觀 (60~100則解鎖) */
+        .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
+        .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
+        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .theme-holo .card-receiver, .theme-holo .card-author { color: #e0e0e0 !important; text-shadow: none; }
+        .theme-gold { background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%) !important; border: 2px solid #d4af37 !important; color: #f9f1d8 !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2) !important; }
+        .theme-gold .card-receiver, .theme-gold .card-author { color: #d4af37 !important; }
+        .theme-cosmic { background: radial-gradient(circle at top right, #2b1055, #000000) !important; border: 1px solid #7b2cbf !important; color: #e0aaff !important; box-shadow: 0 0 25px rgba(123, 44, 191, 0.6) !important; }
+        .theme-cosmic .card-receiver, .theme-cosmic .card-author { color: #9d4edd !important; }
+        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important; background-size: 400% !important; animation: ultimateBg 8s linear infinite !important; color: #fff !important; border: 2px solid #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important; }
         @keyframes ultimateBg { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
-        .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+        .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
         /* ================= Modal 彈窗 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
@@ -128,7 +120,7 @@
         .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
-        /* ================= 升級慶祝 Modal ================= */
+        /* 升級慶祝 Modal */
         .levelUp-card { text-align: center; border: 3px solid #ffd700; background: radial-gradient(circle at center, #ffffff 0%, #fff0f5 100%); box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .level-icon-wrapper { font-size: 56px; margin-bottom: 10px; animation: bounce 1.2s infinite alternate; }
@@ -182,13 +174,6 @@
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
         
-        /* 隱藏版主題選擇器按鈕樣式 */
-        .theme-neon { background: #0ff !important; border-color: #111 !important; }
-        .theme-holo { background: linear-gradient(135deg, #fff, #ccc) !important; }
-        .theme-gold { background: linear-gradient(135deg, #d4af37, #1c1c1c) !important; border-color: #d4af37 !important; }
-        .theme-cosmic { background: radial-gradient(circle, #7b2cbf, #000) !important; border-color: #e0aaff !important; }
-        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #fffb00, #002bff) !important; border-color: #fff !important; }
-
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -238,7 +223,6 @@
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
-    <!-- 英雄榜 Modal -->
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="modal-box">
             <button class="close-btn" id="closeLeaderboard">✖</button>
@@ -256,7 +240,6 @@
         </div>
     </div>
 
-    <!-- 升級慶祝 Modal -->
     <div class="focus-overlay" id="levelUpOverlay">
         <div class="modal-box levelUp-card">
             <div class="level-icon-wrapper" id="levelUpIcon">🎉</div>
@@ -268,11 +251,10 @@
                 <p id="levelUpFeatureDesc">詳細介紹...</p>
             </div>
 
-            <button id="closeLevelUpBtn" class="action-btn primary" style="padding:12px 35px; font-size:16px;">🚀 太棒了，立即體驗！</button>
+            <button id="closeLevelUpBtn" class="action-btn primary" style="padding:12px 35px; font-size:16px;">🚀 太棒了！</button>
         </div>
     </div>
 
-    <!-- 繪圖 Modal -->
     <div class="focus-overlay" id="drawOverlay">
         <div class="modal-box draw-modal" style="text-align: center;">
             <h3 style="margin-top:0; color:#d64966;">🎨 手寫 / 塗鴉 / 上傳圖片</h3>
@@ -323,12 +305,12 @@
                 <div class="theme-btn" data-theme="theme-matcha" style="background: #ebf2de;" title="抹茶青"></div>
                 <div class="theme-btn" data-theme="theme-terracotta" style="background: #d27355;" title="陶土橘"></div>
                 <div class="theme-btn" data-theme="theme-ice" style="background: #e0f2fe;" title="冰川藍"></div>
-                <!-- 🌟 傳說外觀 (Lv.10 ~ Lv.14) -->
-                <div class="theme-btn theme-neon" data-theme="theme-neon" title="Lv.10 解鎖：霓虹幻影"></div>
-                <div class="theme-btn theme-holo" data-theme="theme-holo" title="Lv.11 解鎖：極光玻璃"></div>
-                <div class="theme-btn theme-gold" data-theme="theme-gold" title="Lv.12 解鎖：璀璨鑽金"></div>
-                <div class="theme-btn theme-cosmic" data-theme="theme-cosmic" title="Lv.13 解鎖：星際宇宙"></div>
-                <div class="theme-btn theme-ultimate" data-theme="theme-ultimate" title="Lv.14 解鎖：傳說神話"></div>
+                <!-- 🌟 傳說外觀 (Lv.10 ~ Lv.14) 預設為完全隱藏 -->
+                <div class="theme-btn theme-neon" data-theme="theme-neon" id="btnNeon" style="display:none;" title="霓虹幻影"></div>
+                <div class="theme-btn theme-holo" data-theme="theme-holo" id="btnHolo" style="display:none;" title="極光玻璃"></div>
+                <div class="theme-btn theme-gold" data-theme="theme-gold" id="btnGold" style="display:none;" title="璀璨鑽金"></div>
+                <div class="theme-btn theme-cosmic" data-theme="theme-cosmic" id="btnCosmic" style="display:none;" title="星際宇宙"></div>
+                <div class="theme-btn theme-ultimate" data-theme="theme-ultimate" id="btnUltimate" style="display:none;" title="傳說神話"></div>
             </div>
             <div class="input-container">
                 <img id="userAvatar" class="user-avatar" src="" title="點擊登出">
@@ -498,19 +480,14 @@
         function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
-        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate'];
         let currentTheme = themeList[0];
         
         document.querySelectorAll('.theme-btn').forEach((btn, idx) => {
             btn.addEventListener('click', function() { 
                 if (this.classList.contains('locked')) {
                     playSound('click');
-                    if (idx >= 14) return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
-                    if (idx >= 13) return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
-                    if (idx >= 12) return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
-                    if (idx >= 11) return alert('🔮 極光玻璃模板需要「Lv.11 極光幻境 (70則留言)」才能解鎖！');
-                    if (idx >= 10) return alert('🪩 霓虹幻影模板需要「Lv.10 霓虹幻影 (60則留言)」才能解鎖！');
-                    return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖全彩顏色喔！');
+                    return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖所有基礎顏色喔！');
                 }
                 playSound('click'); themeManuallySelected = true;
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
@@ -518,91 +495,125 @@
             });
         });
 
-        // ================= 🕹️ 14 階職涯系統邏輯與 UI 更新 =================
+        // ================= 🕹️ 封頂大師與隱藏彩蛋系統邏輯 =================
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
 
             userLifetimeMessageCount = rawMessages.filter(m => m.author === currentUser.displayName).length;
             
-            let title = '', msg = '', badge = '', icon = '', featureTitle = '', featureDesc = '', maxLength = 20;
+            let title = '', msg = '', maxLength = 20;
 
-            if (userLifetimeMessageCount >= 100) {
-                userLevel = 14; title = '🦄 Lv.14 傳說之神'; msg = '所有外觀與功能皆已解鎖！'; maxLength = 1000;
-                badge = '🦄 Lv.14 傳說之神'; icon = '🔥'; featureTitle = '🔓 最終解鎖：🦄 傳說神話動態模板！'; featureDesc = '太神啦！你已解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！';
-            } else if (userLifetimeMessageCount >= 90) {
-                userLevel = 13; title = '🌌 Lv.13 星際領航'; msg = `差 ${100 - userLifetimeMessageCount} 則解鎖「傳說神話」`; maxLength = 1000;
-                badge = '🌌 Lv.13 星際領航'; icon = '🚀'; featureTitle = '🔓 解鎖：🌌 星際宇宙光暈模板！'; featureDesc = '你的感謝超越了地球！現已解鎖深紫色的星雲漸層與光暈外框。';
-            } else if (userLifetimeMessageCount >= 80) {
-                userLevel = 12; title = '👑 Lv.12 璀璨鑽金'; msg = `差 ${90 - userLifetimeMessageCount} 則解鎖「星際宇宙」`; maxLength = 1000;
-                badge = '👑 Lv.12 璀璨鑽金'; icon = '💎'; featureTitle = '🔓 解鎖：👑 璀璨鑽金尊爵模板！'; featureDesc = '尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！';
-            } else if (userLifetimeMessageCount >= 70) {
-                userLevel = 11; title = '🔮 Lv.11 極光幻境'; msg = `差 ${80 - userLifetimeMessageCount} 則解鎖「璀璨鑽金」`; maxLength = 1000;
-                badge = '🔮 Lv.11 極光幻境'; icon = '✨'; featureTitle = '🔓 解鎖：🔮 極光毛玻璃特效模板！'; featureDesc = '質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。';
-            } else if (userLifetimeMessageCount >= 60) {
-                userLevel = 10; title = '🪩 Lv.10 霓虹幻影'; msg = `差 ${70 - userLifetimeMessageCount} 則解鎖「極光幻境」`; maxLength = 1000;
-                badge = '🪩 Lv.10 霓虹幻影'; icon = '🎸'; featureTitle = '🔓 解鎖：🪩 賽博龐克霓虹模板！'; featureDesc = '打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。';
-            } else if (userLifetimeMessageCount >= 50) {
-                userLevel = 9; title = '🎖️ Lv.9 榮耀大師'; msg = `差 ${60 - userLifetimeMessageCount} 則解鎖「霓虹幻影」`; maxLength = 1000;
-                badge = '🎖️ Lv.9 榮耀大師'; icon = '👑'; featureTitle = '🔓 解鎖：🎖️ 專屬大師徽章！'; featureDesc = '最高榮譽！你發布的卡片將永久獲得專屬的「🏅 感謝大師徽章」特權！';
-            } else if (userLifetimeMessageCount >= 40) {
-                userLevel = 8; title = '📷 Lv.8 攝影大師'; msg = `差 ${50 - userLifetimeMessageCount} 則解鎖「大師徽章」`; maxLength = 500;
-                badge = '📷 Lv.8 攝影大師'; icon = '📸'; featureTitle = '🔓 解鎖：📷 插入照片與實體圖片！'; featureDesc = '圖文並茂的時代來了！現在你可以在手繪畫布中直接上傳照片！';
+            // 👉 公開等級判斷 (最高到 Lv.8)
+            if (userLifetimeMessageCount >= 50) {
+                userLevel = 8; title = '✨ Lv.8 感謝大師'; maxLength = 1000;
             } else if (userLifetimeMessageCount >= 30) {
-                userLevel = 7; title = '🕵️‍♂️ Lv.7 藏鏡天使'; msg = `差 ${40 - userLifetimeMessageCount} 則解鎖「照片上傳」`; maxLength = 200;
-                badge = '🕵️‍♂️ Lv.7 藏鏡天使'; icon = '🤫'; featureTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; featureDesc = '字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！';
+                userLevel = 7; title = '🕵️‍♂️ Lv.7 藏鏡天使'; msg = `差 ${50 - userLifetimeMessageCount} 則升級「感謝大師」`; maxLength = 200;
             } else if (userLifetimeMessageCount >= 20) {
                 userLevel = 6; title = '🎨 Lv.6 塗鴉畫家'; msg = `差 ${30 - userLifetimeMessageCount} 則解鎖「匿名功能」`; maxLength = 50;
-                badge = '🎨 Lv.6 塗鴉畫家'; icon = '🖌️'; featureTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; featureDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕即可開啟全螢幕塗鴉畫布！';
             } else if (userLifetimeMessageCount >= 15) {
                 userLevel = 5; title = '🗣️ Lv.5 感謝達人'; msg = `差 ${20 - userLifetimeMessageCount} 則解鎖「手繪功能」`; maxLength = 50;
-                badge = '🗣️ Lv.5 感謝達人'; icon = '👥'; featureTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; featureDesc = '感謝不只一個人？現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號標記整個團隊！';
             } else if (userLifetimeMessageCount >= 10) {
                 userLevel = 4; title = '🌈 Lv.4 色彩魔術師'; msg = `差 ${15 - userLifetimeMessageCount} 則解鎖「多人標記」`; maxLength = 50;
-                badge = '🌈 Lv.4 色彩魔術師'; icon = '🌈'; featureTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; featureDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得豐富的中階表情符號！';
             } else if (userLifetimeMessageCount >= 5) {
                 userLevel = 3; title = '🌷 Lv.3 溫暖園丁'; msg = `差 ${10 - userLifetimeMessageCount} 則解鎖「全彩主題」`; maxLength = 50;
-                badge = '🌷 Lv.3 溫暖園丁'; icon = '🖐️'; featureTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; featureDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！';
             } else if (userLifetimeMessageCount >= 1) {
                 userLevel = 2; title = '🍀 Lv.2 熱心路人'; msg = `差 ${5 - userLifetimeMessageCount} 則解鎖「卡片拖曳」`; maxLength = 20;
-                badge = '🍀 Lv.2 熱心路人'; icon = '👍'; featureTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; featureDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉表情了！';
             } else {
-                userLevel = 1; title = '🌱 Lv.1 新手幼苗'; msg = `發送第 1 則解鎖「按讚與表情」`; maxLength = 20;
+                userLevel = 1; title = '🌱 Lv.1 新手幼苗'; msg = `發送 1 則解鎖「按讚與表情」`; maxLength = 20;
             }
 
             const msgInput = document.getElementById('msgInput');
             msgInput.maxLength = maxLength;
             msgInput.placeholder = `寫下感謝內容... (上限 ${maxLength} 字)`;
 
-            document.getElementById('levelStatusBar').style.display = 'flex';
-            document.getElementById('levelTitle').innerText = `${title} (已送出 ${userLifetimeMessageCount} 則)`;
-            document.getElementById('levelHint').innerText = msg;
-
-            const storageKey = `seen_level_v14_${currentUser.uid}`;
-            const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
-
-            if (userLevel > seenLevel) {
-                document.getElementById('levelUpIcon').innerText = icon; document.getElementById('levelUpBadge').innerText = `獲得稱號：${badge}`;
-                document.getElementById('levelUpFeatureTitle').innerText = featureTitle; document.getElementById('levelUpFeatureDesc').innerText = featureDesc;
-                levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
-                localStorage.setItem(storageKey, userLevel.toString());
+            const statusBar = document.getElementById('levelStatusBar');
+            // 👉 50則之後，隱藏進度條，稱號永遠停留在大師
+            if (userLifetimeMessageCount >= 50) {
+                statusBar.style.display = 'none';
+            } else {
+                statusBar.style.display = 'flex';
+                document.getElementById('levelTitle').innerText = `${title} (已送出 ${userLifetimeMessageCount} 則)`;
+                document.getElementById('levelHint').innerText = msg;
             }
 
-            // UI 上鎖處理
+            // 👉 公開等級彈窗判斷 (Lv.2 ~ Lv.8)
+            const storageKey = `seen_pub_lvl_${currentUser.uid}`;
+            const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
+            let shouldShowModal = false;
+            let mIcon = '', mBadge = '', mTitle = '', mDesc = '';
+
+            if (userLevel > seenLevel) {
+                shouldShowModal = true;
+                if (userLevel === 8) {
+                    mIcon = '👑'; mBadge = '獲得稱號：✨ Lv.8 感謝大師'; mTitle = '🔓 解鎖：📷 插入相片 & 大師徽章！'; mDesc = '最高榮譽！現在你可以在塗鴉畫布中直接上傳真實照片，且你發布的卡片將永久獲得專屬的「🏅 大師徽章」特權！';
+                } else if (userLevel === 7) {
+                    mIcon = '🤫'; mBadge = '獲得稱號：🕵️‍♂️ Lv.7 藏鏡天使'; mTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; mDesc = '有愛大聲說！字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！';
+                } else if (userLevel === 6) {
+                    mIcon = '🖌️'; mBadge = '獲得稱號：🎨 Lv.6 塗鴉畫家'; mTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; mDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕，即可開啟全螢幕塗鴉畫布，親筆簽名或畫插圖！';
+                } else if (userLevel === 5) {
+                    mIcon = '👥'; mBadge = '獲得稱號：🗣️ Lv.5 感謝達人'; mTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; mDesc = '現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號，讓你一次標記整個團隊！';
+                } else if (userLevel === 4) {
+                    mIcon = '🌈'; mBadge = '獲得稱號：🌈 Lv.4 色彩魔術師'; mTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; mDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得包含動物、食物等更豐富的表情符號！';
+                } else if (userLevel === 3) {
+                    mIcon = '🖐️'; mBadge = '獲得稱號：🌷 Lv.3 溫暖園丁'; mTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; mDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！';
+                } else if (userLevel === 2) {
+                    mIcon = '👍'; mBadge = '獲得稱號：🍀 Lv.2 熱心路人'; mTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; mDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉、愛心等基礎表情了！';
+                }
+                localStorage.setItem(storageKey, userLevel.toString());
+            } else {
+                // 👉 隱藏彩蛋彈窗判斷 (60, 70, 80, 90, 100)
+                let hiddenLevel = 0;
+                if (userLifetimeMessageCount >= 100) hiddenLevel = 5;
+                else if (userLifetimeMessageCount >= 90) hiddenLevel = 4;
+                else if (userLifetimeMessageCount >= 80) hiddenLevel = 3;
+                else if (userLifetimeMessageCount >= 70) hiddenLevel = 2;
+                else if (userLifetimeMessageCount >= 60) hiddenLevel = 1;
+
+                const hiddenStorageKey = `seen_hid_lvl_${currentUser.uid}`;
+                const seenHidden = parseInt(localStorage.getItem(hiddenStorageKey) || '0');
+
+                if (hiddenLevel > seenHidden) {
+                    shouldShowModal = true;
+                    mIcon = '🎁'; mBadge = '🎊 發現隱藏彩蛋！';
+                    if (hiddenLevel === 5) {
+                        mTitle = '🔓 隱藏解鎖：🦄 傳說神話動態模板！'; mDesc = '太神啦！你已發布 100 則感謝！已為你解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！快去調色盤找找看。';
+                    } else if (hiddenLevel === 4) {
+                        mTitle = '🔓 隱藏解鎖：🌌 星際宇宙光暈模板！'; mDesc = '狂賀！你發布了 90 則感謝！你的心意超越了地球，現已解鎖深紫色的星雲漸層與光暈外框。';
+                    } else if (hiddenLevel === 3) {
+                        mTitle = '🔓 隱藏解鎖：👑 璀璨鑽金尊爵模板！'; mDesc = '狂賀！你發布了 80 則感謝！已解鎖尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！';
+                    } else if (hiddenLevel === 2) {
+                        mTitle = '🔓 隱藏解鎖：🔮 極光毛玻璃特效模板！'; mDesc = '狂賀！你發布了 70 則感謝！質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。';
+                    } else if (hiddenLevel === 1) {
+                        mTitle = '🔓 隱藏解鎖：🪩 賽博龐克霓虹模板！'; mDesc = '狂賀！你發布了 60 則感謝！打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。';
+                    }
+                    localStorage.setItem(hiddenStorageKey, hiddenLevel.toString());
+                }
+            }
+
+            if (shouldShowModal) {
+                document.getElementById('levelUpIcon').innerText = mIcon; document.getElementById('levelUpBadge').innerText = mBadge;
+                document.getElementById('levelUpFeatureTitle').innerText = mTitle; document.getElementById('levelUpFeatureDesc').innerText = mDesc;
+                levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
+            }
+
+            // UI 基礎功能上鎖處理
             document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
             document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
-                if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); // Base 10 colors
-                else if (userLevel < 10 && idx === 10) btn.classList.add('locked'); // Neon
-                else if (userLevel < 11 && idx === 11) btn.classList.add('locked'); // Holo
-                else if (userLevel < 12 && idx === 12) btn.classList.add('locked'); // Gold
-                else if (userLevel < 13 && idx === 13) btn.classList.add('locked'); // Cosmic
-                else if (userLevel < 14 && idx === 14) btn.classList.add('locked'); // Ultimate
-                else btn.classList.remove('locked');
+                btn.classList.remove('locked');
+                if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); 
             });
             document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
             document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
             document.getElementById('anonCheck').disabled = userLevel < 7;
             document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
             
+            // 👉 隱藏版彩蛋按鈕顯示邏輯 (達到條件才出現在調色盤裡)
+            document.getElementById('btnNeon').style.display = userLifetimeMessageCount >= 60 ? 'inline-block' : 'none';
+            document.getElementById('btnHolo').style.display = userLifetimeMessageCount >= 70 ? 'inline-block' : 'none';
+            document.getElementById('btnGold').style.display = userLifetimeMessageCount >= 80 ? 'inline-block' : 'none';
+            document.getElementById('btnCosmic').style.display = userLifetimeMessageCount >= 90 ? 'inline-block' : 'none';
+            document.getElementById('btnUltimate').style.display = userLifetimeMessageCount >= 100 ? 'inline-block' : 'none';
+
             renderEmojis();
         }
 
@@ -666,7 +677,7 @@
         drawCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawCanvas.addEventListener('touchmove', draw, {passive: false}); drawCanvas.addEventListener('touchend', endDraw);
 
         document.getElementById('uploadImgInput').addEventListener('click', function(e) {
-            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 攝影大師 (40則留言)」才能解鎖喔！'); }
+            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 感謝大師 (50則留言)」才能解鎖喔！'); }
         });
 
         document.getElementById('uploadImgInput').addEventListener('change', function(e){
@@ -716,7 +727,11 @@
             const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
             const finalAuthorPic = isAnon ? '' : currentUser.photoURL;
 
-            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: userLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
+            // 如果使用隱藏主題發文，給予最高作者等級保證特效顯示
+            let sentAuthorLevel = userLevel;
+            if (userLifetimeMessageCount >= 50) sentAuthorLevel = 8;
+
+            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
             
             themeManuallySelected = false; 
@@ -760,6 +775,7 @@
                 } catch (e) {}
             });
             rawMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+            
             updateUserLevelUI(); renderWall(); if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
         });
 
@@ -795,12 +811,11 @@
 
             const total = validMessages.length; 
             
-            // 👉 自動色彩平衡不含傳說主題 (只取前 10 個)
+            // 👉 自動色彩平衡不含傳說主題 (只取前 10 個基礎色)
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
-                const availableThemes = userLevel >= 4 ? themeList : themeList.slice(0, 3);
+                const availableThemes = userLevel >= 4 ? themeList.slice(0, 10) : themeList.slice(0, 3);
                 const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
                 validMessages.forEach(msg => { 
-                    // 如果抽到傳說主題，不列入一般平衡計算
                     if(availableThemes.includes(msg.theme)) themeCounts[msg.theme]++; 
                 });
                 const minCount = Math.min(...Object.values(themeCounts));
@@ -839,12 +854,12 @@
                 const isTopLiked = (likeCount === maxLikes && maxLikes > 0);
                 const crownHtml = isTopLiked ? '<div class="crown-badge">👑 人氣王</div>' : '';
                 
-                // 👉 判斷大師徽章 (作者發文時達到 Lv.9 以上)
-                const isMaster = (msg.authorLevel >= 9 && msg.author !== '匿名');
+                const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
                 const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
                 const card = document.createElement('div'); 
                 card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                if (isMaster && !msg.theme?.includes('theme-ultimate')) card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                 
                 const dateObj = new Date(msg.timestamp || Date.now());
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
