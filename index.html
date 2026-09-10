@@ -27,11 +27,10 @@
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
-        /* ================= 標題華麗升級 ================= */
+        /* ================= 標題 ================= */
         .header-container { 
             position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
-            z-index: 1000; 
-            width: max-content; max-width: 90%; pointer-events: none; 
+            z-index: 1000; width: max-content; max-width: 90%; pointer-events: none; 
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
             padding: 15px 45px; border-radius: 60px;
             box-shadow: 0 10px 30px rgba(230, 100, 120, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
@@ -56,11 +55,8 @@
         /* ================= 卡片排版與字體 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            padding: 15px 20px 22px 20px; 
-            border-radius: 16px; 
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
-            width: max-content; max-width: 280px; 
-            text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
+            padding: 15px 20px 22px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
+            width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: pointer; 
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
             transition: opacity 0.5s, box-shadow 0.3s;
@@ -198,12 +194,11 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 右上角功能按鈕：拿掉切換視角，保留英雄榜 -->
+    <!-- 右上角功能按鈕 -->
     <div class="top-btn-group">
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
     </div>
     
-    <!-- 聚焦模式與英雄榜的背景遮罩 -->
     <div class="focus-overlay" id="focusOverlay"></div>
 
     <!-- 英雄榜 Modal -->
@@ -227,7 +222,6 @@
     <div id="wall"></div>
 
     <div class="bottom-panel">
-        <!-- 未登入介面 -->
         <div id="loginPanel" style="text-align: center;">
             <button id="loginBtn" class="send-btn" style="width: auto; margin: 0 auto; padding: 12px 30px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" style="fill:#fff"><path d="M12.24 10.285V14.4h6.806c-.275 1.765-2.056 5.174-6.806 5.174-4.095 0-7.439-3.389-7.439-7.574s3.345-7.574 7.439-7.574c2.33 0 3.891.989 4.785 1.849l3.254-3.138C18.189 1.186 15.479 0 12.24 0c-6.635 0-12 5.365-12 12s5.365 12 12 12c6.926 0 11.52-4.869 11.52-11.726 0-.788-.085-1.39-.189-1.989H12.24z"/></svg>
@@ -235,10 +229,8 @@
             </button>
         </div>
 
-        <!-- 已登入介面 -->
         <div id="inputPanel" style="display: none; width: 100%;">
             <div class="theme-selector" id="themeSelector">
-                <!-- 移除了預設寫死的 active，改由 JavaScript 隨機套用 -->
                 <div class="theme-btn" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
                 <div class="theme-btn" data-theme="theme-midnight" style="background: #1e232e;" title="星空黑"></div>
                 <div class="theme-btn" data-theme="theme-sage" style="background: #d7e6da;" title="鼠尾草綠"></div>
@@ -256,7 +248,6 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 
                 <div class="receiver-wrapper">
-                    <!--  placeholder 改為單純的「感謝誰？」 -->
                     <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="可以輸入多人，系統會自動加逗號">
                     <div id="autocompleteList" class="autocomplete-list"></div>
                 </div>
@@ -286,206 +277,73 @@
         let companyDirectory = new Set(); 
 
         const defaultDirectory = [
-            'Ai-Zhen Weng (ai-zhen.weng@roche.com)',
-            'Alex Yang (alex.yang.ay2@roche.com)',
-            'Alice Hsieh (alice.hsieh.ah2@roche.com)',
-            'Allen Lai (allen.lai.al1@roche.com)',
-            'Allen Liu (allen.liu@roche.com)',
-            'Allison Tseng (allison.tseng.at1@roche.com)',
-            'Alvan Wang (alvan.wang@roche.com)',
-            'Alvin Chen (alvin.chen.ac2@roche.com)',
-            'Alvin Hsiang (alvin.hsiang@roche.com)',
-            'Alyssa Chang (alyssa.chang@roche.com)',
-            'Amanda Wu (amanda.wu.aw2@roche.com)',
-            'Amy Hwang (amy.hwang@roche.com)',
-            'Anita Yu (anita.yu@roche.com)',
-            'Anna Ho (anna.ho@roche.com)',
-            'Anne Lee (anne.lee.al2@roche.com)',
-            'Annie Shih (annie.shih@roche.com)',
-            'Anson Chang (anson.chang@roche.com)',
-            'Ariel Hwang (ariel.hwang@roche.com)',
-            'Becky Fan (becky.fan@roche.com)',
-            'Benny Yu (benny.yu@roche.com)',
-            'Berlin Yeh (berlin.yeh@external.roche.com)',
-            'Brenda Ip (brenda.ip@roche.com)',
-            'Bruce Lee (bruce.lee.bl5@roche.com)',
-            'Bryan Lu (bryan.lu@roche.com)',
-            'Carol Chiang (carol.chiang@roche.com)',
-            'Castial Lee (castial.lee@roche.com)',
-            'Catherine Chang (catherine.chang.cc1@roche.com)',
-            'Chandra Chuang (chandra.chuang@roche.com)',
-            'Charis Shih (charis.shih@roche.com)',
-            'Charles Chou (charles.chou@roche.com)',
-            'Charlie Jiang (charlie.jiang@roche.com)',
-            'Chloe Tsai (chloe.tsai@roche.com)',
-            'Cholun Chang (cholun.chang@roche.com)',
-            'Chun Chen (chun.chen@external.roche.com)',
-            'Claire Hsu (claire.hsu.ch1@external.roche.com)',
-            'Corrine Wang (corrine.wang@roche.com)',
-            'Crystal Huang (crystal.huang.ch1@roche.com)',
-            'Crystal Lo (crystal.lo@external.roche.com)',
-            'Cynthia Lee (cynthia.lee.cl1@roche.com)',
-            'Danny Kuan (danny.kuan@roche.com)',
-            'Danny Lin (danny.lin@roche.com)',
-            'Darren Lin (darren.lin@roche.com)',
-            'David Liu (david.liu.dl5@roche.com)',
-            'Deniz Huang (deniz.huang@roche.com)',
-            'Eason Lee (eason.lee@roche.com)',
-            'Elaine Cheng (elaine.cheng@roche.com)',
-            'Elena Chen (elena.chen.ec2@external.roche.com)',
-            'Elis Kuan (elis.kuan@roche.com)',
-            'Elvis Shen (elvis.shen@roche.com)',
-            'Emily Chang (emily.chang.ec1@roche.com)',
-            'Emma Liu (emma.liu.el1@external.roche.com)',
-            'Eric Chen (eric.chen.ec1@roche.com)',
-            'Erika Chen (erika.chen@roche.com)',
-            'Ethan Chien (ethan.chien@roche.com)',
-            'Eva Yeh (eva.yeh@roche.com)',
-            'Felicity Chen (felicity.chen@roche.com)',
-            'Fenny Wu (fenny.wu@roche.com)',
-            'Fred Yu (fred.yu@roche.com)',
-            'Gallon Chang (gallon.chang@external.roche.com)',
-            'Gary Lee (gary.lee.gl3@roche.com)',
-            'Gina Liao (gina.liao@roche.com)',
-            'Giselle Huang (giselle.huang@roche.com)',
-            'grace...@roche.com (grace.fang@roche.com)',
-            'Hank Chi (hank.chi@roche.com)',
-            'Hank Su (hank.su@roche.com)',
-            'Hank Wu (hank.wu.hw1@roche.com)',
-            'Heather Hung (heather.hung@roche.com)',
-            'Henry Cheng (henry.cheng.hc1@roche.com)',
-            'Hilda Chang (hilda.chang@roche.com)',
-            'Irene Lee (irene.lee.il1@roche.com)',
-            'Irene Liao (irene.liao@roche.com)',
-            'Ivy Hsu (ivy.hsu.ih1@roche.com)',
-            'Jack Huang (jack.huang.jh2@roche.com)',
-            'Jackal Wang (jackal.wang@roche.com)',
-            'Jacky Kuo (jacky.kuo@roche.com)',
-            'Jacky Wang (jacky.wang.jw2@roche.com)',
-            'James Chiang (james.chiang@roche.com)',
-            'James Hsieh (james.hsieh@roche.com)',
-            'James Kuo (james.kuo@roche.com)',
-            'Jamie Chou (jamie.chou@external.roche.com)',
-            'Jamie Lin (jamie.lin@external.roche.com)',
-            'Jane Li (jane.li.jl2@roche.com)',
-            'Janet Tsai (janet.tsai@roche.com)',
-            'Jason Lee (jason.lee.jl2@roche.com)',
-            'Jay Liu (jay.liu@roche.com)',
-            'Jeff Yu (jeff.yu@roche.com)',
-            'Jeffrey Chung (jeffrey.chung@roche.com)',
-            'Jennifer Huang (jennifer.huang.jh2@roche.com)',
-            'Jenny Lai (jenny.lai@roche.com)',
-            'Jerome Yang (jerome.yang@roche.com)',
-            'Joan Yen (joan.yen@roche.com)',
-            'Joe Lin (joe.lin@roche.com)',
-            'Johan Chien (johan.chien@roche.com)',
-            'Jovi Chen (jovi.chen@roche.com)',
-            'Junet Choi (junet.choi@roche.com)',
-            'Just Shen (just.shen@roche.com)',
-            'Kan Shih (kan.shih@roche.com)',
-            'Kathleen Wang (kathleen.wang@roche.com)',
-            'Kevin Chang (kevin.chang.kc2@roche.com)',
-            'Kimberly Chen (kimberly.chen@external.roche.com)',
-            'Kite Yen (kite.yen@roche.com)',
-            'Kyle Hu (kyle.hu.kh1@roche.com)',
-            'Kyra Chiu (kyra.chiu@external.roche.com)',
-            'Latrell Xie (latrell.xie@roche.com)',
-            'Lauren Shih (lauren.shih@roche.com)',
-            'Lena Lan (lena.lan@roche.com)',
-            'Libra Lu (libra.lu@roche.com)',
-            'Lilian Li (lilian.li@external.roche.com)',
-            'Lily Huang (lily.huang.lh5@roche.com)',
-            'Louis Tseng (louis.tseng@roche.com)',
-            'Louise Yu (louise.yu@roche.com)',
-            'Maggie Wu (maggie.wu.mw2@roche.com)',
-            'Mandy Wu (mandy.wu@external.roche.com)',
-            'Menu Huang (menu.huang@external.roche.com)',
-            'Michelle Gui (michelle.gui@roche.com)',
-            'Mini Yang (mini.yang@roche.com)',
-            'Misty Huang (misty.huang@roche.com)',
-            'Nancy Lin (nancy.lin@roche.com)',
-            'Norman Chu (norman.chu@roche.com)',
-            'Oliver Chang (oliver.chang@roche.com)',
-            'Oona Kuo (oona.kuo@roche.com)',
-            'Pareto Liu (pareto.liu@external.roche.com)',
-            'Patty Chen (patty.chen@roche.com)',
-            'Paul Chang (paul.chang.pc3@roche.com)',
-            'Peggy Liu (peggy.liu@roche.com)',
-            'Peter Chen (peter.chen.pc2@roche.com)',
-            'Phil Chang (phil.chang@roche.com)',
-            'Ray Lin (ray.lin@external.roche.com)',
-            'Rebecca Liao (rebecca.liao@roche.com)',
-            'Renee Tol (renee.tol@external.roche.com)',
-            'Rex Ku (rex.ku@roche.com)',
-            'Rita Lee (rita.lee@external.roche.com)',
-            'Riyi Wu (riyi.wu@roche.com)',
-            'Rob Liu (rob.liu@roche.com)',
-            'Roy Chen (roy.chen.rc1@roche.com)',
-            'Ruby Chao (ruby.chao@external.roche.com)',
-            'Ryan Lin (ryan.lin.rl1@roche.com)',
-            'Sally Liu (sally.liu.sl2@roche.com)',
-            'Sally Tseng (sally.tseng.st1@external.roche.com)',
-            'Sam Wang (sam.wang@external.roche.com)',
-            'Samuel Li (samuel.li@roche.com)',
-            'Sandra Chu (sandra.chu@roche.com)',
-            'Sara Chen (sara.chen.sc1@roche.com)',
-            'Sasa Sha (sasa.sha@roche.com)',
-            'Sean Huang (sean.huang@roche.com)',
-            'Sean Tung (sean.tung@roche.com)',
-            'Sean Wang (sean.wang.sw4@roche.com)',
-            'Sherby Lin (sherby.lin@roche.com)',
-            'Shih-En Chang (shih-en.chang@roche.com)',
-            'Shiloh Yu (shiloh.yu@roche.com)',
-            'Simon Lin (simon.lin@roche.com)',
-            'Sophia Chao (sophia.chao@roche.com)',
-            'Soy Sun (soy.sun@roche.com)',
-            'Stacy Huang (stacy.huang@roche.com)',
-            'Stanley Lin (stanley.lin@roche.com)',
-            'Stanly BX Lin (stanly_bx.lin@roche.com)',
-            'Steven Chen (steven.chen@roche.com)',
-            'Steven Huang (steven.huang@roche.com)',
-            'Susan Liao (susan.liao@external.roche.com)',
-            'Ten Li (ten.li@roche.com)',
-            'Ting Zhan (ting.zhan@external.roche.com)',
-            'Tom Suen (tom.suen@roche.com)',
-            'Tony Huang (tony.huang.th1@roche.com)',
-            'Vanson Huang (vanson.huang@roche.com)',
-            'Vic Chen (vic.chen@roche.com)',
-            'Vivien Tan (vivien.tan.vt1@roche.com)',
-            'Wayne Lin (wayne.lin@roche.com)',
-            'Wendy Chen (wendy.chen@roche.com)',
-            'Wendy Huang (wendy.huang@roche.com)',
-            'Wendy PY Yu (wendy_py.yu@roche.com)',
-            'William Shen (william.shen.ws1@roche.com)',
-            'YaChu Chao (yachu.chao@roche.com)',
-            'Yi-Wen Chen (yi-wen.chen@roche.com)',
-            'Yifan Chen (yifan.chen.yc1@roche.com)',
-            'Yvonne Lee (yvonne.lee.yl5@roche.com)',
-            'Zach Wei (zach.wei@external.roche.com)',
-            'Zoe Chen (zoe.chen.zc2@roche.com)',
-            'allen.tsai (allen.tsai@roche.com)',
-            'amanda.liu (amanda.liu@roche.com)',
-            'astrid.yang (astrid.yang@roche.com)',
-            'cindy.huang.ch2 (cindy.huang.ch2@roche.com)',
-            'edward.kuo (edward.kuo@roche.com)',
-            'edward.tan (edward.tan@roche.com)',
-            'elin.shen (elin.shen@roche.com)',
-            'fanny.tseng (fanny.tseng@roche.com)',
-            'jack.chiu (jack.chiu@roche.com)',
-            'jeff.chen.jc2 (jeff.chen.jc2@roche.com)',
-            'jerry.lee (jerry.lee@roche.com)',
-            'jessie.tseng (jessie.tseng@roche.com)',
-            'joan.wu.jw1 (joanne.wu@roche.com)',
-            'lisa.tsai (lisa.tsai@roche.com)',
-            'mike.lin (mike.lin@roche.com)',
-            'olivia.chen (olivia.chen@roche.com)',
-            'raymond.hsieh (raymond.hsieh@roche.com)',
-            'stelly.tsai (stelly.tsai@roche.com)',
-            'taiwan.services-hotline (taiwan.services-hotline@roche.com)',
-            'tina.lin (tina.lin@roche.com)',
-            'tony.su (tony.su@roche.com)',
-            'wendy.wang (wendy.wang@roche.com)',
-            'yuehmei.chou (yuehmei.chou@roche.com)'
+            'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
+            'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
+            'Alvan Wang (alvan.wang@roche.com)', 'Alvin Chen (alvin.chen.ac2@roche.com)', 'Alvin Hsiang (alvin.hsiang@roche.com)',
+            'Alyssa Chang (alyssa.chang@roche.com)', 'Amanda Wu (amanda.wu.aw2@roche.com)', 'Amy Hwang (amy.hwang@roche.com)',
+            'Anita Yu (anita.yu@roche.com)', 'Anna Ho (anna.ho@roche.com)', 'Anne Lee (anne.lee.al2@roche.com)',
+            'Annie Shih (annie.shih@roche.com)', 'Anson Chang (anson.chang@roche.com)', 'Ariel Hwang (ariel.hwang@roche.com)',
+            'Becky Fan (becky.fan@roche.com)', 'Benny Yu (benny.yu@roche.com)', 'Berlin Yeh (berlin.yeh@external.roche.com)',
+            'Brenda Ip (brenda.ip@roche.com)', 'Bruce Lee (bruce.lee.bl5@roche.com)', 'Bryan Lu (bryan.lu@roche.com)',
+            'Carol Chiang (carol.chiang@roche.com)', 'Castial Lee (castial.lee@roche.com)', 'Catherine Chang (catherine.chang.cc1@roche.com)',
+            'Chandra Chuang (chandra.chuang@roche.com)', 'Charis Shih (charis.shih@roche.com)', 'Charles Chou (charles.chou@roche.com)',
+            'Charlie Jiang (charlie.jiang@roche.com)', 'Chloe Tsai (chloe.tsai@roche.com)', 'Cholun Chang (cholun.chang@roche.com)',
+            'Chun Chen (chun.chen@external.roche.com)', 'Claire Hsu (claire.hsu.ch1@external.roche.com)', 'Corrine Wang (corrine.wang@roche.com)',
+            'Crystal Huang (crystal.huang.ch1@roche.com)', 'Crystal Lo (crystal.lo@external.roche.com)', 'Cynthia Lee (cynthia.lee.cl1@roche.com)',
+            'Danny Kuan (danny.kuan@roche.com)', 'Danny Lin (danny.lin@roche.com)', 'Darren Lin (darren.lin@roche.com)',
+            'David Liu (david.liu.dl5@roche.com)', 'Deniz Huang (deniz.huang@roche.com)', 'Eason Lee (eason.lee@roche.com)',
+            'Elaine Cheng (elaine.cheng@roche.com)', 'Elena Chen (elena.chen.ec2@external.roche.com)', 'Elis Kuan (elis.kuan@roche.com)',
+            'Elvis Shen (elvis.shen@roche.com)', 'Emily Chang (emily.chang.ec1@roche.com)', 'Emma Liu (emma.liu.el1@external.roche.com)',
+            'Eric Chen (eric.chen.ec1@roche.com)', 'Erika Chen (erika.chen@roche.com)', 'Ethan Chien (ethan.chien@roche.com)',
+            'Eva Yeh (eva.yeh@roche.com)', 'Felicity Chen (felicity.chen@roche.com)', 'Fenny Wu (fenny.wu@roche.com)',
+            'Fred Yu (fred.yu@roche.com)', 'Gallon Chang (gallon.chang@external.roche.com)', 'Gary Lee (gary.lee.gl3@roche.com)',
+            'Gina Liao (gina.liao@roche.com)', 'Giselle Huang (giselle.huang@roche.com)', 'grace...@roche.com (grace.fang@roche.com)',
+            'Hank Chi (hank.chi@roche.com)', 'Hank Su (hank.su@roche.com)', 'Hank Wu (hank.wu.hw1@roche.com)',
+            'Heather Hung (heather.hung@roche.com)', 'Henry Cheng (henry.cheng.hc1@roche.com)', 'Hilda Chang (hilda.chang@roche.com)',
+            'Irene Lee (irene.lee.il1@roche.com)', 'Irene Liao (irene.liao@roche.com)', 'Ivy Hsu (ivy.hsu.ih1@roche.com)',
+            'Jack Huang (jack.huang.jh2@roche.com)', 'Jackal Wang (jackal.wang@roche.com)', 'Jacky Kuo (jacky.kuo@roche.com)',
+            'Jacky Wang (jacky.wang.jw2@roche.com)', 'James Chiang (james.chiang@roche.com)', 'James Hsieh (james.hsieh@roche.com)',
+            'James Kuo (james.kuo@roche.com)', 'Jamie Chou (jamie.chou@external.roche.com)', 'Jamie Lin (jamie.lin@external.roche.com)',
+            'Jane Li (jane.li.jl2@roche.com)', 'Janet Tsai (janet.tsai@roche.com)', 'Jason Lee (jason.lee.jl2@roche.com)',
+            'Jay Liu (jay.liu@roche.com)', 'Jeff Yu (jeff.yu@roche.com)', 'Jeffrey Chung (jeffrey.chung@roche.com)',
+            'Jennifer Huang (jennifer.huang.jh2@roche.com)', 'Jenny Lai (jenny.lai@roche.com)', 'Jerome Yang (jerome.yang@roche.com)',
+            'Joan Yen (joan.yen@roche.com)', 'Joe Lin (joe.lin@roche.com)', 'Johan Chien (johan.chien@roche.com)',
+            'Jovi Chen (jovi.chen@roche.com)', 'Junet Choi (junet.choi@roche.com)', 'Just Shen (just.shen@roche.com)',
+            'Kan Shih (kan.shih@roche.com)', 'Kathleen Wang (kathleen.wang@roche.com)', 'Kevin Chang (kevin.chang.kc2@roche.com)',
+            'Kimberly Chen (kimberly.chen@external.roche.com)', 'Kite Yen (kite.yen@roche.com)', 'Kyle Hu (kyle.hu.kh1@roche.com)',
+            'Kyra Chiu (kyra.chiu@external.roche.com)', 'Latrell Xie (latrell.xie@roche.com)', 'Lauren Shih (lauren.shih@roche.com)',
+            'Lena Lan (lena.lan@roche.com)', 'Libra Lu (libra.lu@roche.com)', 'Lilian Li (lilian.li@external.roche.com)',
+            'Lily Huang (lily.huang.lh5@roche.com)', 'Louis Tseng (louis.tseng@roche.com)', 'Louise Yu (louise.yu@roche.com)',
+            'Maggie Wu (maggie.wu.mw2@roche.com)', 'Mandy Wu (mandy.wu@external.roche.com)', 'Menu Huang (menu.huang@external.roche.com)',
+            'Michelle Gui (michelle.gui@roche.com)', 'Mini Yang (mini.yang@roche.com)', 'Misty Huang (misty.huang@roche.com)',
+            'Nancy Lin (nancy.lin@roche.com)', 'Norman Chu (norman.chu@roche.com)', 'Oliver Chang (oliver.chang@roche.com)',
+            'Oona Kuo (oona.kuo@roche.com)', 'Pareto Liu (pareto.liu@external.roche.com)', 'Patty Chen (patty.chen@roche.com)',
+            'Paul Chang (paul.chang.pc3@roche.com)', 'Peggy Liu (peggy.liu@roche.com)', 'Peter Chen (peter.chen.pc2@roche.com)',
+            'Phil Chang (phil.chang@roche.com)', 'Ray Lin (ray.lin@external.roche.com)', 'Rebecca Liao (rebecca.liao@roche.com)',
+            'Renee Tol (renee.tol@external.roche.com)', 'Rex Ku (rex.ku@roche.com)', 'Rita Lee (rita.lee@external.roche.com)',
+            'Riyi Wu (riyi.wu@roche.com)', 'Rob Liu (rob.liu@roche.com)', 'Roy Chen (roy.chen.rc1@roche.com)',
+            'Ruby Chao (ruby.chao@external.roche.com)', 'Ryan Lin (ryan.lin.rl1@roche.com)', 'Sally Liu (sally.liu.sl2@roche.com)',
+            'Sally Tseng (sally.tseng.st1@external.roche.com)', 'Sam Wang (sam.wang@external.roche.com)', 'Samuel Li (samuel.li@roche.com)',
+            'Sandra Chu (sandra.chu@roche.com)', 'Sara Chen (sara.chen.sc1@roche.com)', 'Sasa Sha (sasa.sha@roche.com)',
+            'Sean Huang (sean.huang@roche.com)', 'Sean Tung (sean.tung@roche.com)', 'Sean Wang (sean.wang.sw4@roche.com)',
+            'Sherby Lin (sherby.lin@roche.com)', 'Shih-En Chang (shih-en.chang@roche.com)', 'Shiloh Yu (shiloh.yu@roche.com)',
+            'Simon Lin (simon.lin@roche.com)', 'Sophia Chao (sophia.chao@roche.com)', 'Soy Sun (soy.sun@roche.com)',
+            'Stacy Huang (stacy.huang@roche.com)', 'Stanley Lin (stanley.lin@roche.com)', 'Stanly BX Lin (stanly_bx.lin@roche.com)',
+            'Steven Chen (steven.chen@roche.com)', 'Steven Huang (steven.huang@roche.com)', 'Susan Liao (susan.liao@external.roche.com)',
+            'Ten Li (ten.li@roche.com)', 'Ting Zhan (ting.zhan@external.roche.com)', 'Tom Suen (tom.suen@roche.com)',
+            'Tony Huang (tony.huang.th1@roche.com)', 'Vanson Huang (vanson.huang@roche.com)', 'Vic Chen (vic.chen@roche.com)',
+            'Vivien Tan (vivien.tan.vt1@roche.com)', 'Wayne Lin (wayne.lin@roche.com)', 'Wendy Chen (wendy.chen@roche.com)',
+            'Wendy Huang (wendy.huang@roche.com)', 'Wendy PY Yu (wendy_py.yu@roche.com)', 'William Shen (william.shen.ws1@roche.com)',
+            'YaChu Chao (yachu.chao@roche.com)', 'Yi-Wen Chen (yi-wen.chen@roche.com)', 'Yifan Chen (yifan.chen.yc1@roche.com)',
+            'Yvonne Lee (yvonne.lee.yl5@roche.com)', 'Zach Wei (zach.wei@external.roche.com)', 'Zoe Chen (zoe.chen.zc2@roche.com)',
+            'allen.tsai (allen.tsai@roche.com)', 'amanda.liu (amanda.liu@roche.com)', 'astrid.yang (astrid.yang@roche.com)',
+            'cindy.huang.ch2 (cindy.huang.ch2@roche.com)', 'edward.kuo (edward.kuo@roche.com)', 'edward.tan (edward.tan@roche.com)',
+            'elin.shen (elin.shen@roche.com)', 'fanny.tseng (fanny.tseng@roche.com)', 'jack.chiu (jack.chiu@roche.com)',
+            'jeff.chen.jc2 (jeff.chen.jc2@roche.com)', 'jerry.lee (jerry.lee@roche.com)', 'jessie.tseng (jessie.tseng@roche.com)',
+            'joan.wu.jw1 (joanne.wu@roche.com)', 'lisa.tsai (lisa.tsai@roche.com)', 'mike.lin (mike.lin@roche.com)',
+            'olivia.chen (olivia.chen@roche.com)', 'raymond.hsieh (raymond.hsieh@roche.com)', 'stelly.tsai (stelly.tsai@roche.com)',
+            'taiwan.services-hotline (taiwan.services-hotline@roche.com)', 'tina.lin (tina.lin@roche.com)', 'tony.su (tony.su@roche.com)',
+            'wendy.wang (wendy.wang@roche.com)', 'yuehmei.chou (yuehmei.chou@roche.com)'
         ];
 
         // ================= Google 登入邏輯 =================
@@ -517,18 +375,16 @@
             }
         });
 
-        // ================= 音效與互動 =================
+        // ================= 音效與 UI 互動 =================
         let audioCtx;
         function playSound(type) {
             try {
                 if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
                 if (audioCtx.state === 'suspended') audioCtx.resume();
-                
                 const osc = audioCtx.createOscillator();
                 const gainNode = audioCtx.createGain();
                 osc.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
-
                 if (type === 'click') { 
                     osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime);
                     gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
@@ -545,7 +401,6 @@
         }
 
         const wall = document.getElementById('wall');
-
         const leaderboardBtn = document.getElementById('leaderboardBtn');
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         const closeLeaderboard = document.getElementById('closeLeaderboard');
@@ -573,7 +428,22 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
-        // ================= 內部通訊錄智慧選字邏輯 (限制顯示數量) =================
+        // ================= 隨機顏色設定 =================
+        const themeList = ['theme-classic', 'theme-midnight', 'theme-sage', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-lemon', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+        let currentTheme = themeList[Math.floor(Math.random() * themeList.length)];
+
+        document.querySelectorAll('.theme-btn').forEach(btn => {
+            if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active');
+            
+            btn.addEventListener('click', function() {
+                playSound('click');
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                currentTheme = this.getAttribute('data-theme');
+            });
+        });
+
+        // ================= 內部通訊錄智慧選字邏輯 =================
         const receiverInput = document.getElementById('receiverInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
@@ -594,7 +464,6 @@
                 return displayName.toLowerCase().includes(currentVal);
             });
             
-            // 👉 關鍵修改：當比對結果大於 0，且「少於或等於 6 筆」時才顯示下拉選單
             if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(item => {
                     const displayName = item.split(' (')[0];
@@ -622,7 +491,7 @@
             if(e.target !== receiverInput) autocompleteList.style.display = 'none';
         });
 
-        // 表情符號面板
+        // ================= 表情符號面板 =================
         const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
         const picker = document.getElementById('emojiPicker');
         const msgInput = document.getElementById('msgInput');
@@ -635,26 +504,6 @@
 
         document.getElementById('emojiBtn').addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('active'); playSound('click'); });
         picker.addEventListener('click', (e) => e.stopPropagation());
-
-        // ================= 隨機預設顏色主題邏輯 =================
-        const themeList = ['theme-classic', 'theme-midnight', 'theme-sage', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-lemon', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
-        let currentTheme = themeList[Math.floor(Math.random() * themeList.length)];
-
-        document.querySelectorAll('.theme-btn').forEach(btn => {
-            // 初始化套用隨機顏色
-            if (btn.getAttribute('data-theme') === currentTheme) {
-                btn.classList.add('active');
-            } else {
-                btn.classList.remove('active');
-            }
-            // 點擊事件
-            btn.addEventListener('click', function() {
-                playSound('click');
-                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                this.classList.add('active');
-                currentTheme = this.getAttribute('data-theme');
-            });
-        });
 
         // ================= 送出留言 =================
         document.getElementById('sendBtn').addEventListener('click', () => {
@@ -686,6 +535,8 @@
 
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
 
+        let systemSettings = { maxMessages: 50, retentionDays: 30 };
+
         onValue(ref(db, 'settings'), (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -697,6 +548,7 @@
             }
         });
 
+        // ================= 防彈裝甲：讀取留言與學習名單 =================
         let rawMessages = [];
         onValue(query(ref(db, 'messages')), (snapshot) => {
             rawMessages = [];
@@ -706,32 +558,40 @@
             defaultDirectory.forEach(name => companyDirectory.add(name));
 
             snapshot.forEach((child) => { 
-                const msg = { id: child.key, ...child.val() };
-                rawMessages.push(msg); 
-                
-                if (msg.author) companyDirectory.add(msg.author);
-                
-                let receiversList = [];
-                if (msg.receiver && msg.receiver !== '大家') {
-                    receiversList = msg.receiver.split(',').map(r => r.trim()).filter(r => r);
-                    receiversList.forEach(r => companyDirectory.add(r));
-                }
+                try {
+                    const msg = { id: child.key, ...child.val() };
+                    rawMessages.push(msg); 
+                    
+                    if (msg.author) companyDirectory.add(String(msg.author));
+                    
+                    let receiversList = [];
+                    if (msg.receiver && msg.receiver !== '大家') {
+                        receiversList = String(msg.receiver).split(',').map(r => r.trim()).filter(r => r);
+                        receiversList.forEach(r => companyDirectory.add(r));
+                    }
 
-                const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
-                if ((Date.now() - msg.timestamp) <= retentionMs) {
-                    if (msg.author) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
-                    receiversList.forEach(r => {
-                        leaderboardData.receivers[r] = (leaderboardData.receivers[r] || 0) + 1;
-                    });
+                    // 強制保護機制：避免後台設定為 0 或非數字導致全毀
+                    const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
+                    const retentionMs = safeDays * 24 * 60 * 60 * 1000;
+                    const msgTime = msg.timestamp || 0;
+
+                    if ((Date.now() - msgTime) <= retentionMs) {
+                        if (msg.author) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
+                        receiversList.forEach(r => {
+                            leaderboardData.receivers[r] = (leaderboardData.receivers[r] || 0) + 1;
+                        });
+                    }
+                } catch (e) {
+                    console.warn("跳過一筆格式損壞的歷史留言", e);
                 }
             });
-            rawMessages.sort((a, b) => b.timestamp - a.timestamp);
+            
+            rawMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
             renderWall();
             if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
         });
 
         function renderLeaderboard() {
-            // 👉 修改為 Top 10
             const getTop10 = (dataObj) => Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, 10);
             
             const topSenders = getTop10(leaderboardData.senders);
@@ -755,9 +615,16 @@
         function renderWall() {
             const wall = document.getElementById('wall');
             wall.innerHTML = '';
-            const now = Date.now();
-            const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
-            const validMessages = rawMessages.filter(msg => (now - msg.timestamp) <= retentionMs).slice(0, systemSettings.maxMessages);
+            
+            const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
+            const retentionMs = safeDays * 24 * 60 * 60 * 1000;
+            const safeMax = Math.max(parseInt(systemSettings.maxMessages) || 50, 1);
+
+            const validMessages = rawMessages.filter(msg => {
+                const msgTime = msg.timestamp || 0;
+                return (Date.now() - msgTime) <= retentionMs;
+            }).slice(0, safeMax);
+
             const total = validMessages.length;
             if (total === 0) return;
 
@@ -784,7 +651,8 @@
                 const card = document.createElement('div');
                 card.className = `message-card ${msg.theme || 'theme-classic'}`;
                 
-                const dateObj = new Date(msg.timestamp);
+                const msgTime = msg.timestamp || Date.now();
+                const dateObj = new Date(msgTime);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                 
                 const receiverHtml = msg.receiver ? `<div class="card-receiver">To: ${msg.receiver}</div>` : '';
@@ -793,7 +661,7 @@
                 card.innerHTML = `
                     ${receiverHtml}
                     <div class="card-text">${msg.text}</div>
-                    <div class="card-author">${avatarHtml} ${msg.author}</div>
+                    <div class="card-author">${avatarHtml} ${msg.author || '匿名'}</div>
                     <div class="card-date">${dateStr}</div>
                 `;
 
