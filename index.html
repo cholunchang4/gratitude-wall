@@ -22,20 +22,8 @@
             --icon-color: #333;
         }
 
-        /* 針對手機瀏覽器色塊問題進行滿版鎖死防護 */
-        html, body { 
-            margin: 0; padding: 0; 
-            width: 100%; height: 100%; 
-            overflow: hidden; 
-            background: var(--bg-gradient); 
-            overscroll-behavior: none; 
-        }
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            color: var(--text-main); 
-            display: flex; flex-direction: column; 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
-        }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); overscroll-behavior: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-main); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
 
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
@@ -56,7 +44,6 @@
         .icon-btn { background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .icon-btn:hover { transform: scale(1.1); }
 
-        /* ================= 卡片排版 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 15px 20px 22px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
@@ -65,7 +52,7 @@
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
             transition: opacity 0.5s, box-shadow 0.3s;
         }
-        .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); }
+        .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); z-index: 1900 !important; }
         .message-card.dragging { cursor: grabbing !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important; }
         .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
         @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } }
@@ -77,7 +64,6 @@
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
         .card-date { position: absolute; bottom: 6px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
 
-        /* ================= Modal 彈窗 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
         .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important; z-index: 2000 !important; animation: none !important; box-shadow: 0 25px 60px rgba(0,0,0,0.4); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; }
@@ -87,7 +73,6 @@
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 24px; background: none; border: none; cursor: pointer; color: #888; transition: 0.2s; }
         .close-btn:hover { color: #333; transform: scale(1.2); }
 
-        /* 英雄榜 */
         .board-container { display: flex; gap: 20px; margin-top: 20px; }
         .board-col { flex: 1; background: rgba(255,255,255,0.5); padding: 15px; border-radius: 16px; }
         .board-col h3 { text-align: center; margin-top: 0; color: #e63946; font-size: 18px; border-bottom: 2px dashed rgba(230, 57, 70, 0.2); padding-bottom: 10px; }
@@ -97,7 +82,6 @@
         .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
-        /* 繪圖板 UI */
         .draw-toolbar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 15px; }
         .tool-group { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #555; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: none; }
@@ -117,7 +101,6 @@
         .action-btn.primary { background: #d64966; color: #fff; }
         .action-btn.primary:hover { background: #bd3a54; }
 
-        /* 主題顏色 */
         .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
         .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; } .theme-midnight .card-receiver, .theme-midnight .card-author { color: #A0AEC0; }
         .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
@@ -129,7 +112,6 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
-        /* 輸入與選字單 */
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 1002; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -154,7 +136,6 @@
         .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; } .anon-label input { cursor: pointer; margin:0; }
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 100; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
-        /* ================= 手機版排版 ================= */
         @media (max-width: 768px) {
             .header-container { padding: 12px 25px; top: 20px; } #mainTitle { font-size: 28px; letter-spacing: 2px; } #subTitle { font-size: 14px; }
             .top-btn-group { top: 15px; right: 15px; } .icon-btn { padding: 8px; font-size: 16px; }
@@ -259,6 +240,9 @@
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
 
+        // 👉 自動色彩平衡：判斷是否為使用者手動點選
+        let themeManuallySelected = false;
+
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
             'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
@@ -361,9 +345,15 @@
 
         const themeList = ['theme-classic', 'theme-midnight', 'theme-sage', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-lemon', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
         let currentTheme = themeList[Math.floor(Math.random() * themeList.length)];
+        
         document.querySelectorAll('.theme-btn').forEach(btn => {
-            if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active');
-            btn.addEventListener('click', function() { playSound('click'); document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); this.classList.add('active'); currentTheme = this.getAttribute('data-theme'); });
+            btn.addEventListener('click', function() { 
+                playSound('click'); 
+                themeManuallySelected = true; // 👉 標記使用者已手動選色
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
+                this.classList.add('active'); 
+                currentTheme = this.getAttribute('data-theme'); 
+            });
         });
 
         const drawOverlay = document.getElementById('drawOverlay');
@@ -437,6 +427,10 @@
             if (text === '' && !attachedImageBase64) return;
             push(ref(db, 'messages'), { text: text, receiver: receiver, author: anonCheck.checked ? '匿名' : currentUser.displayName, authorPic: anonCheck.checked ? '' : currentUser.photoURL, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
+            
+            // 👉 送出後恢復自動選色模式
+            themeManuallySelected = false; 
+
             playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
         });
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
@@ -486,7 +480,29 @@
         function renderWall() {
             const wall = document.getElementById('wall'); wall.innerHTML = '';
             const validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000).slice(0, Math.max(parseInt(systemSettings.maxMessages) || 50, 1));
-            const total = validMessages.length; if (total === 0) return;
+            const total = validMessages.length; 
+            
+            // 👉 自動色彩平衡邏輯 (Auto-Balancer)
+            if (!themeManuallySelected && total > 0) {
+                const themeCounts = {};
+                themeList.forEach(t => themeCounts[t] = 0);
+                validMessages.forEach(msg => {
+                    const t = msg.theme || 'theme-classic';
+                    if (themeCounts[t] !== undefined) themeCounts[t]++;
+                });
+                const minCount = Math.min(...Object.values(themeCounts));
+                const leastUsedThemes = themeList.filter(t => themeCounts[t] === minCount);
+                // 從最少使用的顏色中隨機挑選一個
+                currentTheme = leastUsedThemes[Math.floor(Math.random() * leastUsedThemes.length)];
+                
+                // 更新 UI 上方的圓圈選取狀態
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active');
+                    else btn.classList.remove('active');
+                });
+            }
+
+            if (total === 0) return;
 
             const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth; const screenH = window.innerHeight;
