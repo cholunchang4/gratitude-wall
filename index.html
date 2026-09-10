@@ -43,12 +43,13 @@
         .top-btn-group { position: absolute; top: 25px; right: 25px; z-index: 1001; display: flex; gap: 10px; }
         .icon-btn { background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .icon-btn:hover { transform: scale(1.1); }
-        /* 篩選按鈕啟用時的樣式 */
         .icon-btn.active { background: #ffe4e1; border-color: #d64966; color: #d64966; }
 
+        /* ================= 卡片排版 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            padding: 15px 20px 22px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
+            /* 👉 修正：將下方的 padding 加大至 38px，給按讚跟日期留出絕對空間 */
+            padding: 15px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
@@ -62,18 +63,21 @@
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
-        .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 5px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
+        /* 👉 修正：加上 margin-top 給名字上方一點呼吸空間 */
+        .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
-        .card-date { position: absolute; bottom: 6px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
+        
+        /* 👉 修正：將日期稍微往上抬，並靠左對齊 */
+        .card-date { position: absolute; bottom: 10px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
 
         /* 按讚按鈕樣式 */
         .card-likes {
             position: absolute; bottom: 6px; right: 15px; font-size: 12px;
-            background: rgba(255,255,255,0.4); padding: 2px 8px; border-radius: 10px;
+            background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 12px;
             cursor: pointer; pointer-events: auto; transition: 0.2s; font-weight: bold; color: #888;
         }
-        .card-likes:hover { transform: scale(1.1); background: rgba(255,255,255,0.8); }
-        .card-likes.liked { color: #e63946; background: #ffe4e1; }
+        .card-likes:hover { transform: scale(1.1); background: rgba(255,255,255,0.9); }
+        .card-likes.liked { color: #e63946; background: #ffe4e1; box-shadow: 0 2px 5px rgba(230,57,70,0.2); }
 
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
@@ -150,7 +154,18 @@
         @media (max-width: 768px) {
             .header-container { padding: 12px 25px; top: 20px; } #mainTitle { font-size: 28px; letter-spacing: 2px; } #subTitle { font-size: 14px; }
             .top-btn-group { top: 15px; right: 15px; } .icon-btn { padding: 8px; font-size: 16px; }
-            .message-card { padding: 10px 12px 15px 12px; border-radius: 12px; } .card-text { font-size: 16px; margin-bottom: 8px; } .card-receiver { font-size: 13px; } .card-author { font-size: 11px; } .card-date { font-size: 9px; left: 10px; bottom: 5px; } .card-image { max-height: 140px; }
+            
+            /* 👉 手機版修正：加大下方 padding 至 34px，給按讚跟日期完整的空間 */
+            .message-card { padding: 10px 12px 34px 12px; border-radius: 12px; } 
+            .card-text { font-size: 16px; margin-bottom: 8px; } 
+            .card-receiver { font-size: 13px; } 
+            .card-author { font-size: 11px; margin-top: 4px; } 
+            
+            /* 👉 修正：按讚與日期的定位微調 */
+            .card-date { font-size: 9px; left: 12px; bottom: 8px; } 
+            .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
+            
+            .card-image { max-height: 140px; }
             .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; }
             .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
@@ -170,7 +185,6 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 頂端功能列更新：加入 篩選按鈕 與 匯出按鈕 -->
     <div class="top-btn-group">
         <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
         <button id="exportCsvBtn" class="icon-btn" title="匯出感謝資料 (HR專用)">📥</button>
@@ -246,7 +260,6 @@
     <div class="designer-signature">Designed & Developed by Cholun Chang</div>
 
     <script type="module">
-        // 👉 新增匯入 set 與 remove 函數，用於處理按讚功能
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, query, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
@@ -256,7 +269,7 @@
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
 
         let themeManuallySelected = false;
-        let isFilterMeOnly = false; // 👉 回憶篩選器狀態
+        let isFilterMeOnly = false; 
 
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
@@ -353,43 +366,21 @@
         document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
 
-        // 👉 功能 2：篩選器功能切換
         document.getElementById('filterMeBtn').addEventListener('click', function() {
             if (!currentUser) return alert('請先登入才能使用專屬回憶篩選喔！');
-            playSound('click');
-            isFilterMeOnly = !isFilterMeOnly;
-            this.classList.toggle('active', isFilterMeOnly);
-            renderWall();
+            playSound('click'); isFilterMeOnly = !isFilterMeOnly; this.classList.toggle('active', isFilterMeOnly); renderWall();
         });
 
-        // 👉 功能 4：匯出 CSV 報表
         document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            playSound('click');
-            if (rawMessages.length === 0) return alert('目前沒有任何留言資料可以匯出喔！');
-            
-            // 加上 \uFEFF 以防 Excel 開啟出現中文亂碼
+            playSound('click'); if (rawMessages.length === 0) return alert('目前沒有任何留言資料可以匯出喔！');
             let csvContent = '\uFEFF時間,發送者,接收者,佈景主題,獲得愛心數,留言內容\n';
-            
             rawMessages.forEach(msg => {
                 const dateObj = new Date(msg.timestamp || Date.now());
                 const dateStr = `${dateObj.getFullYear()}/${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-                
-                // 處理引號跳脫與格式
-                const author = `"${(msg.author || '匿名').replace(/"/g, '""')}"`;
-                const receiver = `"${(msg.receiver || '大家').replace(/"/g, '""')}"`;
-                const text = `"${(msg.text || '').replace(/"/g, '""')}"`;
-                const theme = msg.theme || '預設';
-                const likesCount = msg.likes ? Object.keys(msg.likes).length : 0;
-
+                const author = `"${(msg.author || '匿名').replace(/"/g, '""')}"`; const receiver = `"${(msg.receiver || '大家').replace(/"/g, '""')}"`; const text = `"${(msg.text || '').replace(/"/g, '""')}"`; const theme = msg.theme || '預設'; const likesCount = msg.likes ? Object.keys(msg.likes).length : 0;
                 csvContent += `${dateStr},${author},${receiver},${theme},${likesCount},${text}\n`;
             });
-            
-            // 使用 Blob 觸發下載
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `公司感謝牆匯出報表_${new Date().toISOString().slice(0,10)}.csv`;
-            link.click();
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `公司感謝牆匯出報表_${new Date().toISOString().slice(0,10)}.csv`; link.click();
         });
 
         const focusOverlay = document.getElementById('focusOverlay');
@@ -402,11 +393,9 @@
         
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', function() { 
-                playSound('click'); 
-                themeManuallySelected = true;
+                playSound('click'); themeManuallySelected = true;
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
-                this.classList.add('active'); 
-                currentTheme = this.getAttribute('data-theme'); 
+                this.classList.add('active'); currentTheme = this.getAttribute('data-theme'); 
             });
         });
 
@@ -530,14 +519,12 @@
 
         function renderWall() {
             const wall = document.getElementById('wall'); wall.innerHTML = '';
-            
             const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
             const retentionMs = safeDays * 24 * 60 * 60 * 1000;
             const safeMax = Math.max(parseInt(systemSettings.maxMessages) || 50, 1);
 
             let validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= retentionMs);
 
-            // 👉 功能 2：套用「只看與我相關」篩選邏輯
             if (isFilterMeOnly && currentUser) {
                 const currentName = currentUser.displayName.split(' (')[0];
                 validMessages = validMessages.filter(msg => {
@@ -549,7 +536,6 @@
             }
 
             validMessages = validMessages.slice(0, safeMax);
-
             const total = validMessages.length; 
             
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
@@ -585,7 +571,6 @@
                 const avatarHtml = msg.authorPic ? `<img src="${msg.authorPic}">` : '';
                 const attachedImgHtml = msg.image ? `<img src="${msg.image}" class="card-image" draggable="false">` : '';
 
-                // 👉 功能 1：渲染按讚按鈕與愛心數
                 const likesObj = msg.likes || {};
                 const likeCount = Object.keys(likesObj).length;
                 const hasLiked = currentUser && likesObj[currentUser.uid];
@@ -636,21 +621,16 @@
                 card.addEventListener('mousedown', (e) => handleDragStart(e, card));
                 card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
 
-                // 綁定按讚事件 (阻擋卡片聚焦放大)
                 const likeBtn = card.querySelector('.card-likes');
                 likeBtn.addEventListener('mousedown', (e) => e.stopPropagation());
                 likeBtn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
                 likeBtn.addEventListener('click', (e) => {
-                    e.stopPropagation(); // 防止點擊愛心時觸發卡片放大
+                    e.stopPropagation(); 
                     if (!currentUser) return alert('請先登入 Google 帳號才能按讚喔！');
                     playSound('click');
                     
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
-                    if (hasLiked) {
-                        remove(likeRef); // 取消讚
-                    } else {
-                        set(likeRef, true); // 按讚
-                    }
+                    if (hasLiked) remove(likeRef); else set(likeRef, true);
                 });
 
                 card.addEventListener('click', () => {
