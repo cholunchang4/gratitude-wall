@@ -48,7 +48,6 @@
         /* ================= 卡片排版 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            /* 👉 修正：將下方的 padding 加大至 38px，給按讚跟日期留出絕對空間 */
             padding: 15px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
@@ -63,14 +62,11 @@
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
-        /* 👉 修正：加上 margin-top 給名字上方一點呼吸空間 */
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
         
-        /* 👉 修正：將日期稍微往上抬，並靠左對齊 */
         .card-date { position: absolute; bottom: 10px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
 
-        /* 按讚按鈕樣式 */
         .card-likes {
             position: absolute; bottom: 6px; right: 15px; font-size: 12px;
             background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 12px;
@@ -152,16 +148,19 @@
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 100; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
         @media (max-width: 768px) {
-            .header-container { padding: 12px 25px; top: 20px; } #mainTitle { font-size: 28px; letter-spacing: 2px; } #subTitle { font-size: 14px; }
-            .top-btn-group { top: 15px; right: 15px; } .icon-btn { padding: 8px; font-size: 16px; }
+            /* 👉 修正標題與按鈕群組的距離，並將按鈕改為直向排列避免打架 */
+            .header-container { padding: 10px 20px; top: 15px; } 
+            #mainTitle { font-size: 24px; letter-spacing: 2px; } 
+            #subTitle { font-size: 12px; }
             
-            /* 👉 手機版修正：加大下方 padding 至 34px，給按讚跟日期完整的空間 */
+            .top-btn-group { top: 15px; right: 10px; flex-direction: column; gap: 8px; } 
+            .icon-btn { padding: 6px; font-size: 16px; }
+            
             .message-card { padding: 10px 12px 34px 12px; border-radius: 12px; } 
             .card-text { font-size: 16px; margin-bottom: 8px; } 
             .card-receiver { font-size: 13px; } 
             .card-author { font-size: 11px; margin-top: 4px; } 
             
-            /* 👉 修正：按讚與日期的定位微調 */
             .card-date { font-size: 9px; left: 12px; bottom: 8px; } 
             .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
             
@@ -185,9 +184,9 @@
         <p id="subTitle"></p>
     </div>
 
+    <!-- 👉 移除了匯出 CSV 按鈕 -->
     <div class="top-btn-group">
         <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
-        <button id="exportCsvBtn" class="icon-btn" title="匯出感謝資料 (HR專用)">📥</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
     </div>
     
@@ -369,18 +368,6 @@
         document.getElementById('filterMeBtn').addEventListener('click', function() {
             if (!currentUser) return alert('請先登入才能使用專屬回憶篩選喔！');
             playSound('click'); isFilterMeOnly = !isFilterMeOnly; this.classList.toggle('active', isFilterMeOnly); renderWall();
-        });
-
-        document.getElementById('exportCsvBtn').addEventListener('click', () => {
-            playSound('click'); if (rawMessages.length === 0) return alert('目前沒有任何留言資料可以匯出喔！');
-            let csvContent = '\uFEFF時間,發送者,接收者,佈景主題,獲得愛心數,留言內容\n';
-            rawMessages.forEach(msg => {
-                const dateObj = new Date(msg.timestamp || Date.now());
-                const dateStr = `${dateObj.getFullYear()}/${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-                const author = `"${(msg.author || '匿名').replace(/"/g, '""')}"`; const receiver = `"${(msg.receiver || '大家').replace(/"/g, '""')}"`; const text = `"${(msg.text || '').replace(/"/g, '""')}"`; const theme = msg.theme || '預設'; const likesCount = msg.likes ? Object.keys(msg.likes).length : 0;
-                csvContent += `${dateStr},${author},${receiver},${theme},${likesCount},${text}\n`;
-            });
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' }); const link = document.createElement("a"); link.href = URL.createObjectURL(blob); link.download = `公司感謝牆匯出報表_${new Date().toISOString().slice(0,10)}.csv`; link.click();
         });
 
         const focusOverlay = document.getElementById('focusOverlay');
