@@ -45,7 +45,7 @@
         .icon-btn:hover { transform: scale(1.1); }
         .icon-btn.active { background: #ffe4e1; border-color: #d64966; color: #d64966; }
 
-        /* ================= 卡片排版 ================= */
+        /* ================= 卡片排版與特效 ================= */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 15px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
@@ -59,18 +59,13 @@
         .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
         @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } }
 
-        /* 👉 人氣王專屬特效 */
+        /* 人氣王徽章特效 */
         .message-card.top-liked { border: 2px solid #ffd700; animation: goldenPulse 2s infinite alternate !important; }
-        @keyframes goldenPulse { 
-            0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 32px 0 rgba(0, 0, 0, 0.12); } 
-            100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 12px 40px rgba(0, 0, 0, 0.2); } 
-        }
-        .crown-badge {
-            position: absolute; top: -14px; right: -12px;
-            background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff;
-            padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px;
-            box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none;
-        }
+        @keyframes goldenPulse { 0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 32px 0 rgba(0, 0, 0, 0.12); } 100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 12px 40px rgba(0, 0, 0, 0.2); } }
+        .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
+        
+        /* 大師徽章特效 (50則解鎖) */
+        .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
@@ -79,14 +74,42 @@
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
         .card-date { position: absolute; bottom: 10px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
 
-        .card-likes {
-            position: absolute; bottom: 6px; right: 15px; font-size: 12px;
-            background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 12px;
-            cursor: pointer; pointer-events: auto; transition: 0.2s; font-weight: bold; color: #888;
-        }
+        .card-likes { position: absolute; bottom: 6px; right: 15px; font-size: 12px; background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 12px; cursor: pointer; pointer-events: auto; transition: 0.2s; font-weight: bold; color: #888; }
         .card-likes:hover { transform: scale(1.1); background: rgba(255,255,255,0.9); }
         .card-likes.liked { color: #e63946; background: #ffe4e1; box-shadow: 0 2px 5px rgba(230,57,70,0.2); }
 
+        /* ================= 佈景主題 ================= */
+        /* 基本款 1~9 */
+        .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
+        .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; } .theme-midnight .card-receiver, .theme-midnight .card-author { color: #A0AEC0; }
+        .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
+        .theme-wine { background: rgba(135, 50, 65, 0.88); border: 1px solid rgba(200, 100, 110, 0.7); color: #FFF0F2; } .theme-wine .card-receiver, .theme-wine .card-author { color: #FFB3C1; }
+        .theme-slate { background: rgba(226, 232, 240, 0.95); border: 1px solid rgba(255, 255, 255, 0.8); color: #2D3748; }
+        .theme-lavender { background: rgba(235, 225, 245, 0.92); border: 1px solid rgba(210, 190, 235, 0.9); color: #442966; }
+        .theme-lemon { background: rgba(255, 249, 215, 0.95); border: 1px solid rgba(245, 228, 153, 0.9); color: #78600C; }
+        .theme-matcha { background: rgba(235, 242, 222, 0.95); border: 1px solid rgba(200, 220, 170, 0.9); color: #455725; }
+        .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
+        .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
+
+        /* 🚀 傳說級專屬特效外觀 (60~100則解鎖) */
+        /* 60: 霓虹幻影 */
+        .theme-neon { background: rgba(15, 15, 20, 0.9); border: 2px solid #0ff; color: #fff; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3); text-shadow: 0 0 5px #0ff; }
+        .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f; text-shadow: 0 0 5px #f0f; }
+        /* 70: 極光玻璃 */
+        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8); box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37); color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .theme-holo .card-receiver, .theme-holo .card-author { color: #e0e0e0; text-shadow: none; }
+        /* 80: 璀璨鑽金 */
+        .theme-gold { background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%); border: 2px solid #d4af37; color: #f9f1d8; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2); }
+        .theme-gold .card-receiver, .theme-gold .card-author { color: #d4af37; }
+        /* 90: 星際宇宙 */
+        .theme-cosmic { background: radial-gradient(circle at top right, #2b1055, #000000); border: 1px solid #7b2cbf; color: #e0aaff; box-shadow: 0 0 25px rgba(123, 44, 191, 0.6); }
+        .theme-cosmic .card-receiver, .theme-cosmic .card-author { color: #9d4edd; }
+        /* 100: 傳說神話 */
+        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); background-size: 400%; animation: ultimateBg 8s linear infinite; color: #fff; border: 2px solid #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        @keyframes ultimateBg { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
+        .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
+        /* ================= Modal 彈窗 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
         .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important; z-index: 2000 !important; animation: none !important; box-shadow: 0 25px 60px rgba(0,0,0,0.4) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; }
@@ -105,6 +128,16 @@
         .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
+        /* ================= 升級慶祝 Modal ================= */
+        .levelUp-card { text-align: center; border: 3px solid #ffd700; background: radial-gradient(circle at center, #ffffff 0%, #fff0f5 100%); box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes modalPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .level-icon-wrapper { font-size: 56px; margin-bottom: 10px; animation: bounce 1.2s infinite alternate; }
+        @keyframes bounce { 0% { transform: translateY(0); } 100% { transform: translateY(-12px); } }
+        .feature-unlock-box { background: rgba(255, 255, 255, 0.8); border-radius: 16px; padding: 15px 20px; margin: 20px 0; border: 1px dashed #d64966; text-align: left; }
+        .feature-unlock-box h4 { margin: 0 0 8px 0; color: #e63946; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+        .feature-unlock-box p { margin: 0; font-size: 14px; color: #555; line-height: 1.5; }
+
+        /* 繪圖板 UI */
         .draw-toolbar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 15px; }
         .tool-group { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #555; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: none; }
@@ -124,17 +157,6 @@
         .action-btn.primary { background: #d64966; color: #fff; }
         .action-btn.primary:hover { background: #bd3a54; }
 
-        .theme-classic { background: rgba(255, 255, 255, 0.92); border: 1px solid rgba(255, 255, 255, 1); color: #333333; }
-        .theme-midnight { background: rgba(30, 35, 46, 0.88); border: 1px solid rgba(160, 174, 192, 0.4); color: #F7FAFC; } .theme-midnight .card-receiver, .theme-midnight .card-author { color: #A0AEC0; }
-        .theme-sage { background: rgba(215, 230, 218, 0.92); border: 1px solid rgba(170, 200, 175, 0.9); color: #274E37; }
-        .theme-wine { background: rgba(135, 50, 65, 0.88); border: 1px solid rgba(200, 100, 110, 0.7); color: #FFF0F2; } .theme-wine .card-receiver, .theme-wine .card-author { color: #FFB3C1; }
-        .theme-slate { background: rgba(226, 232, 240, 0.95); border: 1px solid rgba(255, 255, 255, 0.8); color: #2D3748; }
-        .theme-lavender { background: rgba(235, 225, 245, 0.92); border: 1px solid rgba(210, 190, 235, 0.9); color: #442966; }
-        .theme-lemon { background: rgba(255, 249, 215, 0.95); border: 1px solid rgba(245, 228, 153, 0.9); color: #78600C; }
-        .theme-matcha { background: rgba(235, 242, 222, 0.95); border: 1px solid rgba(200, 220, 170, 0.9); color: #455725; }
-        .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
-        .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
-
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 1002; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -147,10 +169,26 @@
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 3px; outline: none; transition: transform 0.2s; position: relative; } .emoji-btn:hover { transform: scale(1.1); }
         .image-indicator { position: absolute; top: -5px; right: -5px; background: #e63946; color: white; font-size: 10px; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
 
-        .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 12px; }
-        .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
-        .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; } .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
+        .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 8px; }
         
+        .level-status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 6px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); }
+        .level-title { color: #d64966; font-size: 13px; }
+        .level-hint { color: #888; font-size: 11px; }
+
+        .locked { opacity: 0.3 !important; cursor: not-allowed !important; position: relative; filter: grayscale(100%); pointer-events: auto; }
+        .locked::after { content: '🔒'; position: absolute; top: -8px; right: -8px; font-size: 12px; opacity: 1 !important; filter: none; }
+
+        .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
+        .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
+        .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
+        
+        /* 隱藏版主題選擇器按鈕樣式 */
+        .theme-neon { background: #0ff !important; border-color: #111 !important; }
+        .theme-holo { background: linear-gradient(135deg, #fff, #ccc) !important; }
+        .theme-gold { background: linear-gradient(135deg, #d4af37, #1c1c1c) !important; border-color: #d4af37 !important; }
+        .theme-cosmic { background: radial-gradient(circle, #7b2cbf, #000) !important; border-color: #e0aaff !important; }
+        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #fffb00, #002bff) !important; border-color: #fff !important; }
+
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -163,7 +201,6 @@
             .header-container { padding: 10px 20px; top: 15px; } 
             #mainTitle { font-size: 24px; letter-spacing: 2px; } 
             #subTitle { font-size: 12px; }
-            
             .top-btn-group { top: 15px; right: 10px; flex-direction: column; gap: 8px; } 
             .icon-btn { padding: 6px; font-size: 16px; }
             
@@ -171,7 +208,6 @@
             .card-text { font-size: 16px; margin-bottom: 8px; } 
             .card-receiver { font-size: 13px; } 
             .card-author { font-size: 11px; margin-top: 4px; } 
-            
             .card-date { font-size: 9px; left: 12px; bottom: 8px; } 
             .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
             
@@ -180,7 +216,7 @@
             .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
             .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
-            .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } .theme-selector { flex-wrap: nowrap; gap: 6px; } .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
+            .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } .theme-selector { flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;} .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
             .designer-signature { bottom: 6px; right: 50%; transform: translateX(50%); font-size: 10px; padding: 4px 10px; white-space: nowrap; background: transparent; border: none; box-shadow: none; }
         }
     </style>
@@ -202,6 +238,7 @@
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
+    <!-- 英雄榜 Modal -->
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="modal-box">
             <button class="close-btn" id="closeLeaderboard">✖</button>
@@ -219,6 +256,23 @@
         </div>
     </div>
 
+    <!-- 升級慶祝 Modal -->
+    <div class="focus-overlay" id="levelUpOverlay">
+        <div class="modal-box levelUp-card">
+            <div class="level-icon-wrapper" id="levelUpIcon">🎉</div>
+            <h2 style="margin:0; color:#d64966; font-size:26px;">🎉 里程碑突破！🎉</h2>
+            <p style="font-size:16px; font-weight:bold; color:#777; margin:5px 0;" id="levelUpBadge">獲得稱號：🌷 Lv.3 溫暖園丁</p>
+            
+            <div class="feature-unlock-box">
+                <h4 id="levelUpFeatureTitle">🔓 新功能解鎖</h4>
+                <p id="levelUpFeatureDesc">詳細介紹...</p>
+            </div>
+
+            <button id="closeLevelUpBtn" class="action-btn primary" style="padding:12px 35px; font-size:16px;">🚀 太棒了，立即體驗！</button>
+        </div>
+    </div>
+
+    <!-- 繪圖 Modal -->
     <div class="focus-overlay" id="drawOverlay">
         <div class="modal-box draw-modal" style="text-align: center;">
             <h3 style="margin-top:0; color:#d64966;">🎨 手寫 / 塗鴉 / 上傳圖片</h3>
@@ -233,8 +287,8 @@
                 <canvas id="bgCanvas" width="800" height="500" class="layer-canvas"></canvas>
                 <canvas id="drawCanvas" width="800" height="500" class="layer-canvas"></canvas>
             </div>
-            <div class="draw-actions">
-                <label class="action-btn">📷 上傳照片 / 插入圖片<input type="file" id="uploadImgInput" accept="image/*" style="display:none;"></label>
+            <div class="draw-actions" id="uploadActionWrapper">
+                <label class="action-btn" id="uploadImgLabel">📷 上傳照片 / 圖片<input type="file" id="uploadImgInput" accept="image/*" style="display:none;"></label>
                 <button id="saveDrawBtn" class="action-btn primary">✅ 完成繪圖</button>
                 <button id="cancelDrawBtn" class="action-btn">✖ 取消</button>
             </div>
@@ -251,17 +305,39 @@
             </button>
         </div>
         <div id="inputPanel" style="display: none; width: 100%;">
+            <div class="level-status-bar" id="levelStatusBar" style="display: none;">
+                <span id="levelTitle" class="level-title">🌱 新手幼苗</span>
+                <span id="levelHint" class="level-hint">差 1 則解鎖按讚與表情</span>
+            </div>
+
             <div class="theme-selector" id="themeSelector">
-                <div class="theme-btn" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div><div class="theme-btn" data-theme="theme-midnight" style="background: #1e232e;" title="星空黑"></div><div class="theme-btn" data-theme="theme-sage" style="background: #d7e6da;" title="鼠尾草綠"></div><div class="theme-btn" data-theme="theme-wine" style="background: #873241;" title="勃根地紅"></div><div class="theme-btn" data-theme="theme-slate" style="background: #e2e8f0;" title="迷霧灰"></div><div class="theme-btn" data-theme="theme-lavender" style="background: #ebe1f5;" title="薰衣草紫"></div><div class="theme-btn" data-theme="theme-lemon" style="background: #fff9d7;" title="檸檬霜"></div><div class="theme-btn" data-theme="theme-matcha" style="background: #ebf2de;" title="抹茶青"></div><div class="theme-btn" data-theme="theme-terracotta" style="background: #d27355;" title="陶土橘"></div><div class="theme-btn" data-theme="theme-ice" style="background: #e0f2fe;" title="冰川藍"></div>
+                <!-- 基礎 3 色 -->
+                <div class="theme-btn" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
+                <div class="theme-btn" data-theme="theme-sage" style="background: #d7e6da;" title="鼠尾草綠"></div>
+                <div class="theme-btn" data-theme="theme-lemon" style="background: #fff9d7;" title="檸檬霜"></div>
+                <!-- 10色 (Lv.4) -->
+                <div class="theme-btn" data-theme="theme-midnight" style="background: #1e232e;" title="星空黑"></div>
+                <div class="theme-btn" data-theme="theme-wine" style="background: #873241;" title="勃根地紅"></div>
+                <div class="theme-btn" data-theme="theme-slate" style="background: #e2e8f0;" title="迷霧灰"></div>
+                <div class="theme-btn" data-theme="theme-lavender" style="background: #ebe1f5;" title="薰衣草紫"></div>
+                <div class="theme-btn" data-theme="theme-matcha" style="background: #ebf2de;" title="抹茶青"></div>
+                <div class="theme-btn" data-theme="theme-terracotta" style="background: #d27355;" title="陶土橘"></div>
+                <div class="theme-btn" data-theme="theme-ice" style="background: #e0f2fe;" title="冰川藍"></div>
+                <!-- 🌟 傳說外觀 (Lv.10 ~ Lv.14) -->
+                <div class="theme-btn theme-neon" data-theme="theme-neon" title="Lv.10 解鎖：霓虹幻影"></div>
+                <div class="theme-btn theme-holo" data-theme="theme-holo" title="Lv.11 解鎖：極光玻璃"></div>
+                <div class="theme-btn theme-gold" data-theme="theme-gold" title="Lv.12 解鎖：璀璨鑽金"></div>
+                <div class="theme-btn theme-cosmic" data-theme="theme-cosmic" title="Lv.13 解鎖：星際宇宙"></div>
+                <div class="theme-btn theme-ultimate" data-theme="theme-ultimate" title="Lv.14 解鎖：傳說神話"></div>
             </div>
             <div class="input-container">
                 <img id="userAvatar" class="user-avatar" src="" title="點擊登出">
                 <div class="emoji-picker" id="emojiPicker"></div>
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
-                <button id="openDrawBtn" class="emoji-btn" title="附圖/手寫">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
-                <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="可以輸入多人，系統會自動加逗號"><div id="autocompleteList" class="autocomplete-list"></div></div>
-                <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝內容..." autocomplete="off">
-                <label class="anon-label" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
+                <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
+                <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字"><div id="autocompleteList" class="autocomplete-list"></div></div>
+                <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20">
+                <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
                 <button id="sendBtn" class="send-btn">送出</button>
             </div>
         </div>
@@ -275,7 +351,13 @@
         import { firebaseConfig } from './config.js'; 
 
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
+        
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
+
+        // 👉 遊戲化系統全域變數
+        let userLevel = 1;
+        let userLifetimeMessageCount = 0;
+        let dragWarned = false; 
 
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
@@ -353,9 +435,19 @@
 
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
+        
         onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; renderWall(); } 
-            else { currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; isFilterMeOnly = false; document.getElementById('filterMeBtn').classList.remove('active'); renderWall(); }
+            if (user) { 
+                currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; 
+                updateUserLevelUI(); 
+                renderWall(); 
+            } 
+            else { 
+                currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; 
+                isFilterMeOnly = false; document.getElementById('filterMeBtn').classList.remove('active'); 
+                updateUserLevelUI(); 
+                renderWall(); 
+            }
         });
 
         let audioCtx;
@@ -365,15 +457,36 @@
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
                 osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-                if (type === 'click') { osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); osc.start(); osc.stop(audioCtx.currentTime + 0.05); } 
-                else if (type === 'send') { osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3); }
+                
+                if (type === 'click') { 
+                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); osc.start(); osc.stop(audioCtx.currentTime + 0.05);
+                } else if (type === 'send') { 
+                    osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
+                } else if (type === 'levelup') {
+                    const now = audioCtx.currentTime; const notes = [523.25, 659.25, 783.99, 1046.50]; 
+                    notes.forEach((freq, idx) => {
+                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'sine'; o.frequency.setValueAtTime(freq, now + idx * 0.1); g.gain.setValueAtTime(0.15, now + idx * 0.1); g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
+                        o.start(now + idx * 0.1); o.stop(now + idx * 0.1 + 0.3);
+                    });
+                }
             } catch(e) {}
+        }
+
+        function triggerLevelUpCelebration() {
+            playSound('levelup');
+            const count = 250; const defaults = { origin: { y: 0.7 } };
+            function fire(ratio, opts) { confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * ratio) })); }
+            fire(0.25, { spread: 26, startVelocity: 55 }); fire(0.2, { spread: 60 }); fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 }); fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 }); fire(0.1, { spread: 120, startVelocity: 45 });
         }
 
         const wall = document.getElementById('wall');
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
+
+        const levelUpOverlay = document.getElementById('levelUpOverlay');
+        document.getElementById('closeLevelUpBtn').addEventListener('click', () => { playSound('click'); levelUpOverlay.classList.remove('active'); });
 
         document.getElementById('filterMeBtn').addEventListener('click', function() {
             if (!currentUser) return alert('請先登入才能使用專屬回憶篩選喔！');
@@ -385,16 +498,139 @@
         function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
-        const themeList = ['theme-classic', 'theme-midnight', 'theme-sage', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-lemon', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
-        let currentTheme = themeList[Math.floor(Math.random() * themeList.length)];
+        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+        let currentTheme = themeList[0];
         
-        document.querySelectorAll('.theme-btn').forEach(btn => {
+        document.querySelectorAll('.theme-btn').forEach((btn, idx) => {
             btn.addEventListener('click', function() { 
+                if (this.classList.contains('locked')) {
+                    playSound('click');
+                    if (idx >= 14) return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
+                    if (idx >= 13) return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
+                    if (idx >= 12) return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
+                    if (idx >= 11) return alert('🔮 極光玻璃模板需要「Lv.11 極光幻境 (70則留言)」才能解鎖！');
+                    if (idx >= 10) return alert('🪩 霓虹幻影模板需要「Lv.10 霓虹幻影 (60則留言)」才能解鎖！');
+                    return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖全彩顏色喔！');
+                }
                 playSound('click'); themeManuallySelected = true;
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
                 this.classList.add('active'); currentTheme = this.getAttribute('data-theme'); 
             });
         });
+
+        // ================= 🕹️ 14 階職涯系統邏輯與 UI 更新 =================
+        function updateUserLevelUI() {
+            if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
+
+            userLifetimeMessageCount = rawMessages.filter(m => m.author === currentUser.displayName).length;
+            
+            let title = '', msg = '', badge = '', icon = '', featureTitle = '', featureDesc = '', maxLength = 20;
+
+            if (userLifetimeMessageCount >= 100) {
+                userLevel = 14; title = '🦄 Lv.14 傳說之神'; msg = '所有外觀與功能皆已解鎖！'; maxLength = 1000;
+                badge = '🦄 Lv.14 傳說之神'; icon = '🔥'; featureTitle = '🔓 最終解鎖：🦄 傳說神話動態模板！'; featureDesc = '太神啦！你已解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！';
+            } else if (userLifetimeMessageCount >= 90) {
+                userLevel = 13; title = '🌌 Lv.13 星際領航'; msg = `差 ${100 - userLifetimeMessageCount} 則解鎖「傳說神話」`; maxLength = 1000;
+                badge = '🌌 Lv.13 星際領航'; icon = '🚀'; featureTitle = '🔓 解鎖：🌌 星際宇宙光暈模板！'; featureDesc = '你的感謝超越了地球！現已解鎖深紫色的星雲漸層與光暈外框。';
+            } else if (userLifetimeMessageCount >= 80) {
+                userLevel = 12; title = '👑 Lv.12 璀璨鑽金'; msg = `差 ${90 - userLifetimeMessageCount} 則解鎖「星際宇宙」`; maxLength = 1000;
+                badge = '👑 Lv.12 璀璨鑽金'; icon = '💎'; featureTitle = '🔓 解鎖：👑 璀璨鑽金尊爵模板！'; featureDesc = '尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！';
+            } else if (userLifetimeMessageCount >= 70) {
+                userLevel = 11; title = '🔮 Lv.11 極光幻境'; msg = `差 ${80 - userLifetimeMessageCount} 則解鎖「璀璨鑽金」`; maxLength = 1000;
+                badge = '🔮 Lv.11 極光幻境'; icon = '✨'; featureTitle = '🔓 解鎖：🔮 極光毛玻璃特效模板！'; featureDesc = '質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。';
+            } else if (userLifetimeMessageCount >= 60) {
+                userLevel = 10; title = '🪩 Lv.10 霓虹幻影'; msg = `差 ${70 - userLifetimeMessageCount} 則解鎖「極光幻境」`; maxLength = 1000;
+                badge = '🪩 Lv.10 霓虹幻影'; icon = '🎸'; featureTitle = '🔓 解鎖：🪩 賽博龐克霓虹模板！'; featureDesc = '打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。';
+            } else if (userLifetimeMessageCount >= 50) {
+                userLevel = 9; title = '🎖️ Lv.9 榮耀大師'; msg = `差 ${60 - userLifetimeMessageCount} 則解鎖「霓虹幻影」`; maxLength = 1000;
+                badge = '🎖️ Lv.9 榮耀大師'; icon = '👑'; featureTitle = '🔓 解鎖：🎖️ 專屬大師徽章！'; featureDesc = '最高榮譽！你發布的卡片將永久獲得專屬的「🏅 感謝大師徽章」特權！';
+            } else if (userLifetimeMessageCount >= 40) {
+                userLevel = 8; title = '📷 Lv.8 攝影大師'; msg = `差 ${50 - userLifetimeMessageCount} 則解鎖「大師徽章」`; maxLength = 500;
+                badge = '📷 Lv.8 攝影大師'; icon = '📸'; featureTitle = '🔓 解鎖：📷 插入照片與實體圖片！'; featureDesc = '圖文並茂的時代來了！現在你可以在手繪畫布中直接上傳照片！';
+            } else if (userLifetimeMessageCount >= 30) {
+                userLevel = 7; title = '🕵️‍♂️ Lv.7 藏鏡天使'; msg = `差 ${40 - userLifetimeMessageCount} 則解鎖「照片上傳」`; maxLength = 200;
+                badge = '🕵️‍♂️ Lv.7 藏鏡天使'; icon = '🤫'; featureTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; featureDesc = '字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！';
+            } else if (userLifetimeMessageCount >= 20) {
+                userLevel = 6; title = '🎨 Lv.6 塗鴉畫家'; msg = `差 ${30 - userLifetimeMessageCount} 則解鎖「匿名功能」`; maxLength = 50;
+                badge = '🎨 Lv.6 塗鴉畫家'; icon = '🖌️'; featureTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; featureDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕即可開啟全螢幕塗鴉畫布！';
+            } else if (userLifetimeMessageCount >= 15) {
+                userLevel = 5; title = '🗣️ Lv.5 感謝達人'; msg = `差 ${20 - userLifetimeMessageCount} 則解鎖「手繪功能」`; maxLength = 50;
+                badge = '🗣️ Lv.5 感謝達人'; icon = '👥'; featureTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; featureDesc = '感謝不只一個人？現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號標記整個團隊！';
+            } else if (userLifetimeMessageCount >= 10) {
+                userLevel = 4; title = '🌈 Lv.4 色彩魔術師'; msg = `差 ${15 - userLifetimeMessageCount} 則解鎖「多人標記」`; maxLength = 50;
+                badge = '🌈 Lv.4 色彩魔術師'; icon = '🌈'; featureTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; featureDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得豐富的中階表情符號！';
+            } else if (userLifetimeMessageCount >= 5) {
+                userLevel = 3; title = '🌷 Lv.3 溫暖園丁'; msg = `差 ${10 - userLifetimeMessageCount} 則解鎖「全彩主題」`; maxLength = 50;
+                badge = '🌷 Lv.3 溫暖園丁'; icon = '🖐️'; featureTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; featureDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！';
+            } else if (userLifetimeMessageCount >= 1) {
+                userLevel = 2; title = '🍀 Lv.2 熱心路人'; msg = `差 ${5 - userLifetimeMessageCount} 則解鎖「卡片拖曳」`; maxLength = 20;
+                badge = '🍀 Lv.2 熱心路人'; icon = '👍'; featureTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; featureDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉表情了！';
+            } else {
+                userLevel = 1; title = '🌱 Lv.1 新手幼苗'; msg = `發送第 1 則解鎖「按讚與表情」`; maxLength = 20;
+            }
+
+            const msgInput = document.getElementById('msgInput');
+            msgInput.maxLength = maxLength;
+            msgInput.placeholder = `寫下感謝內容... (上限 ${maxLength} 字)`;
+
+            document.getElementById('levelStatusBar').style.display = 'flex';
+            document.getElementById('levelTitle').innerText = `${title} (已送出 ${userLifetimeMessageCount} 則)`;
+            document.getElementById('levelHint').innerText = msg;
+
+            const storageKey = `seen_level_v14_${currentUser.uid}`;
+            const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
+
+            if (userLevel > seenLevel) {
+                document.getElementById('levelUpIcon').innerText = icon; document.getElementById('levelUpBadge').innerText = `獲得稱號：${badge}`;
+                document.getElementById('levelUpFeatureTitle').innerText = featureTitle; document.getElementById('levelUpFeatureDesc').innerText = featureDesc;
+                levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
+                localStorage.setItem(storageKey, userLevel.toString());
+            }
+
+            // UI 上鎖處理
+            document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
+            document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
+                if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); // Base 10 colors
+                else if (userLevel < 10 && idx === 10) btn.classList.add('locked'); // Neon
+                else if (userLevel < 11 && idx === 11) btn.classList.add('locked'); // Holo
+                else if (userLevel < 12 && idx === 12) btn.classList.add('locked'); // Gold
+                else if (userLevel < 13 && idx === 13) btn.classList.add('locked'); // Cosmic
+                else if (userLevel < 14 && idx === 14) btn.classList.add('locked'); // Ultimate
+                else btn.classList.remove('locked');
+            });
+            document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
+            document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
+            document.getElementById('anonCheck').disabled = userLevel < 7;
+            document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
+            
+            renderEmojis();
+        }
+
+        // 👉 動態表情符號渲染
+        const emojiFullList = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
+        const emojiBasicList = ['😀','😂','🥰','🙏','👍','💪','🎉','❤️'];
+        const emojiMidList = [...emojiBasicList, '🤣','🥲','😊','😎','🤩','🥳','🤔','👏','🙌','🤝','🔥','✨','💯','💡','🍰','☕','🎁','🎈','🏆','🌟','🚀','💼','💻','🎵'];
+        const picker = document.getElementById('emojiPicker'); const msgInput = document.getElementById('msgInput');
+        
+        function renderEmojis() {
+            picker.innerHTML = '';
+            let currentList = emojiBasicList;
+            if (userLevel >= 7) currentList = emojiFullList;
+            else if (userLevel >= 4) currentList = emojiMidList;
+
+            currentList.forEach(e => { 
+                const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; 
+                span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; 
+                picker.appendChild(span); 
+            });
+        }
+
+        document.getElementById('emojiBtn').addEventListener('click', (e) => { 
+            e.stopPropagation(); 
+            if (userLevel < 2) { playSound('click'); return alert('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
+            picker.classList.toggle('active'); playSound('click'); 
+        }); 
+        picker.addEventListener('click', (e) => e.stopPropagation());
 
         const drawOverlay = document.getElementById('drawOverlay');
         const bgCanvas = document.getElementById('bgCanvas'); const bgCtx = bgCanvas.getContext('2d');
@@ -408,7 +644,10 @@
         function updateToolUI(id) { document.getElementById('modePenBtn').classList.remove('active'); document.getElementById('modeEraserBtn').classList.remove('active'); document.getElementById(id).classList.add('active'); }
         function clearAllCanvas() { ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); attachedImageBase64 = null; document.getElementById('imgCheck').style.display = 'none'; }
         
-        document.getElementById('openDrawBtn').addEventListener('click', () => { playSound('click'); drawOverlay.classList.add('active'); });
+        document.getElementById('openDrawBtn').addEventListener('click', function() { 
+            if (this.classList.contains('locked')) { playSound('click'); return alert('🎨 手繪塗鴉需要達到「Lv.6 塗鴉畫家 (20則留言)」才能解鎖喔！\n快去多寫幾張感謝卡吧！'); }
+            playSound('click'); drawOverlay.classList.add('active'); 
+        });
         document.getElementById('cancelDrawBtn').addEventListener('click', () => { playSound('click'); drawOverlay.classList.remove('active'); if (!attachedImageBase64) clearAllCanvas(); });
         document.getElementById('clearDrawBtn').addEventListener('click', () => { playSound('click'); clearAllCanvas(); });
 
@@ -426,6 +665,10 @@
         drawCanvas.addEventListener('mousedown', startDraw); drawCanvas.addEventListener('mousemove', draw); drawCanvas.addEventListener('mouseup', endDraw); drawCanvas.addEventListener('mouseleave', endDraw);
         drawCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawCanvas.addEventListener('touchmove', draw, {passive: false}); drawCanvas.addEventListener('touchend', endDraw);
 
+        document.getElementById('uploadImgInput').addEventListener('click', function(e) {
+            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 攝影大師 (40則留言)」才能解鎖喔！'); }
+        });
+
         document.getElementById('uploadImgInput').addEventListener('change', function(e){
             const file = e.target.files[0]; if(!file) return;
             const reader = new FileReader();
@@ -441,25 +684,28 @@
 
         const receiverInput = document.getElementById('receiverInput'); const autocompleteList = document.getElementById('autocompleteList');
         receiverInput.addEventListener('input', () => {
+            if (userLevel < 5 && receiverInput.value.includes(',')) {
+                receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click');
+                alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
+            }
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
             const matches = Array.from(companyDirectory).filter(item => item.split(' (')[0].toLowerCase().includes(currentVal));
             if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(item => {
                     const div = document.createElement('div'); div.className = 'autocomplete-item'; div.innerText = item.split(' (')[0]; 
-                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(item.split(' (')[0]); receiverInput.value = cleanParts.join(', ') + ', '; autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
+                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(item.split(' (')[0]); receiverInput.value = cleanParts.join(', ') + (userLevel>=5 ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
                     autocompleteList.appendChild(div);
                 }); autocompleteList.style.display = 'flex';
             } else { autocompleteList.style.display = 'none'; }
         });
         document.addEventListener('click', (e) => { if(e.target !== receiverInput) autocompleteList.style.display = 'none'; });
 
-        const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
-        const picker = document.getElementById('emojiPicker'); const msgInput = document.getElementById('msgInput');
-        emojis.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; picker.appendChild(span); });
-        document.getElementById('emojiBtn').addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('active'); playSound('click'); }); picker.addEventListener('click', (e) => e.stopPropagation());
-
         const anonCheck = document.getElementById('anonCheck');
+        document.getElementById('anonWrapper').addEventListener('click', function(e) {
+            if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
+        });
+
         document.getElementById('sendBtn').addEventListener('click', () => {
             if (!currentUser) return alert("請先登入 Google 帳號！");
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '') || '大家';
@@ -470,20 +716,25 @@
             const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
             const finalAuthorPic = isAnon ? '' : currentUser.photoURL;
 
-            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
+            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: userLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
             
             themeManuallySelected = false; 
-
             playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
         });
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
 
         let systemSettings = { maxMessages: 50, retentionDays: 30 };
+        let rawMessages = []; 
+
         onValue(ref(db, 'settings'), (snapshot) => { const data = snapshot.val(); if (data) { document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; systemSettings.maxMessages = data.maxMessages || 50; systemSettings.retentionDays = data.retentionDays || 30; renderWall(); } });
 
-        let rawMessages = []; let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; let highestZ = 100;
+        let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; let highestZ = 100;
         function handleDragStart(e, card) {
+            if (userLevel < 3) {
+                if (!dragWarned && currentUser) { alert('🖐️ 達到「Lv.3 溫暖園丁 (5則留言)」就能解鎖自由拖曳功能喔！'); dragWarned = true; }
+                return;
+            }
             if (card.classList.contains('focused')) return;
             activeDragCard = card; cardHasMoved = false;
             dragStartX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX; dragStartY = e.type.includes('mouse') ? e.clientY : e.touches[0].clientY;
@@ -508,7 +759,8 @@
                     }
                 } catch (e) {}
             });
-            rawMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); renderWall(); if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
+            rawMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+            updateUserLevelUI(); renderWall(); if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
         });
 
         function renderLeaderboard() {
@@ -543,12 +795,18 @@
 
             const total = validMessages.length; 
             
+            // 👉 自動色彩平衡不含傳說主題 (只取前 10 個)
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
-                const themeCounts = {}; themeList.forEach(t => themeCounts[t] = 0);
-                validMessages.forEach(msg => { const t = msg.theme || 'theme-classic'; if (themeCounts[t] !== undefined) themeCounts[t]++; });
+                const availableThemes = userLevel >= 4 ? themeList : themeList.slice(0, 3);
+                const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
+                validMessages.forEach(msg => { 
+                    // 如果抽到傳說主題，不列入一般平衡計算
+                    if(availableThemes.includes(msg.theme)) themeCounts[msg.theme]++; 
+                });
                 const minCount = Math.min(...Object.values(themeCounts));
-                const leastUsedThemes = themeList.filter(t => themeCounts[t] === minCount);
-                currentTheme = leastUsedThemes[Math.floor(Math.random() * leastUsedThemes.length)];
+                const leastUsedThemes = availableThemes.filter(t => themeCounts[t] === minCount);
+                currentTheme = leastUsedThemes[Math.floor(Math.random() * leastUsedThemes.length)] || 'theme-classic';
+                
                 document.querySelectorAll('.theme-btn').forEach(btn => {
                     if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active'); else btn.classList.remove('active');
                 });
@@ -559,7 +817,6 @@
                 return;
             }
 
-            // 👉 計算所有卡片中的「最高讚數」 (用於觸發人氣王特效)
             let maxLikes = 0;
             validMessages.forEach(msg => {
                 const c = msg.likes ? Object.keys(msg.likes).length : 0;
@@ -579,12 +836,14 @@
                 const likeCount = Object.keys(likesObj).length;
                 const hasLiked = currentUser && likesObj[currentUser.uid];
                 
-                // 👉 判斷此卡片是否為人氣王 (讚數等於最高且大於0)
                 const isTopLiked = (likeCount === maxLikes && maxLikes > 0);
                 const crownHtml = isTopLiked ? '<div class="crown-badge">👑 人氣王</div>' : '';
+                
+                // 👉 判斷大師徽章 (作者發文時達到 Lv.9 以上)
+                const isMaster = (msg.authorLevel >= 9 && msg.author !== '匿名');
+                const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
                 const card = document.createElement('div'); 
-                // 將 top-liked 樣式加進 class 裡
                 card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
                 
                 const dateObj = new Date(msg.timestamp || Date.now());
@@ -599,6 +858,7 @@
                 const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="${tooltipText}">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
 
                 card.innerHTML = `
+                    ${masterHtml}
                     ${crownHtml}
                     ${receiverHtml}
                     ${attachedImgHtml}
@@ -650,8 +910,12 @@
                 likeBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); 
                     if (!currentUser) return alert('請先登入 Google 帳號才能按讚喔！');
-                    playSound('click');
                     
+                    if (userLevel < 2) {
+                        playSound('click'); return alert('👍 按讚功能需要達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖喔！趕快發布你的第一張感謝卡吧！');
+                    }
+                    
+                    playSound('click');
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
                     if (hasLiked) remove(likeRef); else set(likeRef, currentUser.displayName);
                 });
