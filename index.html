@@ -22,7 +22,21 @@
             --icon-color: #333;
         }
 
-        body { margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg-gradient); color: var(--text-main); height: 100vh; overflow: hidden; display: flex; flex-direction: column; }
+        /* 針對手機瀏覽器色塊問題進行滿版鎖死防護 */
+        html, body { 
+            margin: 0; padding: 0; 
+            width: 100%; height: 100%; 
+            overflow: hidden; 
+            background: var(--bg-gradient); 
+            overscroll-behavior: none; /* 防止手機下拉時出現橡皮筋露底色 */
+        }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            color: var(--text-main); 
+            display: flex; flex-direction: column; 
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 徹底鎖死邊界，防止 iOS Safari 產生右側/下方色塊 */
+        }
+
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
@@ -36,7 +50,8 @@
         #mainTitle { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 4px; background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 2px 2px rgba(230, 57, 70, 0.15)); }
         #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
 
-        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; }
+        /* 加入 overflow: hidden 避免卡片撐破牆面邊界 */
+        #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; overflow: hidden; }
 
         .top-btn-group { position: absolute; top: 25px; right: 25px; z-index: 1001; display: flex; gap: 10px; }
         .icon-btn { background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
@@ -477,17 +492,15 @@
             const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth; const screenH = window.innerHeight;
             
-            // 👉 關鍵修改：取消中心聚集演算法，改用純隨機大範圍散佈
-            const sideLimit = isMobile ? 15 : 30; // 邊界放寬，讓卡片更貼近左右
-            const topLimit = isMobile ? 120 : 130; // 讓上方空間更多被利用
+            const sideLimit = isMobile ? 15 : 30; 
+            const topLimit = isMobile ? 120 : 130; 
             const bottomLimit = isMobile ? 180 : 160; 
             
-            // 縮小卡片比例，避免少量卡片互相遮擋
             let richnessScale = total <= 5 ? 1.1 : (total <= 15 ? 1.0 : 0.85);
             const mobileScaleDown = isMobile ? 0.6 : 1.0; 
             const placedRects = [];
             
-            const overlapAllowance = 30; // 允許一點點自然的重疊交錯
+            const overlapAllowance = 30; 
 
             validMessages.forEach((msg, index) => {
                 const card = document.createElement('div'); card.className = `message-card ${msg.theme || 'theme-classic'}`;
@@ -512,7 +525,6 @@
                 const cardW = card.offsetWidth * scale; const cardH = card.offsetHeight * scale;
                 let placedX = screenW / 2, placedY = screenH / 2, foundSpot = false;
                 
-                // 👉 關鍵修改：全螢幕盲測隨機放置，不再侷限於中心
                 for (let attempt = 0; attempt < 200; attempt++) {
                     const testX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
                     const testY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
@@ -527,7 +539,6 @@
                     if (!hasCollision) { placedX = testX; placedY = testY; foundSpot = true; break; }
                 }
 
-                // 如果真的太滿找不到空位，就硬塞在隨機位置
                 if (!foundSpot) { 
                     placedX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
                     placedY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
