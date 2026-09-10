@@ -43,6 +43,8 @@
         .top-btn-group { position: absolute; top: 25px; right: 25px; z-index: 1001; display: flex; gap: 10px; }
         .icon-btn { background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .icon-btn:hover { transform: scale(1.1); }
+        /* 篩選按鈕啟用時的樣式 */
+        .icon-btn.active { background: #ffe4e1; border-color: #d64966; color: #d64966; }
 
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
@@ -63,6 +65,15 @@
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 5px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
         .card-date { position: absolute; bottom: 6px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
+
+        /* 按讚按鈕樣式 */
+        .card-likes {
+            position: absolute; bottom: 6px; right: 15px; font-size: 12px;
+            background: rgba(255,255,255,0.4); padding: 2px 8px; border-radius: 10px;
+            cursor: pointer; pointer-events: auto; transition: 0.2s; font-weight: bold; color: #888;
+        }
+        .card-likes:hover { transform: scale(1.1); background: rgba(255,255,255,0.8); }
+        .card-likes.liked { color: #e63946; background: #ffe4e1; }
 
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
@@ -159,7 +170,10 @@
         <p id="subTitle"></p>
     </div>
 
+    <!-- 頂端功能列更新：加入 篩選按鈕 與 匯出按鈕 -->
     <div class="top-btn-group">
+        <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
+        <button id="exportCsvBtn" class="icon-btn" title="匯出感謝資料 (HR專用)">📥</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
     </div>
     
@@ -232,16 +246,17 @@
     <div class="designer-signature">Designed & Developed by Cholun Chang</div>
 
     <script type="module">
+        // 👉 新增匯入 set 與 remove 函數，用於處理按讚功能
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
+        import { getDatabase, ref, push, onValue, query, set, remove } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         import { firebaseConfig } from './config.js'; 
 
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
 
-        // 👉 自動色彩平衡：判斷是否為使用者手動點選
         let themeManuallySelected = false;
+        let isFilterMeOnly = false; // 👉 回憶篩選器狀態
 
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
@@ -317,8 +332,8 @@
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
         onAuthStateChanged(auth, (user) => {
-            if (user) { currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; } 
-            else { currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; }
+            if (user) { currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; renderWall(); } 
+            else { currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; isFilterMeOnly = false; document.getElementById('filterMeBtn').classList.remove('active'); renderWall(); }
         });
 
         let audioCtx;
@@ -338,6 +353,45 @@
         document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
 
+        // 👉 功能 2：篩選器功能切換
+        document.getElementById('filterMeBtn').addEventListener('click', function() {
+            if (!currentUser) return alert('請先登入才能使用專屬回憶篩選喔！');
+            playSound('click');
+            isFilterMeOnly = !isFilterMeOnly;
+            this.classList.toggle('active', isFilterMeOnly);
+            renderWall();
+        });
+
+        // 👉 功能 4：匯出 CSV 報表
+        document.getElementById('exportCsvBtn').addEventListener('click', () => {
+            playSound('click');
+            if (rawMessages.length === 0) return alert('目前沒有任何留言資料可以匯出喔！');
+            
+            // 加上 \uFEFF 以防 Excel 開啟出現中文亂碼
+            let csvContent = '\uFEFF時間,發送者,接收者,佈景主題,獲得愛心數,留言內容\n';
+            
+            rawMessages.forEach(msg => {
+                const dateObj = new Date(msg.timestamp || Date.now());
+                const dateStr = `${dateObj.getFullYear()}/${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+                
+                // 處理引號跳脫與格式
+                const author = `"${(msg.author || '匿名').replace(/"/g, '""')}"`;
+                const receiver = `"${(msg.receiver || '大家').replace(/"/g, '""')}"`;
+                const text = `"${(msg.text || '').replace(/"/g, '""')}"`;
+                const theme = msg.theme || '預設';
+                const likesCount = msg.likes ? Object.keys(msg.likes).length : 0;
+
+                csvContent += `${dateStr},${author},${receiver},${theme},${likesCount},${text}\n`;
+            });
+            
+            // 使用 Blob 觸發下載
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = `公司感謝牆匯出報表_${new Date().toISOString().slice(0,10)}.csv`;
+            link.click();
+        });
+
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
         function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); currentFocusedCard = null; playSound('click'); } }
@@ -349,7 +403,7 @@
         document.querySelectorAll('.theme-btn').forEach(btn => {
             btn.addEventListener('click', function() { 
                 playSound('click'); 
-                themeManuallySelected = true; // 👉 標記使用者已手動選色
+                themeManuallySelected = true;
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
                 this.classList.add('active'); 
                 currentTheme = this.getAttribute('data-theme'); 
@@ -427,10 +481,7 @@
             if (text === '' && !attachedImageBase64) return;
             push(ref(db, 'messages'), { text: text, receiver: receiver, author: anonCheck.checked ? '匿名' : currentUser.displayName, authorPic: anonCheck.checked ? '' : currentUser.photoURL, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
-            
-            // 👉 送出後恢復自動選色模式
             themeManuallySelected = false; 
-
             playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
         });
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
@@ -479,42 +530,50 @@
 
         function renderWall() {
             const wall = document.getElementById('wall'); wall.innerHTML = '';
-            const validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000).slice(0, Math.max(parseInt(systemSettings.maxMessages) || 50, 1));
-            const total = validMessages.length; 
             
-            // 👉 自動色彩平衡邏輯 (Auto-Balancer)
-            if (!themeManuallySelected && total > 0) {
-                const themeCounts = {};
-                themeList.forEach(t => themeCounts[t] = 0);
-                validMessages.forEach(msg => {
-                    const t = msg.theme || 'theme-classic';
-                    if (themeCounts[t] !== undefined) themeCounts[t]++;
-                });
-                const minCount = Math.min(...Object.values(themeCounts));
-                const leastUsedThemes = themeList.filter(t => themeCounts[t] === minCount);
-                // 從最少使用的顏色中隨機挑選一個
-                currentTheme = leastUsedThemes[Math.floor(Math.random() * leastUsedThemes.length)];
-                
-                // 更新 UI 上方的圓圈選取狀態
-                document.querySelectorAll('.theme-btn').forEach(btn => {
-                    if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active');
-                    else btn.classList.remove('active');
+            const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
+            const retentionMs = safeDays * 24 * 60 * 60 * 1000;
+            const safeMax = Math.max(parseInt(systemSettings.maxMessages) || 50, 1);
+
+            let validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= retentionMs);
+
+            // 👉 功能 2：套用「只看與我相關」篩選邏輯
+            if (isFilterMeOnly && currentUser) {
+                const currentName = currentUser.displayName.split(' (')[0];
+                validMessages = validMessages.filter(msg => {
+                    const isSender = (msg.author === currentUser.displayName);
+                    let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
+                    const isReceiver = receiversList.includes(currentName) || receiversList.includes(currentUser.displayName);
+                    return isSender || isReceiver;
                 });
             }
 
-            if (total === 0) return;
+            validMessages = validMessages.slice(0, safeMax);
+
+            const total = validMessages.length; 
+            
+            if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
+                const themeCounts = {}; themeList.forEach(t => themeCounts[t] = 0);
+                validMessages.forEach(msg => { const t = msg.theme || 'theme-classic'; if (themeCounts[t] !== undefined) themeCounts[t]++; });
+                const minCount = Math.min(...Object.values(themeCounts));
+                const leastUsedThemes = themeList.filter(t => themeCounts[t] === minCount);
+                currentTheme = leastUsedThemes[Math.floor(Math.random() * leastUsedThemes.length)];
+                document.querySelectorAll('.theme-btn').forEach(btn => {
+                    if (btn.getAttribute('data-theme') === currentTheme) btn.classList.add('active'); else btn.classList.remove('active');
+                });
+            }
+
+            if (total === 0) {
+                if (isFilterMeOnly) wall.innerHTML = '<h3 style="color:#d64966; text-align:center; margin-top:20vh;">目前還沒有與你相關的感謝喔，<br>快去寫一張送給同事吧！</h3>';
+                return;
+            }
 
             const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth; const screenH = window.innerHeight;
-            
-            const sideLimit = isMobile ? 15 : 30; 
-            const topLimit = isMobile ? 120 : 130; 
-            const bottomLimit = isMobile ? 180 : 160; 
-            
+            const sideLimit = isMobile ? 15 : 30; const topLimit = isMobile ? 120 : 130; const bottomLimit = isMobile ? 180 : 160; 
             let richnessScale = total <= 5 ? 1.1 : (total <= 15 ? 1.0 : 0.85);
             const mobileScaleDown = isMobile ? 0.6 : 1.0; 
             const placedRects = [];
-            
             const overlapAllowance = 30; 
 
             validMessages.forEach((msg, index) => {
@@ -522,12 +581,23 @@
                 const dateObj = new Date(msg.timestamp || Date.now());
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                 
+                const receiverHtml = msg.receiver ? `<div class="card-receiver">To: ${msg.receiver}</div>` : '';
+                const avatarHtml = msg.authorPic ? `<img src="${msg.authorPic}">` : '';
+                const attachedImgHtml = msg.image ? `<img src="${msg.image}" class="card-image" draggable="false">` : '';
+
+                // 👉 功能 1：渲染按讚按鈕與愛心數
+                const likesObj = msg.likes || {};
+                const likeCount = Object.keys(likesObj).length;
+                const hasLiked = currentUser && likesObj[currentUser.uid];
+                const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="按讚">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
+
                 card.innerHTML = `
-                    ${msg.receiver ? `<div class="card-receiver">To: ${msg.receiver}</div>` : ''}
-                    ${msg.image ? `<img src="${msg.image}" class="card-image" draggable="false">` : ''}
+                    ${receiverHtml}
+                    ${attachedImgHtml}
                     <div class="card-text">${msg.text}</div>
-                    <div class="card-author">${msg.authorPic ? `<img src="${msg.authorPic}">` : ''} ${msg.author || '匿名'}</div>
+                    <div class="card-author">${avatarHtml} ${msg.author || '匿名'}</div>
                     <div class="card-date">${dateStr}</div>
+                    ${heartHtml}
                 `;
 
                 const scale = (1.5 - ((total > 1 ? index / (total - 1) : 0) * 0.9)) * richnessScale * mobileScaleDown;
@@ -543,7 +613,6 @@
                 for (let attempt = 0; attempt < 200; attempt++) {
                     const testX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
                     const testY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
-                    
                     let hasCollision = false;
                     for (let rect of placedRects) {
                         if (Math.abs(testX - rect.x) < (cardW + rect.w) / 2 - overlapAllowance && 
@@ -566,6 +635,23 @@
 
                 card.addEventListener('mousedown', (e) => handleDragStart(e, card));
                 card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
+
+                // 綁定按讚事件 (阻擋卡片聚焦放大)
+                const likeBtn = card.querySelector('.card-likes');
+                likeBtn.addEventListener('mousedown', (e) => e.stopPropagation());
+                likeBtn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
+                likeBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // 防止點擊愛心時觸發卡片放大
+                    if (!currentUser) return alert('請先登入 Google 帳號才能按讚喔！');
+                    playSound('click');
+                    
+                    const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
+                    if (hasLiked) {
+                        remove(likeRef); // 取消讚
+                    } else {
+                        set(likeRef, true); // 按讚
+                    }
+                });
 
                 card.addEventListener('click', () => {
                     if (cardHasMoved) { cardHasMoved = false; return; }
