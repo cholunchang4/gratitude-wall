@@ -74,7 +74,7 @@
         }
 
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; }
-        .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; }
+        .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; }
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 5px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; }
         .card-date { position: absolute; bottom: 6px; left: 15px; font-size: 10px; opacity: 0.5; }
@@ -131,7 +131,7 @@
             background: var(--panel-bg); backdrop-filter: blur(10px);
             border: 1px solid var(--card-border); border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px;
-            overflow-y: auto; z-index: 1002; width: 220px; display: none; flex-direction: column; padding: 5px;
+            overflow-y: auto; z-index: 1002; width: 180px; display: none; flex-direction: column; padding: 5px;
         }
         .autocomplete-list::-webkit-scrollbar { width: 4px; }
         .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
@@ -156,7 +156,8 @@
         
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
-        .input-receiver { width: 140px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; }
+        /* 放寬接收者欄位，並加上 ellipsis 以防名字太長 */
+        .input-receiver { width: 160px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); }
         .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 24px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 8px; }
@@ -256,7 +257,7 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 
                 <div class="receiver-wrapper">
-                    <input type="text" id="receiverInput" class="input-receiver" placeholder="@感謝誰？" autocomplete="off">
+                    <input type="text" id="receiverInput" class="input-receiver" placeholder="@感謝誰？" autocomplete="off" title="可以輸入多人，系統會自動加逗號">
                     <div id="autocompleteList" class="autocomplete-list"></div>
                 </div>
                 
@@ -284,7 +285,6 @@
         let leaderboardData = { senders: {}, receivers: {} };
         let companyDirectory = new Set(); 
 
-        // ================= 剛剛從 Excel 萃取的 200 人完整名單 =================
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)',
             'Alex Yang (alex.yang.ay2@roche.com)',
@@ -581,30 +581,45 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
-        // ================= 內部通訊錄智慧選字邏輯 =================
+        // ================= 內部通訊錄智慧選字邏輯 (支援多人且無Email) =================
         const receiverInput = document.getElementById('receiverInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
         receiverInput.addEventListener('input', () => {
-            const val = receiverInput.value.trim().toLowerCase();
+            const fullVal = receiverInput.value;
+            const parts = fullVal.split(','); // 用逗號拆分字串，允許多人
+            const currentVal = parts[parts.length - 1].trim().toLowerCase(); // 只抓最後一個正在打的名字
+            
             autocompleteList.innerHTML = '';
             
-            if (!val) {
+            if (!currentVal) {
                 autocompleteList.style.display = 'none';
                 return;
             }
 
-            const matches = Array.from(companyDirectory).filter(name => name.toLowerCase().includes(val));
+            const matches = Array.from(companyDirectory).filter(item => {
+                const displayName = item.split(' (')[0];
+                return displayName.toLowerCase().includes(currentVal);
+            });
             
             if (matches.length > 0) {
-                matches.forEach(name => {
+                matches.forEach(item => {
+                    // 只萃取出名字部分，不要 Email
+                    const displayName = item.split(' (')[0];
+                    
                     const div = document.createElement('div');
                     div.className = 'autocomplete-item';
-                    div.innerText = name;
+                    div.innerText = displayName; 
+                    
                     div.onclick = () => {
-                        // 點擊後，只保留名字部分，去掉 Email
-                        receiverInput.value = name.split(' (')[0];
+                        // 替換掉最後一個未完成的名字，保留前面已經選好的
+                        const cleanParts = parts.slice(0, -1).map(p => p.trim());
+                        cleanParts.push(displayName);
+                        
+                        // 自動加上逗號和空白，方便使用者繼續輸入下一個
+                        receiverInput.value = cleanParts.join(', ') + ', '; 
                         autocompleteList.style.display = 'none';
+                        receiverInput.focus();
                         playSound('click');
                     };
                     autocompleteList.appendChild(div);
@@ -645,11 +660,15 @@
             });
         });
 
-        // 送出留言
+        // ================= 送出留言邏輯 (支援多人計分) =================
         document.getElementById('sendBtn').addEventListener('click', () => {
             if (!currentUser) return alert("請先登入 Google 帳號！");
             
-            const receiver = receiverInput.value.trim() || '大家';
+            let receiver = receiverInput.value.trim();
+            // 自動清掉最後一筆不小心留下來的逗號
+            receiver = receiver.replace(/,\s*$/, '');
+            if (!receiver) receiver = '大家';
+            
             const text = msgInput.value.trim();
             if (text === '') return;
 
@@ -689,7 +708,6 @@
             leaderboardData = { senders: {}, receivers: {} };
             companyDirectory.clear(); 
 
-            // ================= 載入預設名單 =================
             defaultDirectory.forEach(name => companyDirectory.add(name));
 
             snapshot.forEach((child) => { 
@@ -697,12 +715,23 @@
                 rawMessages.push(msg); 
                 
                 if (msg.author) companyDirectory.add(msg.author);
-                if (msg.receiver && msg.receiver !== '大家') companyDirectory.add(msg.receiver);
+                
+                // 處理多人被感謝的字串
+                let receiversList = [];
+                if (msg.receiver && msg.receiver !== '大家') {
+                    // 把名字用逗號切開，分別存進名單裡
+                    receiversList = msg.receiver.split(',').map(r => r.trim()).filter(r => r);
+                    receiversList.forEach(r => companyDirectory.add(r));
+                }
 
                 const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
                 if ((Date.now() - msg.timestamp) <= retentionMs) {
                     if (msg.author) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
-                    if (msg.receiver && msg.receiver !== '大家') leaderboardData.receivers[msg.receiver] = (leaderboardData.receivers[msg.receiver] || 0) + 1;
+                    
+                    // 讓每一位被標記的同事都能獨立獲得 1 分！
+                    receiversList.forEach(r => {
+                        leaderboardData.receivers[r] = (leaderboardData.receivers[r] || 0) + 1;
+                    });
                 }
             });
             rawMessages.sort((a, b) => b.timestamp - a.timestamp);
