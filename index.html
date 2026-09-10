@@ -107,7 +107,7 @@
         .board-col ul { list-style: none; padding: 0; margin: 0; }
         .board-col li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; font-weight: 600; }
         .board-col li span.count { background: #ffe4e1; color: #d64966; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        .board-col li:first-child { color: #d4af37; font-size: 17px; } /* 第一名加上土豪金 */
+        .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
         /* ================= 10 款高對比獨立風格模板 ================= */
@@ -124,6 +124,20 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; }
         .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
+
+        /* ================= 智慧選字下拉選單 ================= */
+        .receiver-wrapper { position: relative; display: flex; align-items: center; }
+        .autocomplete-list {
+            position: absolute; bottom: calc(100% + 10px); left: 0;
+            background: var(--panel-bg); backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border); border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px;
+            overflow-y: auto; z-index: 1002; width: 140px; display: none; flex-direction: column; padding: 5px;
+        }
+        .autocomplete-list::-webkit-scrollbar { width: 4px; }
+        .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .autocomplete-item:hover { background: rgba(230,57,70,0.1); color: #e63946; }
 
         /* 輸入區塊與表情面板 */
         .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 100; }
@@ -160,7 +174,10 @@
             .icon-btn { padding: 8px; font-size: 16px; }
             .message-card.focused { transform: translate(-50%, -50%) scale(1.2) rotate(0deg) !important; width: 85%; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; }
-            .input-receiver { width: calc(50% - 30px); } 
+            
+            .receiver-wrapper { width: calc(50% - 30px); }
+            .input-receiver { width: 100%; } 
+            
             .input-msg { width: 100%; flex: none; margin-top: 5px; padding: 10px; background: var(--name-bg); border-radius: 15px;}
             .send-btn { width: 100%; margin-top: 5px; }
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } 
@@ -190,7 +207,7 @@
     <!-- 聚焦模式與英雄榜的背景遮罩 -->
     <div class="focus-overlay" id="focusOverlay"></div>
 
-    <!-- 英雄榜 Modal (預設隱藏) -->
+    <!-- 英雄榜 Modal -->
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="leaderboard-modal">
             <button class="close-btn" id="closeLeaderboard">✖</button>
@@ -219,7 +236,7 @@
             </button>
         </div>
 
-        <!-- 已登入介面 (預設隱藏) -->
+        <!-- 已登入介面 -->
         <div id="inputPanel" style="display: none; width: 100%;">
             <div class="theme-selector" id="themeSelector">
                 <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
@@ -237,8 +254,13 @@
                 <img id="userAvatar" class="user-avatar" src="" title="點擊登出">
                 <div class="emoji-picker" id="emojiPicker"></div>
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
-                <!-- 新增：被感謝者欄位 -->
-                <input type="text" id="receiverInput" class="input-receiver" placeholder="@感謝誰？" autocomplete="off">
+                
+                <!-- 修改為包含下拉選單的結構 -->
+                <div class="receiver-wrapper">
+                    <input type="text" id="receiverInput" class="input-receiver" placeholder="@感謝誰？" autocomplete="off">
+                    <div id="autocompleteList" class="autocomplete-list"></div>
+                </div>
+                
                 <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝內容..." autocomplete="off">
                 <button id="sendBtn" class="send-btn">送出</button>
             </div>
@@ -251,7 +273,6 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getDatabase, ref, push, onValue, query } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-database.js";
-        // 匯入 Authentication 模組
         import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
         
         import { firebaseConfig } from './config.js'; 
@@ -261,9 +282,9 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // 登入狀態變數
         let currentUser = null;
         let leaderboardData = { senders: {}, receivers: {} };
+        let companyDirectory = new Set(); // 內部通訊錄字典
 
         // ================= Google 登入邏輯 =================
         const loginPanel = document.getElementById('loginPanel');
@@ -294,7 +315,7 @@
             }
         });
 
-        // ================= 音效與 UI 互動 =================
+        // ================= 音效與互動 =================
         let audioCtx;
         function playSound(type) {
             try {
@@ -318,10 +339,9 @@
                     gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3);
                     osc.start(); osc.stop(audioCtx.currentTime + 0.3);
                 }
-            } catch(e) { console.log('Audio disabled'); }
+            } catch(e) {}
         }
 
-        // 雙重視角切換
         const wall = document.getElementById('wall');
         const viewToggleBtn = document.getElementById('viewToggleBtn');
         let isListMode = false;
@@ -332,7 +352,6 @@
             viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; 
         });
 
-        // 英雄榜顯示邏輯
         const leaderboardBtn = document.getElementById('leaderboardBtn');
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         const closeLeaderboard = document.getElementById('closeLeaderboard');
@@ -347,7 +366,6 @@
             leaderboardOverlay.classList.remove('active');
         });
 
-        // 卡片聚焦邏輯
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
 
@@ -361,6 +379,45 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
+        // ================= 內部通訊錄智慧選字邏輯 =================
+        const receiverInput = document.getElementById('receiverInput');
+        const autocompleteList = document.getElementById('autocompleteList');
+
+        receiverInput.addEventListener('input', () => {
+            const val = receiverInput.value.trim().toLowerCase();
+            autocompleteList.innerHTML = '';
+            
+            if (!val) {
+                autocompleteList.style.display = 'none';
+                return;
+            }
+
+            // 從自動學習的字典中比對輸入的文字
+            const matches = Array.from(companyDirectory).filter(name => name.toLowerCase().includes(val));
+            
+            if (matches.length > 0) {
+                matches.forEach(name => {
+                    const div = document.createElement('div');
+                    div.className = 'autocomplete-item';
+                    div.innerText = name;
+                    div.onclick = () => {
+                        receiverInput.value = name;
+                        autocompleteList.style.display = 'none';
+                        playSound('click');
+                    };
+                    autocompleteList.appendChild(div);
+                });
+                autocompleteList.style.display = 'flex';
+            } else {
+                autocompleteList.style.display = 'none';
+            }
+        });
+
+        // 點擊外面時隱藏選單
+        document.addEventListener('click', (e) => {
+            if(e.target !== receiverInput) autocompleteList.style.display = 'none';
+        });
+
         // 表情符號面板
         const emojis = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
         const picker = document.getElementById('emojiPicker');
@@ -373,7 +430,6 @@
         });
 
         document.getElementById('emojiBtn').addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('active'); playSound('click'); });
-        document.addEventListener('click', () => picker.classList.remove('active'));
         picker.addEventListener('click', (e) => e.stopPropagation());
 
         let currentTheme = 'theme-classic';
@@ -392,11 +448,10 @@
         document.getElementById('sendBtn').addEventListener('click', () => {
             if (!currentUser) return alert("請先登入 Google 帳號！");
             
-            const receiver = document.getElementById('receiverInput').value.trim() || '大家';
+            const receiver = receiverInput.value.trim() || '大家';
             const text = msgInput.value.trim();
             if (text === '') return;
 
-            // 儲存進資料庫：包含發送者真名、大頭貼、接收者
             push(ref(db, 'messages'), { 
                 text: text, 
                 receiver: receiver,
@@ -407,7 +462,8 @@
             });
             
             msgInput.value = '';
-            document.getElementById('receiverInput').value = '';
+            receiverInput.value = '';
+            autocompleteList.style.display = 'none';
 
             playSound('send');
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
@@ -429,14 +485,17 @@
         let rawMessages = [];
         onValue(query(ref(db, 'messages')), (snapshot) => {
             rawMessages = [];
-            // 重置英雄榜計算
             leaderboardData = { senders: {}, receivers: {} };
+            companyDirectory.clear(); // 清空通訊錄，準備重新學習
 
             snapshot.forEach((child) => { 
                 const msg = { id: child.key, ...child.val() };
                 rawMessages.push(msg); 
                 
-                // 計算英雄榜次數 (只計算有效期限內的留言)
+                // 自動將名字加入內部字典
+                if (msg.author) companyDirectory.add(msg.author);
+                if (msg.receiver && msg.receiver !== '大家') companyDirectory.add(msg.receiver);
+
                 const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
                 if ((Date.now() - msg.timestamp) <= retentionMs) {
                     if (msg.author) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
@@ -445,11 +504,9 @@
             });
             rawMessages.sort((a, b) => b.timestamp - a.timestamp);
             renderWall();
-            // 如果英雄榜正開著，即時更新
             if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
         });
 
-        // 渲染英雄榜畫面
         function renderLeaderboard() {
             const getTop5 = (dataObj) => Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, 5);
             
@@ -506,7 +563,6 @@
                 const dateObj = new Date(msg.timestamp);
                 const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
                 
-                // 新增：顯示對象、顯示大頭貼
                 const receiverHtml = msg.receiver ? `<div class="card-receiver">To: ${msg.receiver}</div>` : '';
                 const avatarHtml = msg.authorPic ? `<img src="${msg.authorPic}">` : '';
 
