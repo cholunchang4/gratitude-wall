@@ -156,7 +156,6 @@
         
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
-        /* 放寬接收者欄位，並加上 ellipsis 以防名字太長 */
         .input-receiver { width: 160px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); }
@@ -199,10 +198,9 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 右上角功能按鈕 -->
+    <!-- 右上角功能按鈕：拿掉切換視角，保留英雄榜 -->
     <div class="top-btn-group">
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
-        <button id="viewToggleBtn" class="icon-btn" title="切換排版模式">📋</button>
     </div>
     
     <!-- 聚焦模式與英雄榜的背景遮罩 -->
@@ -240,7 +238,8 @@
         <!-- 已登入介面 -->
         <div id="inputPanel" style="display: none; width: 100%;">
             <div class="theme-selector" id="themeSelector">
-                <div class="theme-btn active" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
+                <!-- 移除了預設寫死的 active，改由 JavaScript 隨機套用 -->
+                <div class="theme-btn" data-theme="theme-classic" style="background: #ffffff;" title="純淨白"></div>
                 <div class="theme-btn" data-theme="theme-midnight" style="background: #1e232e;" title="星空黑"></div>
                 <div class="theme-btn" data-theme="theme-sage" style="background: #d7e6da;" title="鼠尾草綠"></div>
                 <div class="theme-btn" data-theme="theme-wine" style="background: #873241;" title="勃根地紅"></div>
@@ -257,7 +256,8 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 
                 <div class="receiver-wrapper">
-                    <input type="text" id="receiverInput" class="input-receiver" placeholder="@感謝誰？" autocomplete="off" title="可以輸入多人，系統會自動加逗號">
+                    <!--  placeholder 改為單純的「感謝誰？」 -->
+                    <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="可以輸入多人，系統會自動加逗號">
                     <div id="autocompleteList" class="autocomplete-list"></div>
                 </div>
                 
@@ -545,14 +545,6 @@
         }
 
         const wall = document.getElementById('wall');
-        const viewToggleBtn = document.getElementById('viewToggleBtn');
-        let isListMode = false;
-        viewToggleBtn.addEventListener('click', () => {
-            playSound('click');
-            isListMode = !isListMode;
-            wall.classList.toggle('list-mode', isListMode);
-            viewToggleBtn.innerText = isListMode ? '🌌' : '📋'; 
-        });
 
         const leaderboardBtn = document.getElementById('leaderboardBtn');
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
@@ -581,14 +573,14 @@
         }
         focusOverlay.addEventListener('click', closeFocus);
 
-        // ================= 內部通訊錄智慧選字邏輯 (支援多人且無Email) =================
+        // ================= 內部通訊錄智慧選字邏輯 (限制顯示數量) =================
         const receiverInput = document.getElementById('receiverInput');
         const autocompleteList = document.getElementById('autocompleteList');
 
         receiverInput.addEventListener('input', () => {
             const fullVal = receiverInput.value;
-            const parts = fullVal.split(','); // 用逗號拆分字串，允許多人
-            const currentVal = parts[parts.length - 1].trim().toLowerCase(); // 只抓最後一個正在打的名字
+            const parts = fullVal.split(','); 
+            const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             
             autocompleteList.innerHTML = '';
             
@@ -602,21 +594,17 @@
                 return displayName.toLowerCase().includes(currentVal);
             });
             
-            if (matches.length > 0) {
+            // 👉 關鍵修改：當比對結果大於 0，且「少於或等於 6 筆」時才顯示下拉選單
+            if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(item => {
-                    // 只萃取出名字部分，不要 Email
                     const displayName = item.split(' (')[0];
-                    
                     const div = document.createElement('div');
                     div.className = 'autocomplete-item';
                     div.innerText = displayName; 
                     
                     div.onclick = () => {
-                        // 替換掉最後一個未完成的名字，保留前面已經選好的
                         const cleanParts = parts.slice(0, -1).map(p => p.trim());
                         cleanParts.push(displayName);
-                        
-                        // 自動加上逗號和空白，方便使用者繼續輸入下一個
                         receiverInput.value = cleanParts.join(', ') + ', '; 
                         autocompleteList.style.display = 'none';
                         receiverInput.focus();
@@ -648,10 +636,18 @@
         document.getElementById('emojiBtn').addEventListener('click', (e) => { e.stopPropagation(); picker.classList.toggle('active'); playSound('click'); });
         picker.addEventListener('click', (e) => e.stopPropagation());
 
-        let currentTheme = 'theme-classic';
-        let systemSettings = { maxMessages: 50, retentionDays: 30 };
+        // ================= 隨機預設顏色主題邏輯 =================
+        const themeList = ['theme-classic', 'theme-midnight', 'theme-sage', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-lemon', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+        let currentTheme = themeList[Math.floor(Math.random() * themeList.length)];
 
         document.querySelectorAll('.theme-btn').forEach(btn => {
+            // 初始化套用隨機顏色
+            if (btn.getAttribute('data-theme') === currentTheme) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+            // 點擊事件
             btn.addEventListener('click', function() {
                 playSound('click');
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
@@ -660,12 +656,11 @@
             });
         });
 
-        // ================= 送出留言邏輯 (支援多人計分) =================
+        // ================= 送出留言 =================
         document.getElementById('sendBtn').addEventListener('click', () => {
             if (!currentUser) return alert("請先登入 Google 帳號！");
             
             let receiver = receiverInput.value.trim();
-            // 自動清掉最後一筆不小心留下來的逗號
             receiver = receiver.replace(/,\s*$/, '');
             if (!receiver) receiver = '大家';
             
@@ -716,10 +711,8 @@
                 
                 if (msg.author) companyDirectory.add(msg.author);
                 
-                // 處理多人被感謝的字串
                 let receiversList = [];
                 if (msg.receiver && msg.receiver !== '大家') {
-                    // 把名字用逗號切開，分別存進名單裡
                     receiversList = msg.receiver.split(',').map(r => r.trim()).filter(r => r);
                     receiversList.forEach(r => companyDirectory.add(r));
                 }
@@ -727,8 +720,6 @@
                 const retentionMs = systemSettings.retentionDays * 24 * 60 * 60 * 1000;
                 if ((Date.now() - msg.timestamp) <= retentionMs) {
                     if (msg.author) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
-                    
-                    // 讓每一位被標記的同事都能獨立獲得 1 分！
                     receiversList.forEach(r => {
                         leaderboardData.receivers[r] = (leaderboardData.receivers[r] || 0) + 1;
                     });
@@ -740,10 +731,11 @@
         });
 
         function renderLeaderboard() {
-            const getTop5 = (dataObj) => Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, 5);
+            // 👉 修改為 Top 10
+            const getTop10 = (dataObj) => Object.entries(dataObj).sort((a, b) => b[1] - a[1]).slice(0, 10);
             
-            const topSenders = getTop5(leaderboardData.senders);
-            const topReceivers = getTop5(leaderboardData.receivers);
+            const topSenders = getTop10(leaderboardData.senders);
+            const topReceivers = getTop10(leaderboardData.receivers);
 
             const renderList = (listArr, elementId) => {
                 const ul = document.getElementById(elementId);
