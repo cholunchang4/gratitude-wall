@@ -28,13 +28,13 @@
             width: 100%; height: 100%; 
             overflow: hidden; 
             background: var(--bg-gradient); 
-            overscroll-behavior: none; /* 防止手機下拉時出現橡皮筋露底色 */
+            overscroll-behavior: none; 
         }
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
             color: var(--text-main); 
             display: flex; flex-direction: column; 
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0; /* 徹底鎖死邊界，防止 iOS Safari 產生右側/下方色塊 */
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; 
         }
 
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
@@ -50,7 +50,6 @@
         #mainTitle { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 4px; background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 2px 2px rgba(230, 57, 70, 0.15)); }
         #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
 
-        /* 加入 overflow: hidden 避免卡片撐破牆面邊界 */
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; overflow: hidden; }
 
         .top-btn-group { position: absolute; top: 25px; right: 25px; z-index: 1001; display: flex; gap: 10px; }
@@ -209,7 +208,7 @@
                 <div class="tool-group">顏色：<input type="color" id="penColor" value="#d64966" title="選擇畫筆顏色"></div>
                 <div class="tool-group">粗細：<input type="range" id="penWidth" min="1" max="25" value="4" title="調整筆觸粗細"></div>
                 <button id="modePenBtn" class="tool-btn active">🖊️ 畫筆</button>
-                <button id="modeEraserBtn" class="tool-btn">🧽 透明橡皮擦</button>
+                <button id="modeEraserBtn" class="tool-btn">🧽 橡皮擦</button>
                 <button id="clearDrawBtn" class="tool-btn" style="color:#d64966; border-color:#d64966;">🗑️ 全部清空</button>
             </div>
             <div class="canvas-container">
