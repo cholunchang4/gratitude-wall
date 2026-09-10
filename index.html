@@ -64,7 +64,6 @@
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
-        
         .card-date { position: absolute; bottom: 10px; left: 15px; font-size: 10px; opacity: 0.5; pointer-events: none; }
 
         .card-likes {
@@ -148,7 +147,6 @@
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 100; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
         @media (max-width: 768px) {
-            /* 👉 修正標題與按鈕群組的距離，並將按鈕改為直向排列避免打架 */
             .header-container { padding: 10px 20px; top: 15px; } 
             #mainTitle { font-size: 24px; letter-spacing: 2px; } 
             #subTitle { font-size: 12px; }
@@ -184,7 +182,7 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 👉 移除了匯出 CSV 按鈕 -->
+    <!-- 只保留回憶與英雄榜按鈕 -->
     <div class="top-btn-group">
         <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
@@ -455,9 +453,16 @@
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '') || '大家';
             const text = msgInput.value.trim();
             if (text === '' && !attachedImageBase64) return;
-            push(ref(db, 'messages'), { text: text, receiver: receiver, author: anonCheck.checked ? '匿名' : currentUser.displayName, authorPic: anonCheck.checked ? '' : currentUser.photoURL, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
+            
+            const isAnon = anonCheck.checked;
+            const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
+            const finalAuthorPic = isAnon ? '' : currentUser.photoURL;
+
+            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now() });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
+            
             themeManuallySelected = false; 
+
             playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
         });
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
@@ -514,15 +519,16 @@
 
             if (isFilterMeOnly && currentUser) {
                 const currentName = currentUser.displayName.split(' (')[0];
-                validMessages = validMessages.filter(msg => {
+                validMessages = rawMessages.filter(msg => {
                     const isSender = (msg.author === currentUser.displayName);
                     let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
                     const isReceiver = receiversList.includes(currentName) || receiversList.includes(currentUser.displayName);
                     return isSender || isReceiver;
-                });
+                }).slice(0, 200);
+            } else {
+                validMessages = validMessages.slice(0, safeMax);
             }
 
-            validMessages = validMessages.slice(0, safeMax);
             const total = validMessages.length; 
             
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
@@ -561,7 +567,11 @@
                 const likesObj = msg.likes || {};
                 const likeCount = Object.keys(likesObj).length;
                 const hasLiked = currentUser && likesObj[currentUser.uid];
-                const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="按讚">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
+                
+                // 👉 新增：整理並顯示按讚名單
+                const likers = Object.values(likesObj).map(val => val === true ? '某位同事' : val);
+                const tooltipText = likeCount > 0 ? likers.join(', ') + ' 覺得很讚' : '給個讚！';
+                const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="${tooltipText}">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
 
                 card.innerHTML = `
                     ${receiverHtml}
@@ -617,7 +627,8 @@
                     playSound('click');
                     
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
-                    if (hasLiked) remove(likeRef); else set(likeRef, true);
+                    // 👉 儲存時，改存使用者的名字而不是 true
+                    if (hasLiked) remove(likeRef); else set(likeRef, currentUser.displayName);
                 });
 
                 card.addEventListener('click', () => {
