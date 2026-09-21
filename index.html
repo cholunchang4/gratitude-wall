@@ -88,7 +88,6 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
-        /* 隱藏版彩蛋特效外觀 (60~100則解鎖) */
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
         .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -120,7 +119,6 @@
         .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
-        /* 升級慶祝 Modal */
         .levelUp-card { text-align: center; border: 3px solid #ffd700; background: radial-gradient(circle at center, #ffffff 0%, #fff0f5 100%); box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .level-icon-wrapper { font-size: 56px; margin-bottom: 10px; animation: bounce 1.2s infinite alternate; }
@@ -173,13 +171,6 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-        
-        /* 隱藏版主題選擇器按鈕樣式 */
-        .theme-neon { background: #0ff !important; border-color: #111 !important; }
-        .theme-holo { background: linear-gradient(135deg, #fff, #ccc) !important; }
-        .theme-gold { background: linear-gradient(135deg, #d4af37, #1c1c1c) !important; border-color: #d4af37 !important; }
-        .theme-cosmic { background: radial-gradient(circle, #7b2cbf, #000) !important; border-color: #e0aaff !important; }
-        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #fffb00, #002bff) !important; border-color: #fff !important; }
 
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
@@ -193,8 +184,6 @@
             .header-container { padding: 10px 20px; top: 15px; } 
             #mainTitle { font-size: 24px; letter-spacing: 2px; } 
             #subTitle { font-size: 12px; }
-            
-            /* 👉 修正手機版上方按鈕區塊，採用 2x2 方塊排列避免擋住標題 */
             .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } 
             .icon-btn { padding: 6px; font-size: 16px; }
             
@@ -225,7 +214,6 @@
         <p id="subTitle"></p>
     </div>
 
-    <!-- 👉 新增：使用說明與暖心公約按鈕 -->
     <div class="top-btn-group">
         <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
         <button id="rulesBtn" class="icon-btn" title="暖心公約">📜</button>
@@ -235,7 +223,6 @@
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
-    <!-- 英雄榜 Modal -->
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="modal-box">
             <button class="close-btn" id="closeLeaderboard">✖</button>
@@ -253,7 +240,7 @@
         </div>
     </div>
 
-    <!-- 👉 新增：使用說明 Modal -->
+    <!-- 📖 使用說明 Modal -->
     <div class="focus-overlay" id="guideOverlay">
         <div class="modal-box" style="max-width: 500px;">
             <button class="close-btn" id="closeGuide">✖</button>
@@ -273,7 +260,7 @@
         </div>
     </div>
 
-    <!-- 👉 新增：暖心公約 Modal -->
+    <!-- 📜 暖心公約 Modal -->
     <div class="focus-overlay" id="rulesOverlay">
         <div class="modal-box" style="max-width: 500px;">
             <button class="close-btn" id="closeRules">✖</button>
@@ -295,6 +282,32 @@
                     <li><b>🌱 拒絕洗版</b>：請勿為了「刷等級」連發無意義的字句。</li>
                 </ol>
                 <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👉 新增：首次登入歡迎與公約確認 Modal (沒有 X 按鈕，必須點選確認) -->
+    <div class="focus-overlay" id="onboardingOverlay">
+        <div class="modal-box" style="max-width: 550px;">
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">👋 歡迎來到感謝牆！</h2>
+            <div style="font-size: 15px; color: #555; line-height: 1.6; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
+                <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
+                    <li><b>👀 專屬回憶</b>：點擊右上角的「👀」按鈕，可篩選出與你相關的卡片。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed #e8a0ad; margin: 15px 0;">
+                <p style="font-weight: bold; color: #d64966; font-size: 16px;">🌟 暖心公約約定</p>
+                <ol style="padding-left: 20px; margin-bottom: 15px;">
+                    <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
+                    <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
+                    <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
+                    <li><b>🌱 拒絕洗版</b>：請勿為了「刷等級」連發無意義的字句。</li>
+                </ol>
+                <p style="font-size: 13px; text-align: center; opacity: 0.8;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="acceptOnboardingBtn" class="action-btn primary" style="padding: 12px 35px; font-size: 16px; width: 100%;">✅ 我已閱讀並同意遵守</button>
             </div>
         </div>
     </div>
@@ -397,7 +410,6 @@
         
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
 
-        // 👉 遊戲化系統全域變數
         let userLevel = 1;
         let userLifetimeMessageCount = 0;
         let dragWarned = false; 
@@ -482,6 +494,13 @@
         onAuthStateChanged(auth, (user) => {
             if (user) { 
                 currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; 
+                
+                // 👉 檢查是否為首次登入 (觸發同意條款 Modal)
+                const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
+                if (!localStorage.getItem(onboardingKey)) {
+                    document.getElementById('onboardingOverlay').classList.add('active');
+                }
+
                 updateUserLevelUI(); 
                 renderWall(); 
             } 
@@ -491,6 +510,14 @@
                 updateUserLevelUI(); 
                 renderWall(); 
             }
+        });
+
+        // 👉 同意條款按鈕事件
+        document.getElementById('acceptOnboardingBtn').addEventListener('click', () => {
+            playSound('click');
+            const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
+            localStorage.setItem(onboardingKey, 'true'); // 標記已閱讀
+            document.getElementById('onboardingOverlay').classList.remove('active');
         });
 
         let audioCtx;
@@ -525,7 +552,6 @@
 
         const wall = document.getElementById('wall');
         
-        // 👉 綁定新按鈕事件
         const rulesOverlay = document.getElementById('rulesOverlay');
         document.getElementById('rulesBtn').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.add('active'); });
         document.getElementById('closeRules').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.remove('active'); });
@@ -571,7 +597,6 @@
             });
         });
 
-        // ================= 🕹️ 封頂大師與隱藏彩蛋系統邏輯 =================
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
 
