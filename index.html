@@ -174,6 +174,13 @@
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
         
+        /* 隱藏版主題選擇器按鈕樣式 */
+        .theme-neon { background: #0ff !important; border-color: #111 !important; }
+        .theme-holo { background: linear-gradient(135deg, #fff, #ccc) !important; }
+        .theme-gold { background: linear-gradient(135deg, #d4af37, #1c1c1c) !important; border-color: #d4af37 !important; }
+        .theme-cosmic { background: radial-gradient(circle, #7b2cbf, #000) !important; border-color: #e0aaff !important; }
+        .theme-ultimate { background: linear-gradient(45deg, #ff0000, #fffb00, #002bff) !important; border-color: #fff !important; }
+
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -186,7 +193,9 @@
             .header-container { padding: 10px 20px; top: 15px; } 
             #mainTitle { font-size: 24px; letter-spacing: 2px; } 
             #subTitle { font-size: 12px; }
-            .top-btn-group { top: 15px; right: 10px; flex-direction: column; gap: 8px; } 
+            
+            /* 👉 修正手機版上方按鈕區塊，採用 2x2 方塊排列避免擋住標題 */
+            .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } 
             .icon-btn { padding: 6px; font-size: 16px; }
             
             .message-card { padding: 10px 12px 34px 12px; border-radius: 12px; } 
@@ -216,13 +225,17 @@
         <p id="subTitle"></p>
     </div>
 
+    <!-- 👉 新增：使用說明與暖心公約按鈕 -->
     <div class="top-btn-group">
+        <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
+        <button id="rulesBtn" class="icon-btn" title="暖心公約">📜</button>
         <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
     </div>
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
+    <!-- 英雄榜 Modal -->
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="modal-box">
             <button class="close-btn" id="closeLeaderboard">✖</button>
@@ -240,6 +253,53 @@
         </div>
     </div>
 
+    <!-- 👉 新增：使用說明 Modal -->
+    <div class="focus-overlay" id="guideOverlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <button class="close-btn" id="closeGuide">✖</button>
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">📖 使用說明</h2>
+            <div style="font-size: 15px; color: #555; line-height: 1.6;">
+                <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
+                    <li style="margin-bottom: 8px;"><b>👀 專屬回憶</b>：點擊右上角的「👀」按鈕，牆面會瞬間只留下「你寫給別人的」以及「別人標記你的」卡片。</li>
+                    <li style="margin-bottom: 8px;"><b>🏆 英雄榜</b>：點擊「🏆」看看團隊中最暖心、最受歡迎的神隊友是誰。</li>
+                    <li style="margin-bottom: 8px;"><b>👥 多人標記</b>：等級提升後，在收件人欄位連續選擇多個名字，系統會自動用逗號幫你一次標記整個團隊！</li>
+                </ul>
+                <div style="background: #ffe4e1; padding: 10px 15px; border-radius: 12px; color: #d64966; font-weight: bold; text-align: center; font-size: 14px;">
+                    趕快登入發送你的第一張感謝卡吧！🚀
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 👉 新增：暖心公約 Modal -->
+    <div class="focus-overlay" id="rulesOverlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <button class="close-btn" id="closeRules">✖</button>
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">🌟 暖心公約 🌟</h2>
+            <div style="font-size: 15px; color: #555; line-height: 1.6;">
+                <p>不知道寫什麼？只要符合這些時刻，就大方送出卡片吧！</p>
+                <ul style="padding-left: 20px;">
+                    <li><b>及時傳遞溫暖</b>：收到幫助當下就表達，別讓謝意過期。</li>
+                    <li><b>看見微小付出</b>：日常默默幫忙的小事，也值得一句謝謝。</li>
+                    <li><b>跨界神隊友</b>：打破部門界線，大方讚賞熱心支援的夥伴。</li>
+                    <li><b>肯定無私分享</b>：謝謝樂於分享的「踩坑大師」與勇敢試錯的隊友。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed #e8a0ad; margin: 15px 0;">
+                <p style="font-weight: bold; color: #d64966; margin-bottom: 5px;">🤝 我們一起守護的約定：</p>
+                <ol style="padding-left: 20px;">
+                    <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
+                    <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
+                    <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
+                    <li><b>🌱 拒絕洗版</b>：請勿為了「刷等級」連發無意義的字句。</li>
+                </ol>
+                <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 升級慶祝 Modal -->
     <div class="focus-overlay" id="levelUpOverlay">
         <div class="modal-box levelUp-card">
             <div class="level-icon-wrapper" id="levelUpIcon">🎉</div>
@@ -255,6 +315,7 @@
         </div>
     </div>
 
+    <!-- 繪圖 Modal -->
     <div class="focus-overlay" id="drawOverlay">
         <div class="modal-box draw-modal" style="text-align: center;">
             <h3 style="margin-top:0; color:#d64966;">🎨 手寫 / 塗鴉 / 上傳圖片</h3>
@@ -463,6 +524,16 @@
         }
 
         const wall = document.getElementById('wall');
+        
+        // 👉 綁定新按鈕事件
+        const rulesOverlay = document.getElementById('rulesOverlay');
+        document.getElementById('rulesBtn').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.add('active'); });
+        document.getElementById('closeRules').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.remove('active'); });
+
+        const guideOverlay = document.getElementById('guideOverlay');
+        document.getElementById('guideBtn').addEventListener('click', () => { playSound('click'); guideOverlay.classList.add('active'); });
+        document.getElementById('closeGuide').addEventListener('click', () => { playSound('click'); guideOverlay.classList.remove('active'); });
+
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
@@ -487,7 +558,12 @@
             btn.addEventListener('click', function() { 
                 if (this.classList.contains('locked')) {
                     playSound('click');
-                    return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖所有基礎顏色喔！');
+                    if (idx >= 14) return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
+                    if (idx >= 13) return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
+                    if (idx >= 12) return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
+                    if (idx >= 11) return alert('🔮 極光玻璃模板需要「Lv.11 極光幻境 (70則留言)」才能解鎖！');
+                    if (idx >= 10) return alert('🪩 霓虹幻影模板需要「Lv.10 霓虹幻影 (60則留言)」才能解鎖！');
+                    return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖全彩顏色喔！');
                 }
                 playSound('click'); themeManuallySelected = true;
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
@@ -503,7 +579,6 @@
             
             let title = '', msg = '', maxLength = 20;
 
-            // 👉 公開等級判斷 (最高到 Lv.8)
             if (userLifetimeMessageCount >= 50) {
                 userLevel = 8; title = '✨ Lv.8 感謝大師'; maxLength = 1000;
             } else if (userLifetimeMessageCount >= 30) {
@@ -527,7 +602,6 @@
             msgInput.placeholder = `寫下感謝內容... (上限 ${maxLength} 字)`;
 
             const statusBar = document.getElementById('levelStatusBar');
-            // 👉 50則之後，隱藏進度條，稱號永遠停留在大師
             if (userLifetimeMessageCount >= 50) {
                 statusBar.style.display = 'none';
             } else {
@@ -536,7 +610,6 @@
                 document.getElementById('levelHint').innerText = msg;
             }
 
-            // 👉 公開等級彈窗判斷 (Lv.2 ~ Lv.8)
             const storageKey = `seen_pub_lvl_${currentUser.uid}`;
             const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
             let shouldShowModal = false;
@@ -561,7 +634,6 @@
                 }
                 localStorage.setItem(storageKey, userLevel.toString());
             } else {
-                // 👉 隱藏彩蛋彈窗判斷 (60, 70, 80, 90, 100)
                 let hiddenLevel = 0;
                 if (userLifetimeMessageCount >= 100) hiddenLevel = 5;
                 else if (userLifetimeMessageCount >= 90) hiddenLevel = 4;
@@ -596,7 +668,6 @@
                 levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
             }
 
-            // UI 基礎功能上鎖處理
             document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
             document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
                 btn.classList.remove('locked');
@@ -607,7 +678,6 @@
             document.getElementById('anonCheck').disabled = userLevel < 7;
             document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
             
-            // 👉 隱藏版彩蛋按鈕顯示邏輯 (達到條件才出現在調色盤裡)
             document.getElementById('btnNeon').style.display = userLifetimeMessageCount >= 60 ? 'inline-block' : 'none';
             document.getElementById('btnHolo').style.display = userLifetimeMessageCount >= 70 ? 'inline-block' : 'none';
             document.getElementById('btnGold').style.display = userLifetimeMessageCount >= 80 ? 'inline-block' : 'none';
@@ -617,7 +687,6 @@
             renderEmojis();
         }
 
-        // 👉 動態表情符號渲染
         const emojiFullList = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
         const emojiBasicList = ['😀','😂','🥰','🙏','👍','💪','🎉','❤️'];
         const emojiMidList = [...emojiBasicList, '🤣','🥲','😊','😎','🤩','🥳','🤔','👏','🙌','🤝','🔥','✨','💯','💡','🍰','☕','🎁','🎈','🏆','🌟','🚀','💼','💻','🎵'];
@@ -677,7 +746,7 @@
         drawCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawCanvas.addEventListener('touchmove', draw, {passive: false}); drawCanvas.addEventListener('touchend', endDraw);
 
         document.getElementById('uploadImgInput').addEventListener('click', function(e) {
-            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 感謝大師 (50則留言)」才能解鎖喔！'); }
+            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 攝影大師 (40則留言)」才能解鎖喔！'); }
         });
 
         document.getElementById('uploadImgInput').addEventListener('change', function(e){
@@ -727,7 +796,6 @@
             const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
             const finalAuthorPic = isAnon ? '' : currentUser.photoURL;
 
-            // 如果使用隱藏主題發文，給予最高作者等級保證特效顯示
             let sentAuthorLevel = userLevel;
             if (userLifetimeMessageCount >= 50) sentAuthorLevel = 8;
 
@@ -811,7 +879,6 @@
 
             const total = validMessages.length; 
             
-            // 👉 自動色彩平衡不含傳說主題 (只取前 10 個基礎色)
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
                 const availableThemes = userLevel >= 4 ? themeList.slice(0, 10) : themeList.slice(0, 3);
                 const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
