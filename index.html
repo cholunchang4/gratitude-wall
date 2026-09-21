@@ -88,6 +88,7 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
+        /* 隱藏版彩蛋特效外觀 */
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
         .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -119,6 +120,7 @@
         .board-col li:first-child { color: #d4af37; font-size: 17px; } 
         .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
 
+        /* 升級慶祝 Modal */
         .levelUp-card { text-align: center; border: 3px solid #ffd700; background: radial-gradient(circle at center, #ffffff 0%, #fff0f5 100%); box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
         .level-icon-wrapper { font-size: 56px; margin-bottom: 10px; animation: bounce 1.2s infinite alternate; }
@@ -217,7 +219,7 @@
     <div class="top-btn-group">
         <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
         <button id="rulesBtn" class="icon-btn" title="暖心公約">📜</button>
-        <button id="filterMeBtn" class="icon-btn" title="只看與我相關">👀</button>
+        <button id="filterMeBtn" class="icon-btn" title="我的回憶">👀</button>
         <button id="leaderboardBtn" class="icon-btn" title="查看英雄榜">🏆</button>
     </div>
     
@@ -248,8 +250,9 @@
             <div style="font-size: 15px; color: #555; line-height: 1.6;">
                 <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
-                    <li style="margin-bottom: 8px;"><b>👀 專屬回憶</b>：點擊右上角的「👀」按鈕，牆面會瞬間只留下「你寫給別人的」以及「別人標記你的」卡片。</li>
+                    <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「👀」，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>🏆 英雄榜</b>：點擊「🏆」看看團隊中最暖心、最受歡迎的神隊友是誰。</li>
                     <li style="margin-bottom: 8px;"><b>👥 多人標記</b>：等級提升後，在收件人欄位連續選擇多個名字，系統會自動用逗號幫你一次標記整個團隊！</li>
                 </ul>
@@ -286,15 +289,16 @@
         </div>
     </div>
 
-    <!-- 👉 新增：首次登入歡迎與公約確認 Modal (沒有 X 按鈕，必須點選確認) -->
+    <!-- 👋 首次登入歡迎與公約確認 Modal -->
     <div class="focus-overlay" id="onboardingOverlay">
         <div class="modal-box" style="max-width: 550px;">
             <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">👋 歡迎來到感謝牆！</h2>
             <div style="font-size: 15px; color: #555; line-height: 1.6; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
                 <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
-                    <li><b>👀 專屬回憶</b>：點擊右上角的「👀」按鈕，可篩選出與你相關的卡片。</li>
+                    <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示 50 則最新留言，保留 30 天。</li>
+                    <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
+                    <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊「👀」可篩選出與你相關的卡片（<b>不受 30 天限制</b>，完整保留你的專屬感動！）。</li>
                 </ul>
                 <hr style="border: 0; border-top: 1px dashed #e8a0ad; margin: 15px 0;">
                 <p style="font-weight: bold; color: #d64966; font-size: 16px;">🌟 暖心公約約定</p>
@@ -495,7 +499,6 @@
             if (user) { 
                 currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; 
                 
-                // 👉 檢查是否為首次登入 (觸發同意條款 Modal)
                 const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
                 if (!localStorage.getItem(onboardingKey)) {
                     document.getElementById('onboardingOverlay').classList.add('active');
@@ -512,11 +515,10 @@
             }
         });
 
-        // 👉 同意條款按鈕事件
         document.getElementById('acceptOnboardingBtn').addEventListener('click', () => {
             playSound('click');
             const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
-            localStorage.setItem(onboardingKey, 'true'); // 標記已閱讀
+            localStorage.setItem(onboardingKey, 'true');
             document.getElementById('onboardingOverlay').classList.remove('active');
         });
 
@@ -568,7 +570,7 @@
         document.getElementById('closeLevelUpBtn').addEventListener('click', () => { playSound('click'); levelUpOverlay.classList.remove('active'); });
 
         document.getElementById('filterMeBtn').addEventListener('click', function() {
-            if (!currentUser) return alert('請先登入才能使用專屬回憶篩選喔！');
+            if (!currentUser) return alert('請先登入才能使用「我的回憶」篩選喔！');
             playSound('click'); isFilterMeOnly = !isFilterMeOnly; this.classList.toggle('active', isFilterMeOnly); renderWall();
         });
 
@@ -920,7 +922,7 @@
             }
 
             if (total === 0) {
-                if (isFilterMeOnly) wall.innerHTML = '<h3 style="color:#d64966; text-align:center; margin-top:20vh;">目前還沒有與你相關的感謝喔，<br>快去寫一張送給同事吧！</h3>';
+                if (isFilterMeOnly) wall.innerHTML = '<h3 style="color:#d64966; text-align:center; margin-top:20vh;">目前還沒有屬於你的回憶喔，<br>快去寫一張送給同事吧！</h3>';
                 return;
             }
 
