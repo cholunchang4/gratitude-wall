@@ -52,7 +52,8 @@
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
-            transition: opacity 0.6s ease-in-out, box-shadow 0.3s, border 0.3s;
+            /* 👉 更新動畫：讓縮放與淡入淡出的替換更加滑順 */
+            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out, box-shadow 0.3s, border 0.3s;
         }
         .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); z-index: 1900 !important; }
         .message-card.dragging { cursor: grabbing !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important; }
@@ -94,7 +95,6 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
-        /* 隱藏版彩蛋特效外觀 (60~100則解鎖) */
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
         .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -134,7 +134,6 @@
         .feature-unlock-box h4 { margin: 0 0 8px 0; color: #e63946; font-size: 16px; display: flex; align-items: center; gap: 8px; }
         .feature-unlock-box p { margin: 0; font-size: 14px; color: #555; line-height: 1.5; }
 
-        /* 繪圖板 UI */
         .draw-toolbar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 15px; }
         .tool-group { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #555; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: none; }
@@ -178,7 +177,7 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-        
+
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -883,7 +882,6 @@
         document.addEventListener('mouseup', () => { if (activeDragCard) { activeDragCard.classList.remove('dragging'); activeDragCard = null; } });
         document.addEventListener('touchend', () => { if (activeDragCard) { activeDragCard.classList.remove('dragging'); activeDragCard = null; } });
 
-        // 👉 動態輪播卡片輔助函數
         function generateCardHTML(msg, maxLikes) {
             const likesObj = msg.likes || {};
             const likeCount = Object.keys(likesObj).length;
@@ -1008,9 +1006,9 @@
             const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
             const retentionMs = safeDays * 24 * 60 * 60 * 1000;
             
-            // 👉 手機版自動限縮顯示數量
+            // 👉 電腦版預設 50，手機版自動限縮到 15 (觸發提前輪播)
             const defaultMax = isMobile ? 15 : 50;
-            const safeMax = systemSettings.maxMessages ? Math.max(parseInt(systemSettings.maxMessages), 1) : defaultMax;
+            const safeMax = systemSettings.maxMessages ? Math.min(parseInt(systemSettings.maxMessages), defaultMax) : defaultMax;
 
             let validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= retentionMs);
 
@@ -1052,13 +1050,11 @@
                 if (c > maxLikes) maxLikes = c;
             });
 
-            // 👉 動態輪播分組
             let displayedMessages = isFilterMeOnly ? validMessages : validMessages.slice(0, safeMax);
             let hiddenMessages = isFilterMeOnly ? [] : validMessages.slice(safeMax);
 
             const screenW = window.innerWidth; const screenH = window.innerHeight;
             const sideLimit = isMobile ? 15 : 30; const topLimit = isMobile ? 120 : 130; const bottomLimit = isMobile ? 180 : 160; 
-            let richnessScale = displayedMessages.length <= 5 ? 1.1 : (displayedMessages.length <= 15 ? 1.0 : 0.85);
             const mobileScaleDown = isMobile ? 0.6 : 1.0; 
             const placedRects = [];
             const overlapAllowance = 30; 
@@ -1074,14 +1070,16 @@
                 
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
-                const scale = (1.5 - ((displayedMessages.length > 1 ? index / (displayedMessages.length - 1) : 0) * 0.9)) * richnessScale * mobileScaleDown;
+                // 👉 取消「新留言特別大」的機制，全部改為均勻的隨機大小
+                const scale = (0.85 + Math.random() * 0.4) * mobileScaleDown;
                 card.style.setProperty('--c-scale', scale);
                 card.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
-                card.style.opacity = 1 - ((displayedMessages.length > 1 ? index / (displayedMessages.length - 1) : 0) * 0.35); 
-                card.style.zIndex = displayedMessages.length - index; 
+                card.style.opacity = (0.85 + Math.random() * 0.15).toString(); 
+                card.style.zIndex = Math.floor(Math.random() * 100) + 10; 
                 card.style.visibility = 'hidden'; 
                 wall.appendChild(card);
 
+                // 👉 隨機座標散佈機制
                 const cardW = card.offsetWidth * scale; const cardH = card.offsetHeight * scale;
                 let placedX = screenW / 2, placedY = screenH / 2, foundSpot = false;
                 
@@ -1107,14 +1105,16 @@
                 bindCardEvents(card, msg);
             });
 
-            // 👉 啟動智慧動態輪播機制
+            // 👉 真・動態隨機輪播系統
             if (hiddenMessages.length > 0 && !isFilterMeOnly) {
+                // 智慧計算車速：留言越多，換得越快 (最快 2秒，最慢 8秒)
                 const ratio = validMessages.length / safeMax; 
                 const intervalMs = Math.max(2000, 8000 / ratio); 
 
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
+                    // 1. 隨機挑一張場上的舊卡片消失
                     const cards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
                     if (cards.length === 0) return;
                     const cardToSwap = cards[Math.floor(Math.random() * cards.length)];
@@ -1123,6 +1123,7 @@
                     const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
                     if (removeIdx === -1) return;
 
+                    // 2. 從隱藏區抽一張新卡片
                     const addIdx = Math.floor(Math.random() * hiddenMessages.length);
                     const msgToAdd = hiddenMessages[addIdx];
                     const msgToRemove = displayedMessages[removeIdx];
@@ -1130,36 +1131,56 @@
                     displayedMessages[removeIdx] = msgToAdd;
                     hiddenMessages[addIdx] = msgToRemove;
 
+                    // 3. 執行縮小淡出動畫
                     cardToSwap.style.opacity = '0';
-                    cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.8}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
+                    cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.5}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
                     
                     setTimeout(() => {
+                        // 4. 完全移除舊卡，創建一張全新卡片並分配全新隨機位置
+                        if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
+
                         const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
                         const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
 
-                        const scale = (1.5 - ((displayedMessages.length > 1 ? removeIdx / (displayedMessages.length - 1) : 0) * 0.9)) * richnessScale * mobileScaleDown;
-                        const originalOpacity = 1 - ((displayedMessages.length > 1 ? removeIdx / (displayedMessages.length - 1) : 0) * 0.35);
+                        const newCard = document.createElement('div');
+                        newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                        newCard.setAttribute('data-id', msgToAdd.id);
+                        if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
 
-                        cardToSwap.setAttribute('data-id', msgToAdd.id);
-                        cardToSwap.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                        if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) cardToSwap.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
-                        else cardToSwap.style.boxShadow = ""; 
-                        
-                        cardToSwap.innerHTML = generateCardHTML(msgToAdd, maxLikes);
-                        
-                        const newCard = cardToSwap.cloneNode(true);
-                        newCard.style.opacity = '0'; 
+                        newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
+
+                        // 賦予新的隨機大小、角度與 Z 軸
+                        const scale = (0.85 + Math.random() * 0.4) * mobileScaleDown;
                         newCard.style.setProperty('--c-scale', scale);
                         newCard.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
-
-                        cardToSwap.parentNode.replaceChild(newCard, cardToSwap);
+                        newCard.style.zIndex = Math.floor(Math.random() * 100) + 10;
+                        
+                        // 隨機產生一個全新的座標
+                        const cardW = 250 * scale; const cardH = 150 * scale; 
+                        let placedX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
+                        let placedY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
+                        
+                        newCard.style.left = `${placedX}px`;
+                        newCard.style.top = `${placedY}px`;
+                        
+                        // 初始狀態為透明與縮小
+                        newCard.style.opacity = '0';
+                        newCard.style.transform = `translate(-50%, -50%) scale(${scale * 0.5}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                        
+                        wall.appendChild(newCard);
                         bindCardEvents(newCard, msgToAdd);
                         
-                        setTimeout(() => { 
-                            newCard.style.opacity = originalOpacity; 
-                            newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
-                        }, 50);
-                    }, 600);
+                        // 5. 執行放大淡入動畫
+                        requestAnimationFrame(() => {
+                            setTimeout(() => {
+                                newCard.style.opacity = (0.85 + Math.random() * 0.15).toString();
+                                newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                                newCard.classList.add('floating');
+                                newCard.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
+                                newCard.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
+                            }, 50);
+                        });
+                    }, 600); // 配合 CSS 動畫淡出時間
                 }, intervalMs);
             }
         }
