@@ -52,18 +52,22 @@
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
-            transition: opacity 0.6s ease-in-out, transform 0.6s ease-in-out, box-shadow 0.3s, border 0.3s;
+            transition: opacity 1.5s ease-in-out, box-shadow 0.3s, border 0.3s;
         }
         .message-card:hover { box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2); z-index: 1900 !important; }
         .message-card.dragging { cursor: grabbing !important; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3) !important; }
-        .message-card.floating { animation: floatAnim var(--float-duration, 4s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
-        @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-10px); } }
+        .message-card.floating { animation: floatAnim var(--float-duration, 5s) ease-in-out infinite alternate; animation-delay: var(--float-delay, 0s); }
+        @keyframes floatAnim { 0% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(0px); } 100% { transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate)) translateY(-8px); } }
 
         .message-card.top-liked { border: 2px solid #ffd700; animation: goldenPulse 2s infinite alternate !important; }
         @keyframes goldenPulse { 0% { box-shadow: 0 0 15px rgba(255, 215, 0, 0.4), 0 8px 32px 0 rgba(0, 0, 0, 0.12); } 100% { box-shadow: 0 0 35px rgba(255, 215, 0, 0.9), 0 12px 40px rgba(0, 0, 0, 0.2); } }
-        .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         
+        .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
+        
+        /* 👉 管理員專屬徽章 */
+        .admin-badge { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f); background-size: 300%; color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 13px; font-weight: 900; letter-spacing: 2px; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.8); z-index: 15; pointer-events: none; white-space: nowrap; animation: adminBadgeGlow 4s linear infinite; border: 1px solid rgba(255,255,255,0.8); }
+        @keyframes adminBadgeGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
@@ -105,6 +109,25 @@
         .theme-ultimate { background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000) !important; background-size: 400% !important; animation: ultimateBg 8s linear infinite !important; color: #fff !important; border: 2px solid #fff !important; text-shadow: 0 2px 4px rgba(0,0,0,0.5); box-shadow: 0 10px 40px rgba(0,0,0,0.4) !important; }
         @keyframes ultimateBg { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
         .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
+
+        /* 👉 管理員專屬神仙特效主題 */
+        .theme-admin { 
+            background: linear-gradient(135deg, rgba(15,32,39,0.95), rgba(32,58,67,0.95), rgba(44,83,100,0.95)) !important;
+            border: none !important; 
+            color: #fff !important; 
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4) !important;
+            position: relative;
+            background-clip: padding-box;
+        }
+        .theme-admin::before {
+            content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px;
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5, #ff007f, #00d2ff);
+            background-size: 300%; z-index: -1; border-radius: 19px;
+            animation: adminBorderGlow 4s linear infinite;
+        }
+        @keyframes adminBorderGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+        .theme-admin .card-receiver, .theme-admin .card-author { color: #00d4ff !important; text-shadow: 0 0 8px rgba(0, 212, 255, 0.8); }
+        .theme-admin .card-text { text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
         /* ================= Modal 彈窗 ================= */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 1500; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
@@ -177,6 +200,9 @@
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
         
+        /* 👉 專屬管理員選擇按鈕 */
+        .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
+
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -264,6 +290,7 @@
                 <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，每月最多 30 則。</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「👀」，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點擊放大你曾發布過的卡片，左下方會出現編輯與刪除按鈕，隨時可修改錯字！</li>
@@ -294,7 +321,7 @@
                     <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
                     <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
                     <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
-                    <li><b>🌱 拒絕洗版</b>：請勿為了「刷等級」連發無意義的字句。</li>
+                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則，請勿為了「刷等級」連發無意義的字句。</li>
                 </ol>
                 <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
             </div>
@@ -308,6 +335,7 @@
                 <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示 50 則最新留言，保留 30 天。</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，每月最多 30 則。</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊「👀」可篩選出與你相關的卡片（<b>不受 30 天限制</b>，完整保留你的專屬感動！）。</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 修改留言</b>：點擊放大自己發的卡片，即可隨時編輯文字或刪除。</li>
@@ -396,6 +424,8 @@
                 <div class="theme-btn theme-gold" data-theme="theme-gold" id="btnGold" style="display:none;" title="璀璨鑽金"></div>
                 <div class="theme-btn theme-cosmic" data-theme="theme-cosmic" id="btnCosmic" style="display:none;" title="星際宇宙"></div>
                 <div class="theme-btn theme-ultimate" data-theme="theme-ultimate" id="btnUltimate" style="display:none;" title="傳說神話"></div>
+                <!-- 👉 新增：管理員至尊專屬按鈕 -->
+                <div class="theme-btn theme-admin-btn" data-theme="theme-admin" id="btnAdmin" style="display:none;" title="👑 管理員至尊專屬"></div>
             </div>
             <div class="input-container">
                 <img id="userAvatar" class="user-avatar" src="" title="點擊登出">
@@ -428,6 +458,9 @@
 
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
+
+        // 👉 定義管理員帳號
+        const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
@@ -605,7 +638,7 @@
         function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
-        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate'];
+        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin'];
         let currentTheme = themeList[0];
         
         document.querySelectorAll('.theme-btn').forEach((btn, idx) => {
@@ -628,7 +661,10 @@
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
 
-            userLifetimeMessageCount = rawMessages.filter(m => m.author === currentUser.displayName).length;
+            // 👉 判斷是否為管理員
+            const isAdminUser = currentUser.email === ADMIN_EMAIL;
+
+            userLifetimeMessageCount = rawMessages.filter(m => m.uid === currentUser.uid || (!m.uid && m.author === currentUser.displayName && m.author !== '匿名')).length;
             
             let title = '', msg = '', maxLength = 20;
 
@@ -650,12 +686,15 @@
                 userLevel = 1; title = '🌱 Lv.1 新手幼苗'; msg = `發送 1 則解鎖「按讚與表情」`; maxLength = 20;
             }
 
+            // 👉 管理員無視字數限制
+            if (isAdminUser) maxLength = 2000;
+
             const msgInput = document.getElementById('msgInput');
             msgInput.maxLength = maxLength;
-            msgInput.placeholder = `寫下感謝內容... (上限 ${maxLength} 字)`;
+            msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (無限字數)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
 
             const statusBar = document.getElementById('levelStatusBar');
-            if (userLifetimeMessageCount >= 50) {
+            if (userLifetimeMessageCount >= 50 || isAdminUser) {
                 statusBar.style.display = 'none';
             } else {
                 statusBar.style.display = 'flex';
@@ -663,30 +702,51 @@
                 document.getElementById('levelHint').innerText = msg;
             }
 
+            // 👉 處理管理員神仙模式介面解鎖
+            if (isAdminUser) {
+                document.getElementById('btnAdmin').style.display = 'inline-block';
+                document.getElementById('emojiBtn').classList.remove('locked');
+                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('locked'));
+                document.getElementById('openDrawBtn').classList.remove('locked');
+                document.getElementById('anonWrapper').classList.remove('locked');
+                document.getElementById('anonCheck').disabled = false;
+                document.getElementById('uploadImgLabel').classList.remove('locked');
+            } else {
+                document.getElementById('btnAdmin').style.display = 'none';
+                document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
+                document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
+                    btn.classList.remove('locked');
+                    if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); 
+                });
+                document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
+                document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
+                document.getElementById('anonCheck').disabled = userLevel < 7;
+                document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
+                
+                document.getElementById('btnNeon').style.display = userLifetimeMessageCount >= 60 ? 'inline-block' : 'none';
+                document.getElementById('btnHolo').style.display = userLifetimeMessageCount >= 70 ? 'inline-block' : 'none';
+                document.getElementById('btnGold').style.display = userLifetimeMessageCount >= 80 ? 'inline-block' : 'none';
+                document.getElementById('btnCosmic').style.display = userLifetimeMessageCount >= 90 ? 'inline-block' : 'none';
+                document.getElementById('btnUltimate').style.display = userLifetimeMessageCount >= 100 ? 'inline-block' : 'none';
+            }
+
+            // 處理一般使用者的彈窗邏輯
             const storageKey = `seen_pub_lvl_${currentUser.uid}`;
             const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
             let shouldShowModal = false;
             let mIcon = '', mBadge = '', mTitle = '', mDesc = '';
 
-            if (userLevel > seenLevel) {
+            if (userLevel > seenLevel && !isAdminUser) {
                 shouldShowModal = true;
-                if (userLevel === 8) {
-                    mIcon = '👑'; mBadge = '獲得稱號：✨ Lv.8 感謝大師'; mTitle = '🔓 解鎖：📷 插入相片 & 大師徽章！'; mDesc = '最高榮譽！現在你可以在塗鴉畫布中直接上傳真實照片，且你發布的卡片將永久獲得專屬的「🏅 大師徽章」特權！';
-                } else if (userLevel === 7) {
-                    mIcon = '🤫'; mBadge = '獲得稱號：🕵️‍♂️ Lv.7 藏鏡天使'; mTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; mDesc = '有愛大聲說！字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！';
-                } else if (userLevel === 6) {
-                    mIcon = '🖌️'; mBadge = '獲得稱號：🎨 Lv.6 塗鴉畫家'; mTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; mDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕，即可開啟全螢幕塗鴉畫布，親筆簽名或畫插圖！';
-                } else if (userLevel === 5) {
-                    mIcon = '👥'; mBadge = '獲得稱號：🗣️ Lv.5 感謝達人'; mTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; mDesc = '現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號，讓你一次標記整個團隊！';
-                } else if (userLevel === 4) {
-                    mIcon = '🌈'; mBadge = '獲得稱號：🌈 Lv.4 色彩魔術師'; mTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; mDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得包含動物、食物等更豐富的表情符號！';
-                } else if (userLevel === 3) {
-                    mIcon = '🖐️'; mBadge = '獲得稱號：🌷 Lv.3 溫暖園丁'; mTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; mDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！';
-                } else if (userLevel === 2) {
-                    mIcon = '👍'; mBadge = '獲得稱號：🍀 Lv.2 熱心路人'; mTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; mDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉、愛心等基礎表情了！';
-                }
+                if (userLevel === 8) { mIcon = '👑'; mBadge = '獲得稱號：✨ Lv.8 感謝大師'; mTitle = '🔓 解鎖：📷 插入相片 & 大師徽章！'; mDesc = '最高榮譽！現在你可以在塗鴉畫布中直接上傳真實照片，且你發布的卡片將永久獲得專屬的「🏅 大師徽章」特權！'; } 
+                else if (userLevel === 7) { mIcon = '🤫'; mBadge = '獲得稱號：🕵️‍♂️ Lv.7 藏鏡天使'; mTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; mDesc = '有愛大聲說！字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！'; } 
+                else if (userLevel === 6) { mIcon = '🖌️'; mBadge = '獲得稱號：🎨 Lv.6 塗鴉畫家'; mTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; mDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕，即可開啟全螢幕塗鴉畫布，親筆簽名或畫插圖！'; } 
+                else if (userLevel === 5) { mIcon = '👥'; mBadge = '獲得稱號：🗣️ Lv.5 感謝達人'; mTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; mDesc = '現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號，讓你一次標記整個團隊！'; } 
+                else if (userLevel === 4) { mIcon = '🌈'; mBadge = '獲得稱號：🌈 Lv.4 色彩魔術師'; mTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; mDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得包含動物、食物等更豐富的表情符號！'; } 
+                else if (userLevel === 3) { mIcon = '🖐️'; mBadge = '獲得稱號：🌷 Lv.3 溫暖園丁'; mTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; mDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！'; } 
+                else if (userLevel === 2) { mIcon = '👍'; mBadge = '獲得稱號：🍀 Lv.2 熱心路人'; mTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; mDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉、愛心等基礎表情了！'; }
                 localStorage.setItem(storageKey, userLevel.toString());
-            } else {
+            } else if (!isAdminUser) {
                 let hiddenLevel = 0;
                 if (userLifetimeMessageCount >= 100) hiddenLevel = 5;
                 else if (userLifetimeMessageCount >= 90) hiddenLevel = 4;
@@ -700,17 +760,11 @@
                 if (hiddenLevel > seenHidden) {
                     shouldShowModal = true;
                     mIcon = '🎁'; mBadge = '🎊 發現隱藏彩蛋！';
-                    if (hiddenLevel === 5) {
-                        mTitle = '🔓 隱藏解鎖：🦄 傳說神話動態模板！'; mDesc = '太神啦！你已發布 100 則感謝！已為你解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！快去調色盤找找看。';
-                    } else if (hiddenLevel === 4) {
-                        mTitle = '🔓 隱藏解鎖：🌌 星際宇宙光暈模板！'; mDesc = '狂賀！你發布了 90 則感謝！你的心意超越了地球，現已解鎖深紫色的星雲漸層與光暈外框。';
-                    } else if (hiddenLevel === 3) {
-                        mTitle = '🔓 隱藏解鎖：👑 璀璨鑽金尊爵模板！'; mDesc = '狂賀！你發布了 80 則感謝！已解鎖尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！';
-                    } else if (hiddenLevel === 2) {
-                        mTitle = '🔓 隱藏解鎖：🔮 極光毛玻璃特效模板！'; mDesc = '狂賀！你發布了 70 則感謝！質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。';
-                    } else if (hiddenLevel === 1) {
-                        mTitle = '🔓 隱藏解鎖：🪩 賽博龐克霓虹模板！'; mDesc = '狂賀！你發布了 60 則感謝！打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。';
-                    }
+                    if (hiddenLevel === 5) { mTitle = '🔓 隱藏解鎖：🦄 傳說神話動態模板！'; mDesc = '太神啦！你已發布 100 則感謝！已為你解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！快去調色盤找找看。'; } 
+                    else if (hiddenLevel === 4) { mTitle = '🔓 隱藏解鎖：🌌 星際宇宙光暈模板！'; mDesc = '狂賀！你發布了 90 則感謝！你的心意超越了地球，現已解鎖深紫色的星雲漸層與光暈外框。'; } 
+                    else if (hiddenLevel === 3) { mTitle = '🔓 隱藏解鎖：👑 璀璨鑽金尊爵模板！'; mDesc = '狂賀！你發布了 80 則感謝！已解鎖尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！'; } 
+                    else if (hiddenLevel === 2) { mTitle = '🔓 隱藏解鎖：🔮 極光毛玻璃特效模板！'; mDesc = '狂賀！你發布了 70 則感謝！質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。'; } 
+                    else if (hiddenLevel === 1) { mTitle = '🔓 隱藏解鎖：🪩 賽博龐克霓虹模板！'; mDesc = '狂賀！你發布了 60 則感謝！打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。'; }
                     localStorage.setItem(hiddenStorageKey, hiddenLevel.toString());
                 }
             }
@@ -720,22 +774,6 @@
                 document.getElementById('levelUpFeatureTitle').innerText = mTitle; document.getElementById('levelUpFeatureDesc').innerText = mDesc;
                 levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
             }
-
-            document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
-            document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
-                btn.classList.remove('locked');
-                if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); 
-            });
-            document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
-            document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
-            document.getElementById('anonCheck').disabled = userLevel < 7;
-            document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
-            
-            document.getElementById('btnNeon').style.display = userLifetimeMessageCount >= 60 ? 'inline-block' : 'none';
-            document.getElementById('btnHolo').style.display = userLifetimeMessageCount >= 70 ? 'inline-block' : 'none';
-            document.getElementById('btnGold').style.display = userLifetimeMessageCount >= 80 ? 'inline-block' : 'none';
-            document.getElementById('btnCosmic').style.display = userLifetimeMessageCount >= 90 ? 'inline-block' : 'none';
-            document.getElementById('btnUltimate').style.display = userLifetimeMessageCount >= 100 ? 'inline-block' : 'none';
 
             renderEmojis();
         }
@@ -748,7 +786,7 @@
         function renderEmojis() {
             picker.innerHTML = '';
             let currentList = emojiBasicList;
-            if (userLevel >= 7) currentList = emojiFullList;
+            if (userLevel >= 7 || (currentUser && currentUser.email === ADMIN_EMAIL)) currentList = emojiFullList;
             else if (userLevel >= 4) currentList = emojiMidList;
 
             currentList.forEach(e => { 
@@ -760,7 +798,7 @@
 
         document.getElementById('emojiBtn').addEventListener('click', (e) => { 
             e.stopPropagation(); 
-            if (userLevel < 2) { playSound('click'); return alert('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
+            if (userLevel < 2 && !(currentUser && currentUser.email === ADMIN_EMAIL)) { playSound('click'); return alert('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
             picker.classList.toggle('active'); playSound('click'); 
         }); 
         picker.addEventListener('click', (e) => e.stopPropagation());
@@ -817,7 +855,7 @@
 
         const receiverInput = document.getElementById('receiverInput'); const autocompleteList = document.getElementById('autocompleteList');
         receiverInput.addEventListener('input', () => {
-            if (userLevel < 5 && receiverInput.value.includes(',')) {
+            if (userLevel < 5 && receiverInput.value.includes(',') && !(currentUser && currentUser.email === ADMIN_EMAIL)) {
                 receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click');
                 alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
             }
@@ -827,7 +865,7 @@
             if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(item => {
                     const div = document.createElement('div'); div.className = 'autocomplete-item'; div.innerText = item.split(' (')[0]; 
-                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(item.split(' (')[0]); receiverInput.value = cleanParts.join(', ') + (userLevel>=5 ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
+                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(item.split(' (')[0]); receiverInput.value = cleanParts.join(', ') + ((userLevel>=5 || (currentUser && currentUser.email === ADMIN_EMAIL)) ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
                     autocompleteList.appendChild(div);
                 }); autocompleteList.style.display = 'flex';
             } else { autocompleteList.style.display = 'none'; }
@@ -841,6 +879,24 @@
 
         document.getElementById('sendBtn').addEventListener('click', () => {
             if (!currentUser) return alert("請先登入 Google 帳號！");
+
+            const isAdminUser = currentUser.email === ADMIN_EMAIL;
+
+            // 👉 發文配額檢查 (管理員可無視配額)
+            if (!isAdminUser) {
+                const todayStart = new Date().setHours(0,0,0,0);
+                const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
+                let todayCount = 0; let monthCount = 0;
+                rawMessages.forEach(msg => {
+                    if (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名')) {
+                        if (msg.timestamp >= todayStart) todayCount++;
+                        if (msg.timestamp >= monthStart) monthCount++;
+                    }
+                });
+                if (todayCount >= 10) { playSound('click'); return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！'); }
+                if (monthCount >= 30) { playSound('click'); return alert('📝 溫馨提醒：你這個月已經送出 30 則感謝，達上限囉！請下個月再來分享吧！'); }
+            }
+
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '') || '大家';
             const text = msgInput.value.trim();
             if (text === '' && !attachedImageBase64) return;
@@ -851,8 +907,9 @@
 
             let sentAuthorLevel = userLevel;
             if (userLifetimeMessageCount >= 50) sentAuthorLevel = 8;
+            if (isAdminUser) sentAuthorLevel = 99; // 賦予管理員絕對高標的等級參數
 
-            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid });
+            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid, email: currentUser.email || '' });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
             
             themeManuallySelected = false; 
@@ -867,7 +924,7 @@
 
         let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; 
         function handleDragStart(e, card) {
-            if (userLevel < 3) {
+            if (userLevel < 3 && !(currentUser && currentUser.email === ADMIN_EMAIL)) {
                 if (!dragWarned && currentUser) { alert('🖐️ 達到「Lv.3 溫暖園丁 (5則留言)」就能解鎖自由拖曳功能喔！'); dragWarned = true; }
                 return;
             }
@@ -890,6 +947,12 @@
             const crownHtml = isTopLiked ? '<div class="crown-badge">👑 人氣王</div>' : '';
             const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
+
+            // 👉 判斷這張卡片是否為管理員發布
+            const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
+            const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
+            // 如果是管理員，用管理員徽章覆蓋大師徽章
+            const finalBadgeHtml = isAdminCard ? adminHtml : masterHtml;
             
             const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名'));
             const actionsHtml = isOwner ? `
@@ -909,7 +972,7 @@
             const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="${tooltipText}">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
 
             return `
-                ${masterHtml}
+                ${finalBadgeHtml}
                 ${crownHtml}
                 ${receiverHtml}
                 ${attachedImgHtml}
@@ -932,7 +995,7 @@
                 likeBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); 
                     if (!currentUser) return alert('請先登入 Google 帳號才能按讚喔！');
-                    if (userLevel < 2) { playSound('click'); return alert('👍 按讚功能需要達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖喔！'); }
+                    if (userLevel < 2 && !(currentUser && currentUser.email === ADMIN_EMAIL)) { playSound('click'); return alert('👍 按讚功能需要達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖喔！'); }
                     playSound('click');
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
                     if (msg.likes && msg.likes[currentUser.uid]) remove(likeRef); else set(likeRef, currentUser.displayName);
@@ -1024,7 +1087,7 @@
             const total = validMessages.length; 
             
             if (!themeManuallySelected && total > 0 && !isFilterMeOnly) {
-                const availableThemes = userLevel >= 4 ? themeList.slice(0, 10) : themeList.slice(0, 3);
+                const availableThemes = userLevel >= 4 || (currentUser && currentUser.email === ADMIN_EMAIL) ? themeList.slice(0, 10) : themeList.slice(0, 3);
                 const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
                 validMessages.forEach(msg => { 
                     if(availableThemes.includes(msg.theme)) themeCounts[msg.theme]++; 
@@ -1063,11 +1126,17 @@
             displayedMessages.forEach((msg, index) => {
                 const isTopLiked = (msg.likes && Object.keys(msg.likes).length === maxLikes && maxLikes > 0);
                 const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
+                const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
 
                 const card = document.createElement('div'); 
                 card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
                 card.setAttribute('data-id', msg.id);
-                if (isMaster && !msg.theme?.includes('theme-ultimate')) card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                // 處理陰影覆蓋邏輯
+                if (isAdminCard) {
+                    // admin theme 自己有 box-shadow，不用覆蓋
+                } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
+                    card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                }
                 
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
@@ -1101,22 +1170,18 @@
                 placedRects.push({ x: placedX, y: placedY, w: cardW, h: cardH });
                 card.style.left = `${placedX}px`; card.style.top = `${placedY}px`;
                 card.style.visibility = 'visible'; card.classList.add('floating');
-                card.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`); card.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
+                card.style.setProperty('--float-duration', `${4 + Math.random() * 3}s`); 
+                card.style.setProperty('--float-delay', `-${Math.random() * 3}s`);
 
                 bindCardEvents(card, msg);
             });
 
-            // 👉 湧泉式動態輪播機制：就算不到50篇也會把場上的卡片重新隨機洗牌浮現！
             if (validMessages.length > 2 && !isFilterMeOnly) {
-                // 固定每 6 秒進行一波替換/重生
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    // 1. 決定這波要動幾張：最少 1 張，最多 15 張 (看總數量的 1/4)
-                    let swapCount = Math.max(1, Math.floor(validMessages.length / 4));
-                    if (swapCount > 15) swapCount = 15;
+                    let swapCount = Math.min(3, Math.max(1, Math.floor(validMessages.length / 15)));
 
-                    // 2. 找出目前牆上不在操作中的卡片，並且按照 Z-index 由小到大排序 (找出壓在最底下的)
                     let availableCards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
                     if (availableCards.length === 0) return;
                     availableCards.sort((a, b) => parseInt(a.style.zIndex) - parseInt(b.style.zIndex));
@@ -1124,10 +1189,8 @@
                     const actualSwapCount = Math.min(swapCount, availableCards.length);
                     const cardsToRemove = availableCards.slice(0, actualSwapCount);
 
-                    // 如果有隱藏卡片，隨機選出準備要上場的隱藏卡片
                     const indicesToAdd = [];
                     if (hiddenMessages.length > 0) {
-                        // 避免無窮迴圈，最多只能抽隱藏陣列的長度
                         const pickCount = Math.min(actualSwapCount, hiddenMessages.length);
                         while(indicesToAdd.length < pickCount) {
                             const r = Math.floor(Math.random() * hiddenMessages.length);
@@ -1135,7 +1198,6 @@
                         }
                     }
 
-                    // 4. 利用 setTimeout 做出每張間隔 0.3秒 的流水替換特效
                     cardsToRemove.forEach((cardToSwap, i) => {
                         setTimeout(() => {
                             const removeId = cardToSwap.getAttribute('data-id');
@@ -1143,7 +1205,6 @@
                             if (removeIdx === -1) return;
 
                             let msgToAdd;
-
                             if (hiddenMessages.length > 0 && i < indicesToAdd.length) {
                                 const addIdx = indicesToAdd[i];
                                 msgToAdd = hiddenMessages[addIdx];
@@ -1152,25 +1213,28 @@
                                 displayedMessages[removeIdx] = msgToAdd;
                                 hiddenMessages[addIdx] = msgToRemove;
                             } else {
-                                // 就算沒有隱藏的，也把同一張重新拿出來重生！
                                 msgToAdd = displayedMessages[removeIdx];
                             }
 
-                            // 舊卡縮小淡出
+                            cardToSwap.style.pointerEvents = 'none';
                             cardToSwap.style.opacity = '0';
-                            cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.5}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
                             
                             setTimeout(() => {
-                                // 移除舊卡，創建新卡並隨機分配座標
                                 if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
 
                                 const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
                                 const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
+                                const isAdminCard = msgToAdd.email === ADMIN_EMAIL || (msgToAdd.author && msgToAdd.author.includes('Cholun Chang'));
 
                                 const newCard = document.createElement('div');
                                 newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
                                 newCard.setAttribute('data-id', msgToAdd.id);
-                                if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                                
+                                if (isAdminCard) {
+                                    // admin theme ignores manual box-shadow addition
+                                } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
+                                    newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                                }
 
                                 newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
 
@@ -1178,7 +1242,6 @@
                                 newCard.style.setProperty('--c-scale', scale);
                                 newCard.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
                                 
-                                // 👉 重點：確保新出現的卡片在最上層
                                 highestZ++;
                                 newCard.style.zIndex = highestZ;
                                 
@@ -1190,7 +1253,7 @@
                                 newCard.style.top = `${placedY}px`;
                                 
                                 newCard.style.opacity = '0';
-                                newCard.style.transform = `translate(-50%, -50%) scale(${scale * 0.5}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                                newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
                                 
                                 wall.appendChild(newCard);
                                 bindCardEvents(newCard, msgToAdd);
@@ -1198,16 +1261,15 @@
                                 requestAnimationFrame(() => {
                                     setTimeout(() => {
                                         newCard.style.opacity = (0.85 + Math.random() * 0.15).toString();
-                                        newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
                                         newCard.classList.add('floating');
-                                        newCard.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
-                                        newCard.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
+                                        newCard.style.setProperty('--float-duration', `${4 + Math.random() * 3}s`); 
+                                        newCard.style.setProperty('--float-delay', `-${Math.random() * 3}s`);
                                     }, 50);
                                 });
-                            }, 600);
-                        }, i * 300); // 每 0.3 秒消失並替換一張，形成流水般的輪播
+                            }, 1500); 
+                        }, i * 1200); 
                     });
-                }, 6000); // 固定每 6 秒檢查一次並進行批次替換
+                }, 6000); 
             }
         }
         window.addEventListener('resize', renderWall);
