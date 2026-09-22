@@ -144,7 +144,6 @@
         .board-col li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; font-weight: 600; }
         .board-col li span.count { background: #ffe4e1; color: #d64966; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
         
-        /* 👉 英雄榜平手共享金色樣式 */
         .board-col li.top-rank { color: #d4af37; font-size: 17px; } 
         .board-col li.top-rank span.count { background: #fff8dc; color: #b8860b; }
 
@@ -699,6 +698,14 @@
 
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
+                
+                // 👉 修正：確保管理員也一併顯示 60~100 則解鎖的 5 個傳說級模板！
+                document.getElementById('btnNeon').style.display = 'inline-block';
+                document.getElementById('btnHolo').style.display = 'inline-block';
+                document.getElementById('btnGold').style.display = 'inline-block';
+                document.getElementById('btnCosmic').style.display = 'inline-block';
+                document.getElementById('btnUltimate').style.display = 'inline-block';
+
                 document.getElementById('emojiBtn').classList.remove('locked');
                 document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('locked'));
                 document.getElementById('openDrawBtn').classList.remove('locked');
@@ -940,7 +947,6 @@
             const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
-            // 👉 管理員專屬徽章邏輯
             const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
             const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
             const finalBadgeHtml = isAdminCard ? adminHtml : masterHtml;
@@ -1048,7 +1054,6 @@
                 const ul = document.getElementById(elementId); ul.innerHTML = '';
                 if(listArr.length === 0) { ul.innerHTML = '<li style="justify-content:center; color:#999; font-weight:normal;">目前還沒有資料喔</li>'; return; }
                 
-                // 👉 英雄榜平手共享機制
                 const maxCount = listArr[0][1];
                 listArr.forEach((item, idx) => { 
                     const isTop = (item[1] === maxCount && maxCount > 0);
@@ -1176,11 +1181,9 @@
             });
 
             if (validMessages.length > 2 && !isFilterMeOnly) {
-                // 👉 優雅循環：每 6 秒觸發一次
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    // 👉 優雅循環：每次只換 1 到 3 張
                     let swapCount = Math.min(3, Math.max(1, Math.floor(validMessages.length / 15)));
 
                     let availableCards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
@@ -1200,7 +1203,6 @@
                     }
 
                     cardsToRemove.forEach((cardToSwap, i) => {
-                        // 👉 優雅循環：每張卡片間隔 1.2 秒才開始消失
                         setTimeout(() => {
                             const removeId = cardToSwap.getAttribute('data-id');
                             const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
@@ -1218,11 +1220,9 @@
                                 msgToAdd = displayedMessages[removeIdx];
                             }
 
-                            // 👉 純粹淡出，沒有縮小位移
                             cardToSwap.style.pointerEvents = 'none';
                             cardToSwap.style.opacity = '0';
                             
-                            // 👉 等待 1.5 秒淡出動畫完成
                             setTimeout(() => {
                                 if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
 
@@ -1255,7 +1255,6 @@
                                 newCard.style.left = `${placedX}px`;
                                 newCard.style.top = `${placedY}px`;
                                 
-                                // 👉 純粹淡入，沒有縮放位移
                                 newCard.style.opacity = '0';
                                 newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
                                 
