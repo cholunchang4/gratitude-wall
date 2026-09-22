@@ -65,7 +65,6 @@
         .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
         
-        /* 👉 管理員專屬徽章 */
         .admin-badge { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f); background-size: 300%; color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 13px; font-weight: 900; letter-spacing: 2px; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.8); z-index: 15; pointer-events: none; white-space: nowrap; animation: adminBadgeGlow 4s linear infinite; border: 1px solid rgba(255,255,255,0.8); }
         @keyframes adminBadgeGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
 
@@ -110,7 +109,6 @@
         @keyframes ultimateBg { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
         .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
-        /* 👉 管理員專屬神仙特效主題 */
         .theme-admin { 
             background: linear-gradient(135deg, rgba(15,32,39,0.95), rgba(32,58,67,0.95), rgba(44,83,100,0.95)) !important;
             border: none !important; 
@@ -145,8 +143,10 @@
         .board-col ul { list-style: none; padding: 0; margin: 0; }
         .board-col li { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 15px; font-weight: 600; }
         .board-col li span.count { background: #ffe4e1; color: #d64966; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        .board-col li:first-child { color: #d4af37; font-size: 17px; } 
-        .board-col li:first-child span.count { background: #fff8dc; color: #b8860b; }
+        
+        /* 👉 英雄榜平手共享金色樣式 */
+        .board-col li.top-rank { color: #d4af37; font-size: 17px; } 
+        .board-col li.top-rank span.count { background: #fff8dc; color: #b8860b; }
 
         .levelUp-card { text-align: center; border: 3px solid #ffd700; background: radial-gradient(circle at center, #ffffff 0%, #fff0f5 100%); box-shadow: 0 0 50px rgba(255, 215, 0, 0.5), inset 0 0 20px rgba(255, 215, 0, 0.2); animation: modalPop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @keyframes modalPop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
@@ -200,7 +200,6 @@
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
         
-        /* 👉 專屬管理員選擇按鈕 */
         .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
 
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
@@ -424,7 +423,6 @@
                 <div class="theme-btn theme-gold" data-theme="theme-gold" id="btnGold" style="display:none;" title="璀璨鑽金"></div>
                 <div class="theme-btn theme-cosmic" data-theme="theme-cosmic" id="btnCosmic" style="display:none;" title="星際宇宙"></div>
                 <div class="theme-btn theme-ultimate" data-theme="theme-ultimate" id="btnUltimate" style="display:none;" title="傳說神話"></div>
-                <!-- 👉 新增：管理員至尊專屬按鈕 -->
                 <div class="theme-btn theme-admin-btn" data-theme="theme-admin" id="btnAdmin" style="display:none;" title="👑 管理員至尊專屬"></div>
             </div>
             <div class="input-container">
@@ -459,7 +457,6 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        // 👉 定義管理員帳號
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const defaultDirectory = [
@@ -661,7 +658,6 @@
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
 
-            // 👉 判斷是否為管理員
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
 
             userLifetimeMessageCount = rawMessages.filter(m => m.uid === currentUser.uid || (!m.uid && m.author === currentUser.displayName && m.author !== '匿名')).length;
@@ -686,7 +682,6 @@
                 userLevel = 1; title = '🌱 Lv.1 新手幼苗'; msg = `發送 1 則解鎖「按讚與表情」`; maxLength = 20;
             }
 
-            // 👉 管理員無視字數限制
             if (isAdminUser) maxLength = 2000;
 
             const msgInput = document.getElementById('msgInput');
@@ -702,7 +697,6 @@
                 document.getElementById('levelHint').innerText = msg;
             }
 
-            // 👉 處理管理員神仙模式介面解鎖
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
                 document.getElementById('emojiBtn').classList.remove('locked');
@@ -730,7 +724,6 @@
                 document.getElementById('btnUltimate').style.display = userLifetimeMessageCount >= 100 ? 'inline-block' : 'none';
             }
 
-            // 處理一般使用者的彈窗邏輯
             const storageKey = `seen_pub_lvl_${currentUser.uid}`;
             const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
             let shouldShowModal = false;
@@ -882,7 +875,6 @@
 
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
 
-            // 👉 發文配額檢查 (管理員可無視配額)
             if (!isAdminUser) {
                 const todayStart = new Date().setHours(0,0,0,0);
                 const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
@@ -907,7 +899,7 @@
 
             let sentAuthorLevel = userLevel;
             if (userLifetimeMessageCount >= 50) sentAuthorLevel = 8;
-            if (isAdminUser) sentAuthorLevel = 99; // 賦予管理員絕對高標的等級參數
+            if (isAdminUser) sentAuthorLevel = 99; 
 
             push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid, email: currentUser.email || '' });
             msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
@@ -948,10 +940,9 @@
             const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
-            // 👉 判斷這張卡片是否為管理員發布
+            // 👉 管理員專屬徽章邏輯
             const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
             const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
-            // 如果是管理員，用管理員徽章覆蓋大師徽章
             const finalBadgeHtml = isAdminCard ? adminHtml : masterHtml;
             
             const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名'));
@@ -1056,7 +1047,16 @@
             const renderList = (listArr, elementId) => {
                 const ul = document.getElementById(elementId); ul.innerHTML = '';
                 if(listArr.length === 0) { ul.innerHTML = '<li style="justify-content:center; color:#999; font-weight:normal;">目前還沒有資料喔</li>'; return; }
-                listArr.forEach((item, idx) => { const li = document.createElement('li'); li.innerHTML = `<span>${idx === 0 ? '👑 ' : ''}${item[0]}</span> <span class="count">${item[1]} 次</span>`; ul.appendChild(li); });
+                
+                // 👉 英雄榜平手共享機制
+                const maxCount = listArr[0][1];
+                listArr.forEach((item, idx) => { 
+                    const isTop = (item[1] === maxCount && maxCount > 0);
+                    const li = document.createElement('li'); 
+                    if(isTop) li.className = 'top-rank';
+                    li.innerHTML = `<span>${isTop ? '👑 ' : ''}${item[0]}</span> <span class="count">${item[1]} 次</span>`; 
+                    ul.appendChild(li); 
+                });
             };
             renderList(getTop10(leaderboardData.senders), 'topSendersList'); renderList(getTop10(leaderboardData.receivers), 'topReceiversList');
         }
@@ -1131,9 +1131,8 @@
                 const card = document.createElement('div'); 
                 card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
                 card.setAttribute('data-id', msg.id);
-                // 處理陰影覆蓋邏輯
+                
                 if (isAdminCard) {
-                    // admin theme 自己有 box-shadow，不用覆蓋
                 } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
                     card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                 }
@@ -1177,9 +1176,11 @@
             });
 
             if (validMessages.length > 2 && !isFilterMeOnly) {
+                // 👉 優雅循環：每 6 秒觸發一次
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
+                    // 👉 優雅循環：每次只換 1 到 3 張
                     let swapCount = Math.min(3, Math.max(1, Math.floor(validMessages.length / 15)));
 
                     let availableCards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
@@ -1199,6 +1200,7 @@
                     }
 
                     cardsToRemove.forEach((cardToSwap, i) => {
+                        // 👉 優雅循環：每張卡片間隔 1.2 秒才開始消失
                         setTimeout(() => {
                             const removeId = cardToSwap.getAttribute('data-id');
                             const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
@@ -1216,9 +1218,11 @@
                                 msgToAdd = displayedMessages[removeIdx];
                             }
 
+                            // 👉 純粹淡出，沒有縮小位移
                             cardToSwap.style.pointerEvents = 'none';
                             cardToSwap.style.opacity = '0';
                             
+                            // 👉 等待 1.5 秒淡出動畫完成
                             setTimeout(() => {
                                 if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
 
@@ -1231,7 +1235,6 @@
                                 newCard.setAttribute('data-id', msgToAdd.id);
                                 
                                 if (isAdminCard) {
-                                    // admin theme ignores manual box-shadow addition
                                 } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
                                     newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                                 }
@@ -1252,6 +1255,7 @@
                                 newCard.style.left = `${placedX}px`;
                                 newCard.style.top = `${placedY}px`;
                                 
+                                // 👉 純粹淡入，沒有縮放位移
                                 newCard.style.opacity = '0';
                                 newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
                                 
