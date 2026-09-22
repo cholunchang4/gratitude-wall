@@ -176,7 +176,7 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-        
+
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -420,6 +420,7 @@
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
+        let highestZ = 100; // 👉 全域管理 Z 軸，確保新卡片永遠在最上層
 
         let userLevel = 1;
         let userLifetimeMessageCount = 0;
@@ -864,7 +865,7 @@
 
         onValue(ref(db, 'settings'), (snapshot) => { const data = snapshot.val(); if (data) { document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; systemSettings.maxMessages = data.maxMessages || 50; systemSettings.retentionDays = data.retentionDays || 30; renderWall(); } });
 
-        let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; let highestZ = 100;
+        let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; 
         function handleDragStart(e, card) {
             if (userLevel < 3) {
                 if (!dragWarned && currentUser) { alert('🖐️ 達到「Lv.3 溫暖園丁 (5則留言)」就能解鎖自由拖曳功能喔！'); dragWarned = true; }
@@ -1005,9 +1006,8 @@
             const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
             const retentionMs = safeDays * 24 * 60 * 60 * 1000;
             
-            // 👉 電腦版預設 24，手機版自動限縮到 12 (觸發提前輪播)
-            const defaultMax = isMobile ? 12 : 24;
-            // 這裡強制最高不超過設定值，避免畫面過度擁擠
+            // 👉 電腦版預設 50，手機版自動限縮到 20 以防破版
+            const defaultMax = isMobile ? 20 : 50;
             const safeMax = systemSettings.maxMessages ? Math.min(parseInt(systemSettings.maxMessages), defaultMax) : defaultMax;
 
             let validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= retentionMs);
@@ -1054,14 +1054,14 @@
             let hiddenMessages = isFilterMeOnly ? [] : validMessages.slice(safeMax);
 
             const screenW = window.innerWidth; const screenH = window.innerHeight;
-            // 👉 優化排版：允許卡片往左右邊緣更靠近一點 (減少 Margin)
             const sideLimit = isMobile ? 10 : 40; 
             const topLimit = isMobile ? 100 : 140; 
             const bottomLimit = isMobile ? 170 : 160; 
             const mobileScaleDown = isMobile ? 0.6 : 1.0; 
             const placedRects = [];
-            const overlapAllowance = 30; // 防重疊演算法的排斥力
+            const overlapAllowance = 30; 
 
+            // 第一次載入所有的卡片
             displayedMessages.forEach((msg, index) => {
                 const isTopLiked = (msg.likes && Object.keys(msg.likes).length === maxLikes && maxLikes > 0);
                 const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
@@ -1073,12 +1073,15 @@
                 
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
-                // 👉 視覺平權：大家的大小差不多，不再根據時間放大縮小，只套用小幅度的隨機縮放
+                // 👉 取消「越新越大」，全部均勻微隨機縮放
                 const scale = (0.85 + Math.random() * 0.3) * mobileScaleDown;
                 card.style.setProperty('--c-scale', scale);
                 card.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
                 card.style.opacity = (0.85 + Math.random() * 0.15).toString(); 
-                card.style.zIndex = Math.floor(Math.random() * 100) + 10; 
+                
+                // 確保初始的 Z-index 遞增
+                highestZ++;
+                card.style.zIndex = highestZ; 
                 card.style.visibility = 'hidden'; 
                 wall.appendChild(card);
 
@@ -1107,83 +1110,97 @@
                 bindCardEvents(card, msg);
             });
 
-            // 👉 真・動態隨機輪播系統 (隨機地點湧現)
+            // 👉 湧泉式動態輪播機制：批次替換壓在底層的卡片
             if (hiddenMessages.length > 0 && !isFilterMeOnly) {
-                // 智慧車速控制：留言越多換越快
-                const ratio = validMessages.length / safeMax; 
-                const intervalMs = Math.max(2000, 8000 / ratio); 
-
+                // 固定每 8 秒進行一波大替換
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    // 1. 隨機挑一張場上的舊卡片消失
-                    const cards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
-                    if (cards.length === 0) return;
-                    const cardToSwap = cards[Math.floor(Math.random() * cards.length)];
-                    
-                    const removeId = cardToSwap.getAttribute('data-id');
-                    const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
-                    if (removeIdx === -1) return;
+                    // 1. 決定這波要換幾張：最少 3 張，最多 15 張
+                    let swapCount = Math.min(hiddenMessages.length, Math.max(3, Math.floor(hiddenMessages.length / 4)));
+                    if (swapCount > 15) swapCount = 15;
 
-                    // 2. 從隱藏區抽一張新卡片
-                    const addIdx = Math.floor(Math.random() * hiddenMessages.length);
-                    const msgToAdd = hiddenMessages[addIdx];
-                    const msgToRemove = displayedMessages[removeIdx];
-                    
-                    displayedMessages[removeIdx] = msgToAdd;
-                    hiddenMessages[addIdx] = msgToRemove;
+                    // 2. 找出目前牆上不在操作中的卡片，並且按照 Z-index 由小到大排序 (找出壓在最底下的)
+                    let availableCards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
+                    if (availableCards.length === 0) return;
+                    availableCards.sort((a, b) => parseInt(a.style.zIndex) - parseInt(b.style.zIndex));
 
-                    // 3. 執行縮小淡出動畫
-                    cardToSwap.style.opacity = '0';
-                    cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.5}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
-                    
-                    setTimeout(() => {
-                        // 4. 移除舊卡，創建一張全新卡片並分配全新隨機位置
-                        if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
+                    const actualSwapCount = Math.min(swapCount, availableCards.length);
+                    const cardsToRemove = availableCards.slice(0, actualSwapCount);
 
-                        const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
-                        const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
+                    // 3. 隨機選出準備要上場的隱藏卡片
+                    const indicesToAdd = [];
+                    while(indicesToAdd.length < actualSwapCount) {
+                        const r = Math.floor(Math.random() * hiddenMessages.length);
+                        if(!indicesToAdd.includes(r)) indicesToAdd.push(r);
+                    }
 
-                        const newCard = document.createElement('div');
-                        newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                        newCard.setAttribute('data-id', msgToAdd.id);
-                        if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                    // 4. 利用 setTimeout 做出每張間隔 0.25秒 的流水替換特效
+                    cardsToRemove.forEach((cardToSwap, i) => {
+                        setTimeout(() => {
+                            const removeId = cardToSwap.getAttribute('data-id');
+                            const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
+                            if (removeIdx === -1) return;
 
-                        newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
+                            const addIdx = indicesToAdd[i];
+                            const msgToAdd = hiddenMessages[addIdx];
+                            const msgToRemove = displayedMessages[removeIdx];
+                            
+                            displayedMessages[removeIdx] = msgToAdd;
+                            hiddenMessages[addIdx] = msgToRemove;
 
-                        // 賦予新的隨機大小、角度與 Z 軸
-                        const scale = (0.85 + Math.random() * 0.3) * mobileScaleDown;
-                        newCard.style.setProperty('--c-scale', scale);
-                        newCard.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
-                        newCard.style.zIndex = Math.floor(Math.random() * 100) + 10;
-                        
-                        // 隨機產生一個全新的座標
-                        const cardW = 250 * scale; const cardH = 150 * scale; 
-                        let placedX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
-                        let placedY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
-                        
-                        newCard.style.left = `${placedX}px`;
-                        newCard.style.top = `${placedY}px`;
-                        
-                        // 初始狀態為透明與縮小
-                        newCard.style.opacity = '0';
-                        newCard.style.transform = `translate(-50%, -50%) scale(${scale * 0.5}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
-                        
-                        wall.appendChild(newCard);
-                        bindCardEvents(newCard, msgToAdd);
-                        
-                        // 5. 執行放大淡入動畫
-                        requestAnimationFrame(() => {
+                            // 舊卡縮小淡出
+                            cardToSwap.style.opacity = '0';
+                            cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.5}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
+                            
                             setTimeout(() => {
-                                newCard.style.opacity = (0.85 + Math.random() * 0.15).toString();
-                                newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
-                                newCard.classList.add('floating');
-                                newCard.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
-                                newCard.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
-                            }, 50);
-                        });
-                    }, 600);
-                }, intervalMs);
+                                // 移除舊卡，創建新卡並隨機分配座標
+                                if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
+
+                                const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
+                                const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
+
+                                const newCard = document.createElement('div');
+                                newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                                newCard.setAttribute('data-id', msgToAdd.id);
+                                if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+
+                                newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
+
+                                const scale = (0.85 + Math.random() * 0.3) * mobileScaleDown;
+                                newCard.style.setProperty('--c-scale', scale);
+                                newCard.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
+                                
+                                // 👉 重點：確保新出現的卡片在最上層
+                                highestZ++;
+                                newCard.style.zIndex = highestZ;
+                                
+                                const cardW = 250 * scale; const cardH = 150 * scale; 
+                                let placedX = sideLimit + cardW/2 + Math.random() * (screenW - sideLimit*2 - cardW);
+                                let placedY = topLimit + cardH/2 + Math.random() * (screenH - topLimit - bottomLimit - cardH);
+                                
+                                newCard.style.left = `${placedX}px`;
+                                newCard.style.top = `${placedY}px`;
+                                
+                                newCard.style.opacity = '0';
+                                newCard.style.transform = `translate(-50%, -50%) scale(${scale * 0.5}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                                
+                                wall.appendChild(newCard);
+                                bindCardEvents(newCard, msgToAdd);
+                                
+                                requestAnimationFrame(() => {
+                                    setTimeout(() => {
+                                        newCard.style.opacity = (0.85 + Math.random() * 0.15).toString();
+                                        newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                                        newCard.classList.add('floating');
+                                        newCard.style.setProperty('--float-duration', `${3 + Math.random() * 2}s`);
+                                        newCard.style.setProperty('--float-delay', `-${Math.random() * 2}s`);
+                                    }, 50);
+                                });
+                            }, 600);
+                        }, i * 250); // 每 0.25 秒消失並替換一張，形成流水般的輪播
+                    });
+                }, 8000); // 固定每 8 秒檢查一次並進行批次替換
             }
         }
         window.addEventListener('resize', renderWall);
