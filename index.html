@@ -94,6 +94,7 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
+        /* 隱藏版彩蛋特效外觀 (60~100則解鎖) */
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
         .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -133,6 +134,7 @@
         .feature-unlock-box h4 { margin: 0 0 8px 0; color: #e63946; font-size: 16px; display: flex; align-items: center; gap: 8px; }
         .feature-unlock-box p { margin: 0; font-size: 14px; color: #555; line-height: 1.5; }
 
+        /* 繪圖板 UI */
         .draw-toolbar { display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 15px; flex-wrap: wrap; background: rgba(255,255,255,0.7); padding: 10px; border-radius: 15px; }
         .tool-group { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #555; }
         input[type="color"] { -webkit-appearance: none; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; padding: 0; background: none; }
@@ -176,7 +178,7 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-
+        
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -487,7 +489,7 @@
             'Vivien Tan (vivien.tan.vt1@roche.com)', 'Wayne Lin (wayne.lin@roche.com)', 'Wendy Chen (wendy.chen@roche.com)',
             'Wendy Huang (wendy.huang@roche.com)', 'Wendy PY Yu (wendy_py.yu@roche.com)', 'William Shen (william.shen.ws1@roche.com)',
             'YaChu Chao (yachu.chao@roche.com)', 'Yi-Wen Chen (yi-wen.chen@roche.com)', 'Yifan Chen (yifan.chen.yc1@roche.com)',
-            'Yvonne Lee (yvonne.lee.yl5@roche.com)', 'Zach Wei (zach.wei@external.roche.com)', 'Zoe Chen (zoe.chen.zc2@roche.com)',
+            'Yvonne Lee (yvonne.lee.yl5@roche.com)', 'Zach Wei (optional.wei@external.roche.com)', 'Zoe Chen (zoe.chen.zc2@roche.com)',
             'allen.tsai (allen.tsai@roche.com)', 'amanda.liu (amanda.liu@roche.com)', 'astrid.yang (astrid.yang@roche.com)',
             'cindy.huang.ch2 (cindy.huang.ch2@roche.com)', 'edward.kuo (edward.kuo@roche.com)', 'edward.tan (edward.tan@roche.com)',
             'elin.shen (elin.shen@roche.com)', 'fanny.tseng (fanny.tseng@roche.com)', 'jack.chiu (jack.chiu@roche.com)',
@@ -955,8 +957,7 @@
                 delBtn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
                 delBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); playSound('click');
-                    // 👉 刪除時的扣除經驗提示
-                    if (confirm('確定要刪除這張感謝卡嗎？\\n⚠️ 注意：刪除後將無法復原，且該留言將不列入經驗值計算喔！')) {
+                    if (confirm('確定要刪除這張感謝卡嗎？\n⚠️ 注意：刪除後將無法復原，且該留言將不列入經驗值計算喔！')) {
                         remove(ref(db, `messages/${msg.id}`));
                         closeFocus();
                     }
@@ -1002,9 +1003,14 @@
         function renderWall() {
             if (window.wallRotationInterval) clearInterval(window.wallRotationInterval);
             const wall = document.getElementById('wall'); wall.innerHTML = '';
+            
+            const isMobile = window.innerWidth <= 768;
             const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
             const retentionMs = safeDays * 24 * 60 * 60 * 1000;
-            const safeMax = Math.max(parseInt(systemSettings.maxMessages) || 50, 1);
+            
+            // 👉 手機版自動限縮顯示數量
+            const defaultMax = isMobile ? 15 : 50;
+            const safeMax = systemSettings.maxMessages ? Math.max(parseInt(systemSettings.maxMessages), 1) : defaultMax;
 
             let validMessages = rawMessages.filter(msg => (Date.now() - (msg.timestamp || 0)) <= retentionMs);
 
@@ -1050,7 +1056,6 @@
             let displayedMessages = isFilterMeOnly ? validMessages : validMessages.slice(0, safeMax);
             let hiddenMessages = isFilterMeOnly ? [] : validMessages.slice(safeMax);
 
-            const isMobile = window.innerWidth <= 768;
             const screenW = window.innerWidth; const screenH = window.innerHeight;
             const sideLimit = isMobile ? 15 : 30; const topLimit = isMobile ? 120 : 130; const bottomLimit = isMobile ? 180 : 160; 
             let richnessScale = displayedMessages.length <= 5 ? 1.1 : (displayedMessages.length <= 15 ? 1.0 : 0.85);
@@ -1064,7 +1069,7 @@
 
                 const card = document.createElement('div'); 
                 card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                card.setAttribute('data-id', msg.id); // 為了輪播識別
+                card.setAttribute('data-id', msg.id);
                 if (isMaster && !msg.theme?.includes('theme-ultimate')) card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                 
                 card.innerHTML = generateCardHTML(msg, maxLikes);
@@ -1104,15 +1109,12 @@
 
             // 👉 啟動智慧動態輪播機制
             if (hiddenMessages.length > 0 && !isFilterMeOnly) {
-                // 依據隱藏留言的比例計算輪播速度 (最多 2 秒換一張，最慢 8 秒換一張)
                 const ratio = validMessages.length / safeMax; 
                 const intervalMs = Math.max(2000, 8000 / ratio); 
 
                 window.wallRotationInterval = setInterval(() => {
-                    // 如果使用者正在操作、或是網頁在背景執行，則暫停輪播
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    // 挑選一張不在焦點狀態且沒有在拖曳的卡片
                     const cards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
                     if (cards.length === 0) return;
                     const cardToSwap = cards[Math.floor(Math.random() * cards.length)];
@@ -1121,21 +1123,22 @@
                     const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
                     if (removeIdx === -1) return;
 
-                    // 從隱藏區挑選一張新的
                     const addIdx = Math.floor(Math.random() * hiddenMessages.length);
                     const msgToAdd = hiddenMessages[addIdx];
                     const msgToRemove = displayedMessages[removeIdx];
                     
-                    // 交換資料陣列
                     displayedMessages[removeIdx] = msgToAdd;
                     hiddenMessages[addIdx] = msgToRemove;
 
-                    // 執行淡出動畫
                     cardToSwap.style.opacity = '0';
+                    cardToSwap.style.transform = `translate(-50%, -50%) scale(${parseFloat(cardToSwap.style.getPropertyValue('--c-scale')) * 0.8}) rotate(${cardToSwap.style.getPropertyValue('--c-rotate')})`;
                     
                     setTimeout(() => {
                         const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
                         const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
+
+                        const scale = (1.5 - ((displayedMessages.length > 1 ? removeIdx / (displayedMessages.length - 1) : 0) * 0.9)) * richnessScale * mobileScaleDown;
+                        const originalOpacity = 1 - ((displayedMessages.length > 1 ? removeIdx / (displayedMessages.length - 1) : 0) * 0.35);
 
                         cardToSwap.setAttribute('data-id', msgToAdd.id);
                         cardToSwap.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
@@ -1144,13 +1147,18 @@
                         
                         cardToSwap.innerHTML = generateCardHTML(msgToAdd, maxLikes);
                         
-                        // 移除舊事件並重新綁定
                         const newCard = cardToSwap.cloneNode(true);
+                        newCard.style.opacity = '0'; 
+                        newCard.style.setProperty('--c-scale', scale);
+                        newCard.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
+
                         cardToSwap.parentNode.replaceChild(newCard, cardToSwap);
                         bindCardEvents(newCard, msgToAdd);
                         
-                        // 執行淡入動畫
-                        requestAnimationFrame(() => { newCard.style.opacity = '1'; });
+                        setTimeout(() => { 
+                            newCard.style.opacity = originalOpacity; 
+                            newCard.style.transform = `translate(-50%, -50%) scale(${scale}) rotate(${newCard.style.getPropertyValue('--c-rotate')})`;
+                        }, 50);
                     }, 600);
                 }, intervalMs);
             }
