@@ -176,7 +176,7 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-
+        
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
@@ -420,7 +420,7 @@
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
-        let highestZ = 100; // 👉 全域管理 Z 軸，確保新卡片永遠在最上層
+        let highestZ = 100;
 
         let userLevel = 1;
         let userLifetimeMessageCount = 0;
@@ -1006,7 +1006,6 @@
             const safeDays = Math.max(parseInt(systemSettings.retentionDays) || 30, 1);
             const retentionMs = safeDays * 24 * 60 * 60 * 1000;
             
-            // 👉 電腦版預設 50，手機版自動限縮到 20 以防破版
             const defaultMax = isMobile ? 20 : 50;
             const safeMax = systemSettings.maxMessages ? Math.min(parseInt(systemSettings.maxMessages), defaultMax) : defaultMax;
 
@@ -1061,7 +1060,6 @@
             const placedRects = [];
             const overlapAllowance = 30; 
 
-            // 第一次載入所有的卡片
             displayedMessages.forEach((msg, index) => {
                 const isTopLiked = (msg.likes && Object.keys(msg.likes).length === maxLikes && maxLikes > 0);
                 const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
@@ -1073,13 +1071,11 @@
                 
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
-                // 👉 取消「越新越大」，全部均勻微隨機縮放
                 const scale = (0.85 + Math.random() * 0.3) * mobileScaleDown;
                 card.style.setProperty('--c-scale', scale);
                 card.style.setProperty('--c-rotate', `${(Math.random() - 0.5) * 14}deg`);
                 card.style.opacity = (0.85 + Math.random() * 0.15).toString(); 
                 
-                // 確保初始的 Z-index 遞增
                 highestZ++;
                 card.style.zIndex = highestZ; 
                 card.style.visibility = 'hidden'; 
@@ -1110,14 +1106,14 @@
                 bindCardEvents(card, msg);
             });
 
-            // 👉 湧泉式動態輪播機制：批次替換壓在底層的卡片
-            if (hiddenMessages.length > 0 && !isFilterMeOnly) {
-                // 固定每 8 秒進行一波大替換
+            // 👉 湧泉式動態輪播機制：就算不到50篇也會把場上的卡片重新隨機洗牌浮現！
+            if (validMessages.length > 2 && !isFilterMeOnly) {
+                // 固定每 6 秒進行一波替換/重生
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    // 1. 決定這波要換幾張：最少 3 張，最多 15 張
-                    let swapCount = Math.min(hiddenMessages.length, Math.max(3, Math.floor(hiddenMessages.length / 4)));
+                    // 1. 決定這波要動幾張：最少 1 張，最多 15 張 (看總數量的 1/4)
+                    let swapCount = Math.max(1, Math.floor(validMessages.length / 4));
                     if (swapCount > 15) swapCount = 15;
 
                     // 2. 找出目前牆上不在操作中的卡片，並且按照 Z-index 由小到大排序 (找出壓在最底下的)
@@ -1128,26 +1124,37 @@
                     const actualSwapCount = Math.min(swapCount, availableCards.length);
                     const cardsToRemove = availableCards.slice(0, actualSwapCount);
 
-                    // 3. 隨機選出準備要上場的隱藏卡片
+                    // 如果有隱藏卡片，隨機選出準備要上場的隱藏卡片
                     const indicesToAdd = [];
-                    while(indicesToAdd.length < actualSwapCount) {
-                        const r = Math.floor(Math.random() * hiddenMessages.length);
-                        if(!indicesToAdd.includes(r)) indicesToAdd.push(r);
+                    if (hiddenMessages.length > 0) {
+                        // 避免無窮迴圈，最多只能抽隱藏陣列的長度
+                        const pickCount = Math.min(actualSwapCount, hiddenMessages.length);
+                        while(indicesToAdd.length < pickCount) {
+                            const r = Math.floor(Math.random() * hiddenMessages.length);
+                            if(!indicesToAdd.includes(r)) indicesToAdd.push(r);
+                        }
                     }
 
-                    // 4. 利用 setTimeout 做出每張間隔 0.25秒 的流水替換特效
+                    // 4. 利用 setTimeout 做出每張間隔 0.3秒 的流水替換特效
                     cardsToRemove.forEach((cardToSwap, i) => {
                         setTimeout(() => {
                             const removeId = cardToSwap.getAttribute('data-id');
                             const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
                             if (removeIdx === -1) return;
 
-                            const addIdx = indicesToAdd[i];
-                            const msgToAdd = hiddenMessages[addIdx];
-                            const msgToRemove = displayedMessages[removeIdx];
-                            
-                            displayedMessages[removeIdx] = msgToAdd;
-                            hiddenMessages[addIdx] = msgToRemove;
+                            let msgToAdd;
+
+                            if (hiddenMessages.length > 0 && i < indicesToAdd.length) {
+                                const addIdx = indicesToAdd[i];
+                                msgToAdd = hiddenMessages[addIdx];
+                                const msgToRemove = displayedMessages[removeIdx];
+                                
+                                displayedMessages[removeIdx] = msgToAdd;
+                                hiddenMessages[addIdx] = msgToRemove;
+                            } else {
+                                // 就算沒有隱藏的，也把同一張重新拿出來重生！
+                                msgToAdd = displayedMessages[removeIdx];
+                            }
 
                             // 舊卡縮小淡出
                             cardToSwap.style.opacity = '0';
@@ -1198,9 +1205,9 @@
                                     }, 50);
                                 });
                             }, 600);
-                        }, i * 250); // 每 0.25 秒消失並替換一張，形成流水般的輪播
+                        }, i * 300); // 每 0.3 秒消失並替換一張，形成流水般的輪播
                     });
-                }, 8000); // 固定每 8 秒檢查一次並進行批次替換
+                }, 6000); // 固定每 6 秒檢查一次並進行批次替換
             }
         }
         window.addEventListener('resize', renderWall);
