@@ -263,6 +263,9 @@
     </div>
 
     <div class="top-btn-group">
+        <!-- 👉 新增：中秋限定企劃按鈕 -->
+        <button id="festivalBtn" class="icon-btn" title="中秋活動說明" style="display: none; background: #fff8dc; border-color: #ffd700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5));">🌕</button>
+        
         <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
         <button id="rulesBtn" class="icon-btn" title="暖心公約">📜</button>
         <button id="filterMeBtn" class="icon-btn" title="我的回憶">👀</button>
@@ -270,6 +273,25 @@
     </div>
     
     <div class="focus-overlay" id="focusOverlay"></div>
+
+    <!-- 👉 新增：中秋限定企劃說明面板 -->
+    <div class="focus-overlay" id="festivalOverlay">
+        <div class="modal-box" style="max-width: 550px; background: linear-gradient(135deg, #1e232e 0%, #0f2027 100%); color: #fff; border: 1px solid #ffd700; box-shadow: 0 20px 50px rgba(255,215,0,0.2);">
+            <button class="close-btn" id="closeFestival" style="color: #ffd700;">✖</button>
+            <h2 style="text-align: center; color: #ffd700; margin-top: 0; font-size: 24px; text-shadow: 0 2px 5px rgba(255,215,0,0.5);">🌕 中秋限時特別企劃 🥮</h2>
+            <div style="font-size: 15px; color: #f0f0f0; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+                <p style="text-align: center; margin-bottom: 20px;">歡迎來到中秋限定感謝牆！<br>9/24 - 9/30 期間，我們為大家準備了專屬的互動驚喜：</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li style="margin-bottom: 12px;">🌌 <b>星夜與玉兔</b>：版面已自動切換為星夜模式，偶爾會有祈福天燈與小玉兔飄過喔！發文時也可選擇限定的「皓月當空」主題。</li>
+                    <li style="margin-bottom: 12px;">🥮 <b>送月餅取代按讚</b>：日常的「按讚」全面替換為「送月餅」！點擊時還會噴發金黃色的專屬彩帶。</li>
+                    <li style="margin-bottom: 12px;">🎁 <b>首創「月餅盲盒」玩法</b>：發文時勾選盲盒並指定收件人，卡片在牆上會偽裝成一顆未開箱的月餅！<b>只有「收件人本人」登入點擊才能解鎖</b>，且解鎖瞬間全公司的牆面都會同步看見裡面的真心話！</li>
+                    <li style="margin-bottom: 12px;">🏆 <b>團圓大使與限定英雄榜</b>：活動期間發送的卡片將永久獲得「🥮 團圓大使」徽章！英雄榜也會限時轉變為中秋爭霸模式。</li>
+                    <li style="margin-bottom: 12px;">✨ <b>活動專屬加碼</b>：若您的發文配額已滿，系統將為您自動解鎖額外 10 則的中秋備用彈匣，讓您暢所欲言！</li>
+                </ul>
+                <p style="font-size: 13px; text-align: center; color: #b8860b; margin-top: 20px; font-weight: bold;">(此活動模式將於 9/30 23:59 自動結束)</p>
+            </div>
+        </div>
+    </div>
 
     <div class="focus-overlay" id="leaderboardOverlay">
         <div class="modal-box">
@@ -491,9 +513,15 @@
         function initFestivalUI() {
             if (!IS_MID_AUTUMN) {
                 document.getElementById('mooncakeWrapper').style.display = 'none';
+                document.getElementById('festivalBtn').style.display = 'none';
                 return;
             }
             
+            // 顯示企劃說明按鈕並加上呼吸動畫
+            const festivalBtn = document.getElementById('festivalBtn');
+            festivalBtn.style.display = 'inline-block';
+            festivalBtn.style.animation = 'goldenPulse 2s infinite alternate';
+
             // 更換夜空背景與燈籠粒子
             document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)');
             document.documentElement.style.setProperty('--geo-bg-1', 'rgba(255, 215, 0, 0.08)');
@@ -662,6 +690,10 @@
 
         const wall = document.getElementById('wall');
         
+        const festivalOverlay = document.getElementById('festivalOverlay');
+        document.getElementById('festivalBtn').addEventListener('click', () => { playSound('click'); festivalOverlay.classList.add('active'); });
+        document.getElementById('closeFestival').addEventListener('click', () => { playSound('click'); festivalOverlay.classList.remove('active'); });
+
         const rulesOverlay = document.getElementById('rulesOverlay');
         document.getElementById('rulesBtn').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.add('active'); });
         document.getElementById('closeRules').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.remove('active'); });
@@ -769,6 +801,7 @@
 
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
+                
                 document.getElementById('btnNeon').style.display = 'inline-block';
                 document.getElementById('btnHolo').style.display = 'inline-block';
                 document.getElementById('btnGold').style.display = 'inline-block';
@@ -963,6 +996,8 @@
             }
             if (!receiver) receiver = '大家';
 
+            let useExtraQuota = false; 
+
             if (!isAdminUser) {
                 const now = Date.now();
                 const todayStart = new Date().setHours(0,0,0,0);
@@ -970,16 +1005,33 @@
                 
                 let todayCount = 0; 
                 let monthCount = 0;
+                let eventExtraCount = 0; 
                 
                 rawMessages.forEach(msg => {
                     if (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名')) {
-                        if (msg.timestamp >= todayStart) todayCount++;
-                        if (msg.timestamp >= thirtyDaysAgo) monthCount++;
+                        if (msg.isEventExtra) {
+                            if (checkIsMidAutumn(msg.timestamp)) eventExtraCount++;
+                        } else {
+                            if (msg.timestamp >= todayStart) todayCount++;
+                            if (msg.timestamp >= thirtyDaysAgo) monthCount++;
+                        }
                     }
                 });
                 
-                if (todayCount >= 10) { playSound('click'); return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！'); }
-                if (monthCount >= 30) { playSound('click'); return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！'); }
+                if (todayCount >= 10 || monthCount >= 30) {
+                    if (IS_MID_AUTUMN && eventExtraCount < 10) {
+                        useExtraQuota = true; 
+                    } else {
+                        playSound('click');
+                        if (IS_MID_AUTUMN && eventExtraCount >= 10) {
+                            return alert('📝 溫馨提醒：您的一般配額與「10則中秋活動額外名額」皆已用盡囉！請過幾天再來分享吧！');
+                        } else if (todayCount >= 10) {
+                            return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！');
+                        } else {
+                            return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！');
+                        }
+                    }
+                }
             }
 
             const text = msgInput.value.trim();
@@ -1012,9 +1064,12 @@
                     uid: currentUser.uid, 
                     email: currentUser.email || '',
                     isMooncake: isMooncake,
-                    isOpened: false
+                    isOpened: false,
+                    isEventExtra: useExtraQuota 
                 });
                 
+                rawMessages.push({ timestamp: Date.now(), uid: currentUser.uid, isEventExtra: useExtraQuota });
+
                 msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 themeManuallySelected = false; 
                 playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
@@ -1079,19 +1134,16 @@
             const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
-            // 👉 專屬節慶徽章判斷：只要是在活動期間發出的訊息，永遠帶有團圓大使勳章
             const isFestivalMsg = checkIsMidAutumn(msg.timestamp || 0);
             const festivalBadgeHtml = isFestivalMsg ? '<div class="festival-badge">🥮 團圓大使</div>' : '';
 
             const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
             const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
             
-            // 徽章優先順序排版
             let finalBadgeHtml = '';
             if (isAdminCard) finalBadgeHtml = adminHtml;
             else if (isMaster) finalBadgeHtml = masterHtml;
             
-            // 將節慶徽章疊加上去
             finalBadgeHtml += festivalBadgeHtml;
             
             const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名'));
@@ -1110,7 +1162,6 @@
             
             const likers = Object.values(likesObj).map(val => val === true ? '某位同事' : val);
             
-            // 👉 中秋按讚替換為送月餅機制
             const likeIcon = IS_MID_AUTUMN ? '🥮' : '❤️';
             const likeText = IS_MID_AUTUMN ? (likeCount > 0 ? likeCount : '送月餅') : (likeCount > 0 ? likeCount : '讚');
             const tooltipAction = IS_MID_AUTUMN ? '送了月餅' : '覺得很讚';
@@ -1173,7 +1224,6 @@
                     const hasLiked = msg.likes && msg.likes[currentUser.uid];
                     playSound('click');
                     
-                    // 👉 如果是中秋期間且是「送出」月餅，噴發金黃色彩帶
                     if (IS_MID_AUTUMN && !hasLiked) {
                         const clickX = e.clientX ? e.clientX / window.innerWidth : 0.5;
                         const clickY = e.clientY ? e.clientY / window.innerHeight : 0.8;
@@ -1224,12 +1274,13 @@
                     if (msg.author && msg.author !== '匿名') companyDirectory.add(String(msg.author));
                     let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
                     
-                    // 👉 英雄榜計算：如果是中秋期間，只計算 9/24~9/30 間送的月餅與卡片
                     let shouldCountInLeaderboard = false;
                     if (IS_MID_AUTUMN) {
                         shouldCountInLeaderboard = checkIsMidAutumn(msg.timestamp || 0);
                     } else {
-                        shouldCountInLeaderboard = (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000;
+                        if (!msg.isEventExtra) {
+                            shouldCountInLeaderboard = (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000;
+                        }
                     }
 
                     if (shouldCountInLeaderboard) {
