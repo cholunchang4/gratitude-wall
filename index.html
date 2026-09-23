@@ -299,7 +299,7 @@
 
     <!-- 👉 防快取安全更新面板 -->
     <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
-        <div class="modal-box" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
+        <div class="modal-box" id="forceUpdateBox" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
             <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
             <h2 style="color: #ffd700; margin-top: 0; text-shadow: 0 2px 10px rgba(255,215,0,0.5);">系統已發佈重大更新！</h2>
             <p style="font-size: 16px; line-height: 1.5; color: #ddd; margin-bottom: 25px;">為確保您的畫面與最新活動同步<br>請點擊下方按鈕更新網頁。</p>
@@ -374,7 +374,7 @@
                     <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
                     <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
                     <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
-                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
+                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則，請勿為了「刷等級」連發無意義的字句。</li>
                 </ol>
                 <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
             </div>
@@ -512,8 +512,8 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        // 🟢 定義前端當前版號
-        const CURRENT_APP_VERSION = "2.1"; 
+        // 🟢 定義前端當前版號 (已升級為 3.0)
+        const CURRENT_APP_VERSION = "3.0"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         // 👉 中秋排程引擎
@@ -642,12 +642,6 @@
 
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
-        
-        // 👉 強制更新彈窗按鈕綁定
-        document.getElementById('forceUpdateBtn').addEventListener('click', () => {
-            playSound('click');
-            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
-        });
         
         onAuthStateChanged(auth, (user) => {
             if (user) { 
@@ -791,7 +785,7 @@
             } else if (userLifetimeMessageCount >= 20) {
                 userLevel = 6; title = '🎨 Lv.6 塗鴉畫家'; msg = `差 ${30 - userLifetimeMessageCount} 則解鎖「匿名功能」`; maxLength = 50;
             } else if (userLifetimeMessageCount >= 15) {
-                userLevel = 5; title = '🗣️ Lv.5 感謝達人'; msg = `差 ${20 - userLifetimeMessageCount} 則解鎖「手繪功能」`; maxLength = 50;
+                userLevel = 5; title = '🗣️ Lv.5 感謝達ర్ణ'; msg = `差 ${20 - userLifetimeMessageCount} 則解鎖「手繪功能」`; maxLength = 50;
             } else if (userLifetimeMessageCount >= 10) {
                 userLevel = 4; title = '🌈 Lv.4 色彩魔術師'; msg = `差 ${15 - userLifetimeMessageCount} 則解鎖「多人標記」`; maxLength = 50;
             } else if (userLifetimeMessageCount >= 5) {
@@ -819,6 +813,7 @@
 
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
+                
                 document.getElementById('btnNeon').style.display = 'inline-block';
                 document.getElementById('btnHolo').style.display = 'inline-block';
                 document.getElementById('btnGold').style.display = 'inline-block';
@@ -996,7 +991,6 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
-        // 👉 防連點鎖定與中秋特別配額機制
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
@@ -1107,11 +1101,41 @@
         onValue(ref(db, 'settings'), (snapshot) => { 
             const data = snapshot.val(); 
             if (data) { 
-                // 👉 安全的更新檢測機制：只跳彈窗，不自動無限重新整理
+                // 👉 安全的更新檢測機制：防死迴圈
                 if (data.appVersion && data.appVersion !== CURRENT_APP_VERSION) {
+                    const updateAttemptKey = 'updateAttempt_' + data.appVersion;
+                    
+                    if (sessionStorage.getItem(updateAttemptKey)) {
+                        // 已經點擊過更新按鈕，但因為快取延遲，版號還是不一樣 -> 顯示手動操作提示
+                        const box = document.getElementById('forceUpdateBox');
+                        box.style.background = '#fff';
+                        box.style.borderRadius = '20px';
+                        box.style.padding = '30px 20px';
+                        box.innerHTML = `
+                            <div style="font-size: 50px; margin-bottom: 15px;">😭</div>
+                            <h2 style="color: #d64966; margin-top: 0; text-shadow: none;">瀏覽器快取太頑固了！</h2>
+                            <p style="font-size: 15px; line-height: 1.6; color: #555; margin-bottom: 25px; text-align: left;">
+                                系統偵測到您已嘗試更新，但瀏覽器仍死抓著舊版不放。<br><br>
+                                <b>請嘗試以下動作：</b><br>
+                                1. 完全關閉這個分頁/視窗，重新點擊連結進入。<br>
+                                2. 手動清除瀏覽器快取。
+                            </p>
+                        `;
+                    } else {
+                        // 綁定更新按鈕，記錄已嘗試，然後刷新並加上時間戳
+                        document.getElementById('forceUpdateBtn').onclick = () => {
+                            playSound('click');
+                            sessionStorage.setItem(updateAttemptKey, 'true');
+                            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
+                        };
+                    }
+
                     document.getElementById('forceUpdateOverlay').style.display = 'flex';
                     document.getElementById('forceUpdateOverlay').classList.add('active');
                     return; // 終止後續渲染，強迫使用者更新
+                } else {
+                    // 若版號一致，清除嘗試紀錄
+                    sessionStorage.removeItem('updateAttempt_' + CURRENT_APP_VERSION);
                 }
 
                 if(!IS_MID_AUTUMN) {
