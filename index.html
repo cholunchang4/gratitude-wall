@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- 加入防快取 Meta 標籤雙重保險 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>公司感謝牆</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
@@ -263,7 +267,7 @@
     </div>
 
     <div class="top-btn-group">
-        <!-- 👉 新增：中秋限定企劃按鈕 -->
+        <!-- 👉 中秋限定企劃按鈕 -->
         <button id="festivalBtn" class="icon-btn" title="中秋活動說明" style="display: none; background: #fff8dc; border-color: #ffd700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5));">🌕</button>
         
         <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
@@ -274,7 +278,7 @@
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
-    <!-- 👉 新增：中秋限定企劃說明面板 -->
+    <!-- 👉 中秋限定企劃說明面板 -->
     <div class="focus-overlay" id="festivalOverlay">
         <div class="modal-box" style="max-width: 550px; background: linear-gradient(135deg, #1e232e 0%, #0f2027 100%); color: #fff; border: 1px solid #ffd700; box-shadow: 0 20px 50px rgba(255,215,0,0.2);">
             <button class="close-btn" id="closeFestival" style="color: #ffd700;">✖</button>
@@ -290,6 +294,16 @@
                 </ul>
                 <p style="font-size: 13px; text-align: center; color: #b8860b; margin-top: 20px; font-weight: bold;">(此活動模式將於 9/30 23:59 自動結束)</p>
             </div>
+        </div>
+    </div>
+
+    <!-- 👉 防快取安全更新面板 -->
+    <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 9999; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+        <div class="modal-box" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
+            <h2 style="color: #ffd700; margin-top: 0; text-shadow: 0 2px 10px rgba(255,215,0,0.5);">系統已發佈重大更新！</h2>
+            <p style="font-size: 16px; line-height: 1.5; color: #ddd; margin-bottom: 25px;">為確保您的畫面與最新活動同步<br>請點擊下方按鈕更新網頁。</p>
+            <button id="forceUpdateBtn" class="action-btn primary" style="padding: 12px 30px; font-size: 16px; box-shadow: 0 4px 15px rgba(230,57,70,0.4);">立即更新體驗</button>
         </div>
     </div>
 
@@ -329,7 +343,7 @@
                 <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「👀」，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點擊放大你曾發布過的卡片，左下方會出現編輯與刪除按鈕，隨時可修改錯字！</li>
@@ -360,7 +374,7 @@
                     <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
                     <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
                     <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
-                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則，請勿為了「刷等級」連發無意義的字句。</li>
+                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
                 </ol>
                 <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
             </div>
@@ -374,7 +388,7 @@
                 <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示 50 則最新留言，保留 30 天。</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊「👀」可篩選出與你相關的卡片（<b>不受 30 天限制</b>，完整保留你的專屬感動！）。</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 修改留言</b>：點擊放大自己發的卡片，即可隨時編輯文字或刪除。</li>
@@ -498,9 +512,11 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
+        // 🟢 定義前端當前版號
+        const CURRENT_APP_VERSION = "2.1"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
-        // 👉 中秋排程引擎：判斷目前時間是否在 9/24 00:00 ~ 9/30 23:59 內
+        // 👉 中秋排程引擎
         function checkIsMidAutumn(ts) {
             const d = new Date(ts);
             const m = d.getMonth() + 1;
@@ -517,12 +533,10 @@
                 return;
             }
             
-            // 顯示企劃說明按鈕並加上呼吸動畫
             const festivalBtn = document.getElementById('festivalBtn');
             festivalBtn.style.display = 'inline-block';
             festivalBtn.style.animation = 'goldenPulse 2s infinite alternate';
 
-            // 更換夜空背景與燈籠粒子
             document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)');
             document.documentElement.style.setProperty('--geo-bg-1', 'rgba(255, 215, 0, 0.08)');
             document.documentElement.style.setProperty('--geo-bg-2', 'rgba(255, 140, 0, 0.08)');
@@ -537,7 +551,6 @@
                 document.body.appendChild(l);
             }
 
-            // 更新文案與新增限定主題
             document.getElementById('mainTitle').innerHTML = '🌕 中秋感謝牆 🥮';
             document.getElementById('subTitle').innerHTML = '送上一顆月餅，表達你最真摯的感謝';
             document.getElementById('subTitle').style.color = '#ffd700';
@@ -549,7 +562,6 @@
             maTheme.title = '🌕 皓月當空 (中秋限定)';
             ts.insertBefore(maTheme, ts.firstChild);
 
-            // 更新英雄榜標題
             document.querySelector('#leaderboardOverlay h2').innerHTML = '🌕 中秋限定英雄榜 🌕';
             document.querySelector('#leaderboardOverlay h2').style.color = '#ffd700';
             document.querySelector('#leaderboardOverlay .board-col:nth-child(1) h3').innerHTML = '💖 團圓天使 <br><span style="font-size:12px; color:#888;">(送出最多感謝)</span>';
@@ -630,6 +642,12 @@
 
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
+        
+        // 👉 強制更新彈窗按鈕綁定
+        document.getElementById('forceUpdateBtn').addEventListener('click', () => {
+            playSound('click');
+            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
+        });
         
         onAuthStateChanged(auth, (user) => {
             if (user) { 
@@ -801,7 +819,6 @@
 
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
-                
                 document.getElementById('btnNeon').style.display = 'inline-block';
                 document.getElementById('btnHolo').style.display = 'inline-block';
                 document.getElementById('btnGold').style.display = 'inline-block';
@@ -979,6 +996,7 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
+        // 👉 防連點鎖定與中秋特別配額機制
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
@@ -1089,6 +1107,13 @@
         onValue(ref(db, 'settings'), (snapshot) => { 
             const data = snapshot.val(); 
             if (data) { 
+                // 👉 安全的更新檢測機制：只跳彈窗，不自動無限重新整理
+                if (data.appVersion && data.appVersion !== CURRENT_APP_VERSION) {
+                    document.getElementById('forceUpdateOverlay').style.display = 'flex';
+                    document.getElementById('forceUpdateOverlay').classList.add('active');
+                    return; // 終止後續渲染，強迫使用者更新
+                }
+
                 if(!IS_MID_AUTUMN) {
                     document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; 
                     document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
