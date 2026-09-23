@@ -22,10 +22,10 @@
             --icon-color: #333;
         }
 
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); overscroll-behavior: none; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); overscroll-behavior: none; transition: background 1s ease; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-main); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
 
-        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; }
+        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 1s ease; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
         .header-container { 
@@ -44,6 +44,15 @@
         .icon-btn { background: var(--panel-bg); border: 1px solid var(--card-border); padding: 10px; border-radius: 50%; font-size: 20px; cursor: pointer; backdrop-filter: blur(5px); box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: transform 0.2s; color: var(--icon-color); }
         .icon-btn:hover { transform: scale(1.1); }
         .icon-btn.active { background: #ffe4e1; border-color: #d64966; color: #d64966; }
+
+        /* ================= 中秋限定特效 ================= */
+        .lantern { position: fixed; bottom: -50px; font-size: 24px; opacity: 0.6; pointer-events: none; animation: floatUp linear infinite; z-index: 1; filter: drop-shadow(0 0 10px rgba(255,215,0,0.8)); }
+        @keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; } }
+        .theme-moonlight { background: rgba(15, 32, 39, 0.85) !important; border: 1px solid #ffd700 !important; color: #fff8dc !important; box-shadow: 0 0 15px rgba(255,215,0,0.3) !important; }
+        .theme-moonlight .card-receiver, .theme-moonlight .card-author { color: #ffd700 !important; }
+        .theme-moonlight-btn { background: linear-gradient(135deg, #0f2027, #ffd700) !important; border: 2px solid #ffd700 !important; }
+        .festival-badge { position: absolute; top: -14px; left: 15px; background: linear-gradient(135deg, #ff8c00 0%, #ffd700 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(-8deg); z-index: 11; pointer-events: none; border: 1px solid #fff; }
+        .ma-liked { color: #d4af37 !important; background: #fff8dc !important; box-shadow: 0 2px 5px rgba(218,165,32,0.4) !important; border: 1px solid #d4af37 !important; }
 
         /* ================= 卡片排版與特效 ================= */
         .message-card { 
@@ -64,9 +73,14 @@
         
         .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
-        
         .admin-badge { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f); background-size: 300%; color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 13px; font-weight: 900; letter-spacing: 2px; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.8); z-index: 15; pointer-events: none; white-space: nowrap; animation: adminBadgeGlow 4s linear infinite; border: 1px solid rgba(255,255,255,0.8); }
         @keyframes adminBadgeGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
+
+        .mooncake-box { background: linear-gradient(135deg, #fff9d7 0%, #ffdf85 100%) !important; border: 2px dashed #d4af37 !important; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4) !important; padding: 30px 20px !important; cursor: pointer !important; animation: mooncakePulse 2.5s infinite alternate !important; }
+        @keyframes mooncakePulse { 0% { box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); } 100% { box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6); transform: translate(-50%, -50%) scale(calc(var(--c-scale) * 1.05)) rotate(var(--c-rotate)); } }
+        .mooncake-icon { font-size: 50px; margin-bottom: 10px; animation: gentleBounce 2s ease-in-out infinite; pointer-events: none; }
+        @keyframes gentleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+        .mooncake-hint { font-size: 12px; color: #b8860b; font-weight: bold; margin-top: 15px; opacity: 0.8; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
@@ -206,7 +220,12 @@
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); min-width: 100px; }
         .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
+        
         .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; } .anon-label input { cursor: pointer; margin:0; }
+        .mooncake-label { font-size: 13px; font-weight: bold; color: #b8860b; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; background: #fff8dc; padding: 4px 10px; border-radius: 12px; border: 1px solid #f0e68c; transition: 0.2s; }
+        .mooncake-label:hover { background: #ffebcd; }
+        .mooncake-label input { cursor: pointer; margin:0; }
+
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 100; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
         @media (max-width: 768px) {
@@ -432,6 +451,7 @@
                 <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字"><div id="autocompleteList" class="autocomplete-list"></div></div>
                 <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20">
                 <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
+                <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
                 <button id="sendBtn" class="send-btn">送出</button>
             </div>
         </div>
@@ -457,6 +477,57 @@
         let isFilterMeOnly = false; 
 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
+
+        // 👉 中秋排程引擎：判斷目前時間是否在 9/24 00:00 ~ 9/30 23:59 內
+        function checkIsMidAutumn(ts) {
+            const d = new Date(ts);
+            const m = d.getMonth() + 1;
+            const date = d.getDate();
+            return m === 9 && date >= 24 && date <= 30;
+        }
+        const IS_MID_AUTUMN = checkIsMidAutumn(Date.now());
+
+        // 👉 初始化中秋環境與特效
+        function initFestivalUI() {
+            if (!IS_MID_AUTUMN) {
+                document.getElementById('mooncakeWrapper').style.display = 'none';
+                return;
+            }
+            
+            // 更換夜空背景與燈籠粒子
+            document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)');
+            document.documentElement.style.setProperty('--geo-bg-1', 'rgba(255, 215, 0, 0.08)');
+            document.documentElement.style.setProperty('--geo-bg-2', 'rgba(255, 140, 0, 0.08)');
+            
+            for(let i=0; i<15; i++) {
+                let l = document.createElement('div');
+                l.className = 'lantern';
+                l.innerText = Math.random() > 0.6 ? '🐇' : '🏮';
+                l.style.left = Math.random() * 100 + 'vw';
+                l.style.animationDuration = (15 + Math.random() * 20) + 's';
+                l.style.animationDelay = (Math.random() * 10) + 's';
+                document.body.appendChild(l);
+            }
+
+            // 更新文案與新增限定主題
+            document.getElementById('mainTitle').innerHTML = '🌕 中秋感謝牆 🥮';
+            document.getElementById('subTitle').innerHTML = '送上一顆月餅，表達你最真摯的感謝';
+            document.getElementById('subTitle').style.color = '#ffd700';
+
+            const ts = document.getElementById('themeSelector');
+            const maTheme = document.createElement('div');
+            maTheme.className = 'theme-btn theme-moonlight-btn';
+            maTheme.setAttribute('data-theme', 'theme-moonlight');
+            maTheme.title = '🌕 皓月當空 (中秋限定)';
+            ts.insertBefore(maTheme, ts.firstChild);
+
+            // 更新英雄榜標題
+            document.querySelector('#leaderboardOverlay h2').innerHTML = '🌕 中秋限定英雄榜 🌕';
+            document.querySelector('#leaderboardOverlay h2').style.color = '#ffd700';
+            document.querySelector('#leaderboardOverlay .board-col:nth-child(1) h3').innerHTML = '💖 團圓天使 <br><span style="font-size:12px; color:#888;">(送出最多感謝)</span>';
+            document.querySelector('#leaderboardOverlay .board-col:nth-child(2) h3').innerHTML = '🥮 人氣月餅王 <br><span style="font-size:12px; color:#888;">(收到最多月餅/讚)</span>';
+        }
+        initFestivalUI();
 
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
@@ -698,7 +769,6 @@
 
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
-                
                 document.getElementById('btnNeon').style.display = 'inline-block';
                 document.getElementById('btnHolo').style.display = 'inline-block';
                 document.getElementById('btnGold').style.display = 'inline-block';
@@ -876,12 +946,22 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
-        // 👉 防連點鎖定機制
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
 
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
+            
+            const isMooncake = document.getElementById('mooncakeCheck').checked;
+            let receiver = receiverInput.value.trim().replace(/,\s*$/, '');
+            
+            if (isMooncake) {
+                if (!validNamesForLeaderboard.has(receiver)) {
+                    playSound('click');
+                    return alert('🥮 月餅盲盒必須指定「一位特定的同事」才能贈送喔！\n請從下拉選單中選擇正確的名字。');
+                }
+            }
+            if (!receiver) receiver = '大家';
 
             if (!isAdminUser) {
                 const now = Date.now();
@@ -902,11 +982,10 @@
                 if (monthCount >= 30) { playSound('click'); return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！'); }
             }
 
-            let receiver = receiverInput.value.trim().replace(/,\s*$/, '') || '大家';
             const text = msgInput.value.trim();
-            if (text === '' && !attachedImageBase64) return;
+            if (text === '' && !attachedImageBase64 && !isMooncake) return;
+            if (isMooncake && text === '') return alert('請在月餅裡包入一句真心的感謝文字喔！');
             
-            // 👉 鎖定按鈕防連點
             const btn = this;
             btn.disabled = true;
             btn.style.opacity = '0.6';
@@ -921,15 +1000,27 @@
             if (isAdminUser) sentAuthorLevel = 99; 
 
             try {
-                await push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid, email: currentUser.email || '' });
+                await push(ref(db, 'messages'), { 
+                    text: text, 
+                    receiver: receiver, 
+                    author: finalAuthor, 
+                    authorPic: finalAuthorPic, 
+                    authorLevel: sentAuthorLevel, 
+                    theme: currentTheme, 
+                    image: attachedImageBase64 || null, 
+                    timestamp: Date.now(), 
+                    uid: currentUser.uid, 
+                    email: currentUser.email || '',
+                    isMooncake: isMooncake,
+                    isOpened: false
+                });
                 
-                msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
+                msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 themeManuallySelected = false; 
                 playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
             } catch (err) {
                 alert('發送失敗，請稍後重試！');
             } finally {
-                // 👉 解除按鈕鎖定
                 btn.disabled = false;
                 btn.style.opacity = '1';
                 btn.innerHTML = '送出';
@@ -943,9 +1034,10 @@
         onValue(ref(db, 'settings'), (snapshot) => { 
             const data = snapshot.val(); 
             if (data) { 
-                // 👉 為了穩定性，已經完全移除危險的「自動重新整理」迴圈機制
-                document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; 
-                document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
+                if(!IS_MID_AUTUMN) {
+                    document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; 
+                    document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
+                }
                 systemSettings.maxMessages = data.maxMessages || 50; 
                 systemSettings.retentionDays = data.retentionDays || 30; 
                 renderWall(); 
@@ -970,6 +1062,15 @@
         document.addEventListener('touchend', () => { if (activeDragCard) { activeDragCard.classList.remove('dragging'); activeDragCard = null; } });
 
         function generateCardHTML(msg, maxLikes) {
+            if (msg.isMooncake && !msg.isOpened) {
+                return `
+                    <div class="mooncake-icon">🥮</div>
+                    <div style="font-weight: 900; font-size: 18px; color: #b8860b;">中秋神秘月餅</div>
+                    <div style="font-size: 14px; font-weight: bold; color: #d64966; margin-top: 8px;">To: ${msg.receiver}</div>
+                    <div class="mooncake-hint">(等待收件人解鎖)</div>
+                `;
+            }
+
             const likesObj = msg.likes || {};
             const likeCount = Object.keys(likesObj).length;
             const hasLiked = currentUser && likesObj[currentUser.uid];
@@ -978,9 +1079,20 @@
             const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
+            // 👉 專屬節慶徽章判斷：只要是在活動期間發出的訊息，永遠帶有團圓大使勳章
+            const isFestivalMsg = checkIsMidAutumn(msg.timestamp || 0);
+            const festivalBadgeHtml = isFestivalMsg ? '<div class="festival-badge">🥮 團圓大使</div>' : '';
+
             const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
             const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
-            const finalBadgeHtml = isAdminCard ? adminHtml : masterHtml;
+            
+            // 徽章優先順序排版
+            let finalBadgeHtml = '';
+            if (isAdminCard) finalBadgeHtml = adminHtml;
+            else if (isMaster) finalBadgeHtml = masterHtml;
+            
+            // 將節慶徽章疊加上去
+            finalBadgeHtml += festivalBadgeHtml;
             
             const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名'));
             const actionsHtml = isOwner ? `
@@ -995,9 +1107,17 @@
             const receiverHtml = msg.receiver ? `<div class="card-receiver">To: ${msg.receiver}</div>` : '';
             const avatarHtml = msg.authorPic ? `<img src="${msg.authorPic}">` : '';
             const attachedImgHtml = msg.image ? `<img src="${msg.image}" class="card-image" draggable="false">` : '';
+            
             const likers = Object.values(likesObj).map(val => val === true ? '某位同事' : val);
-            const tooltipText = likeCount > 0 ? likers.join(', ') + ' 覺得很讚' : '給個讚！';
-            const heartHtml = `<div class="card-likes ${hasLiked ? 'liked' : ''}" title="${tooltipText}">❤️ ${likeCount > 0 ? likeCount : '讚'}</div>`;
+            
+            // 👉 中秋按讚替換為送月餅機制
+            const likeIcon = IS_MID_AUTUMN ? '🥮' : '❤️';
+            const likeText = IS_MID_AUTUMN ? (likeCount > 0 ? likeCount : '送月餅') : (likeCount > 0 ? likeCount : '讚');
+            const tooltipAction = IS_MID_AUTUMN ? '送了月餅' : '覺得很讚';
+            const tooltipText = likeCount > 0 ? likers.join(', ') + ` ${tooltipAction}` : (IS_MID_AUTUMN ? '送顆月餅！' : '給個讚！');
+            const likedClass = hasLiked ? (IS_MID_AUTUMN ? 'liked ma-liked' : 'liked') : '';
+            
+            const heartHtml = `<div class="card-likes ${likedClass}" title="${tooltipText}">${likeIcon} ${likeText}</div>`;
 
             return `
                 ${finalBadgeHtml}
@@ -1013,6 +1133,31 @@
         }
 
         function bindCardEvents(card, msg) {
+            if (msg.isMooncake && !msg.isOpened) {
+                card.addEventListener('mousedown', (e) => handleDragStart(e, card));
+                card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
+                
+                card.addEventListener('click', (e) => {
+                    if (cardHasMoved) { cardHasMoved = false; return; }
+                    e.stopPropagation();
+                    playSound('click');
+                    
+                    if (!currentUser) return alert('請先登入才能開啟月餅喔！');
+                    
+                    const currentName = currentUser.displayName.split(' (')[0];
+                    const isAdminUser = currentUser.email === ADMIN_EMAIL;
+
+                    if (currentName === msg.receiver || currentUser.displayName === msg.receiver || isAdminUser) {
+                        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 9999 });
+                        playSound('levelup');
+                        update(ref(db, `messages/${msg.id}`), { isOpened: true });
+                    } else {
+                        alert(`🥮 這是送給【${msg.receiver}】的專屬月餅盲盒！\n快去通知他/她本人登入來開箱吧！`);
+                    }
+                });
+                return; 
+            }
+
             card.addEventListener('mousedown', (e) => handleDragStart(e, card));
             card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
 
@@ -1024,9 +1169,19 @@
                     e.stopPropagation(); 
                     if (!currentUser) return alert('請先登入 Google 帳號才能按讚喔！');
                     if (userLevel < 2 && !(currentUser && currentUser.email === ADMIN_EMAIL)) { playSound('click'); return alert('👍 按讚功能需要達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖喔！'); }
+                    
+                    const hasLiked = msg.likes && msg.likes[currentUser.uid];
                     playSound('click');
+                    
+                    // 👉 如果是中秋期間且是「送出」月餅，噴發金黃色彩帶
+                    if (IS_MID_AUTUMN && !hasLiked) {
+                        const clickX = e.clientX ? e.clientX / window.innerWidth : 0.5;
+                        const clickY = e.clientY ? e.clientY / window.innerHeight : 0.8;
+                        confetti({ particleCount: 40, spread: 60, origin: { y: clickY, x: clickX }, colors: ['#FFD700', '#FFA500', '#FF8C00'] });
+                    }
+
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
-                    if (msg.likes && msg.likes[currentUser.uid]) remove(likeRef); else set(likeRef, currentUser.displayName);
+                    if (hasLiked) remove(likeRef); else set(likeRef, currentUser.displayName);
                 });
             }
 
@@ -1068,7 +1223,16 @@
                     const msg = { id: child.key, ...child.val() }; rawMessages.push(msg); 
                     if (msg.author && msg.author !== '匿名') companyDirectory.add(String(msg.author));
                     let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
-                    if ((Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000) {
+                    
+                    // 👉 英雄榜計算：如果是中秋期間，只計算 9/24~9/30 間送的月餅與卡片
+                    let shouldCountInLeaderboard = false;
+                    if (IS_MID_AUTUMN) {
+                        shouldCountInLeaderboard = checkIsMidAutumn(msg.timestamp || 0);
+                    } else {
+                        shouldCountInLeaderboard = (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000;
+                    }
+
+                    if (shouldCountInLeaderboard) {
                         if (msg.author && msg.author !== '匿名' && validNamesForLeaderboard.has(msg.author)) leaderboardData.senders[msg.author] = (leaderboardData.senders[msg.author] || 0) + 1;
                         receiversList.forEach(r => { if (validNamesForLeaderboard.has(r)) leaderboardData.receivers[r] = (leaderboardData.receivers[r] || 0) + 1; });
                     }
@@ -1165,14 +1329,18 @@
                 const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
 
                 const card = document.createElement('div'); 
-                card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                card.setAttribute('data-id', msg.id);
                 
-                if (isAdminCard) {
-                } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
-                    card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                if (msg.isMooncake && !msg.isOpened) {
+                    card.className = `message-card mooncake-box`;
+                } else {
+                    card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                    if (isAdminCard) {
+                    } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
+                        card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                    }
                 }
                 
+                card.setAttribute('data-id', msg.id);
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
                 const scale = (0.85 + Math.random() * 0.3) * mobileScaleDown;
@@ -1262,12 +1430,16 @@
                                 const isAdminCard = msgToAdd.email === ADMIN_EMAIL || (msgToAdd.author && msgToAdd.author.includes('Cholun Chang'));
 
                                 const newCard = document.createElement('div');
-                                newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
                                 newCard.setAttribute('data-id', msgToAdd.id);
                                 
-                                if (isAdminCard) {
-                                } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
-                                    newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                                if (msgToAdd.isMooncake && !msgToAdd.isOpened) {
+                                    newCard.className = `message-card mooncake-box`;
+                                } else {
+                                    newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                                    if (isAdminCard) {
+                                    } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
+                                        newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
+                                    }
                                 }
 
                                 newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
