@@ -205,7 +205,7 @@
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); min-width: 100px; }
-        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
+        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
         .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; } .anon-label input { cursor: pointer; margin:0; }
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 100; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
@@ -288,7 +288,7 @@
                 <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，每月最多 30 則。</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「👀」，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點擊放大你曾發布過的卡片，左下方會出現編輯與刪除按鈕，隨時可修改錯字！</li>
@@ -333,7 +333,7 @@
                 <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示 50 則最新留言，保留 30 天。</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，每月最多 30 則。</li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：為了維持版面品質，每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊「👀」可篩選出與你相關的卡片（<b>不受 30 天限制</b>，完整保留你的專屬感動！）。</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 修改留言</b>：點擊放大自己發的卡片，即可隨時編輯文字或刪除。</li>
@@ -699,7 +699,6 @@
             if (isAdminUser) {
                 document.getElementById('btnAdmin').style.display = 'inline-block';
                 
-                // 👉 修正：確保管理員也一併顯示 60~100 則解鎖的 5 個傳說級模板！
                 document.getElementById('btnNeon').style.display = 'inline-block';
                 document.getElementById('btnHolo').style.display = 'inline-block';
                 document.getElementById('btnGold').style.display = 'inline-block';
@@ -877,28 +876,41 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
-        document.getElementById('sendBtn').addEventListener('click', () => {
+        // 👉 防連點鎖定機制
+        document.getElementById('sendBtn').addEventListener('click', async function() {
+            if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
 
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
 
             if (!isAdminUser) {
+                const now = Date.now();
                 const todayStart = new Date().setHours(0,0,0,0);
-                const monthStart = new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime();
-                let todayCount = 0; let monthCount = 0;
+                const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+                
+                let todayCount = 0; 
+                let monthCount = 0;
+                
                 rawMessages.forEach(msg => {
                     if (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名')) {
                         if (msg.timestamp >= todayStart) todayCount++;
-                        if (msg.timestamp >= monthStart) monthCount++;
+                        if (msg.timestamp >= thirtyDaysAgo) monthCount++;
                     }
                 });
+                
                 if (todayCount >= 10) { playSound('click'); return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！'); }
-                if (monthCount >= 30) { playSound('click'); return alert('📝 溫馨提醒：你這個月已經送出 30 則感謝，達上限囉！請下個月再來分享吧！'); }
+                if (monthCount >= 30) { playSound('click'); return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！'); }
             }
 
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '') || '大家';
             const text = msgInput.value.trim();
             if (text === '' && !attachedImageBase64) return;
+            
+            // 👉 鎖定按鈕防連點
+            const btn = this;
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+            btn.innerHTML = '傳送中...';
             
             const isAnon = anonCheck.checked;
             const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
@@ -908,18 +920,37 @@
             if (userLifetimeMessageCount >= 50) sentAuthorLevel = 8;
             if (isAdminUser) sentAuthorLevel = 99; 
 
-            push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid, email: currentUser.email || '' });
-            msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
-            
-            themeManuallySelected = false; 
-            playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
+            try {
+                await push(ref(db, 'messages'), { text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), uid: currentUser.uid, email: currentUser.email || '' });
+                
+                msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
+                themeManuallySelected = false; 
+                playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 9999 });
+            } catch (err) {
+                alert('發送失敗，請稍後重試！');
+            } finally {
+                // 👉 解除按鈕鎖定
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.innerHTML = '送出';
+            }
         });
         msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
 
         let systemSettings = { maxMessages: 50, retentionDays: 30 };
         let rawMessages = []; 
 
-        onValue(ref(db, 'settings'), (snapshot) => { const data = snapshot.val(); if (data) { document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; systemSettings.maxMessages = data.maxMessages || 50; systemSettings.retentionDays = data.retentionDays || 30; renderWall(); } });
+        onValue(ref(db, 'settings'), (snapshot) => { 
+            const data = snapshot.val(); 
+            if (data) { 
+                // 👉 為了穩定性，已經完全移除危險的「自動重新整理」迴圈機制
+                document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; 
+                document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
+                systemSettings.maxMessages = data.maxMessages || 50; 
+                systemSettings.retentionDays = data.retentionDays || 30; 
+                renderWall(); 
+            } 
+        });
 
         let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; 
         function handleDragStart(e, card) {
