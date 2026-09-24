@@ -55,13 +55,10 @@
         .theme-moonlight { background: rgba(15, 32, 39, 0.85) !important; border: 1px solid #ffd700 !important; color: #fff8dc !important; box-shadow: 0 0 15px rgba(255,215,0,0.3) !important; }
         .theme-moonlight .card-receiver, .theme-moonlight .card-author { color: #ffd700 !important; }
         .theme-moonlight-btn { background: linear-gradient(135deg, #0f2027, #ffd700) !important; border: 2px solid #ffd700 !important; }
-        
-        /* 👉 調整團圓大使徽章位置，往左側移出避免跟管理員徽章打架 */
         .festival-badge { position: absolute; top: -12px; left: -6px; background: linear-gradient(135deg, #ff8c00 0%, #ffd700 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(-8deg); z-index: 11; pointer-events: none; border: 1px solid #fff; }
         .ma-liked { color: #d4af37 !important; background: #fff8dc !important; box-shadow: 0 2px 5px rgba(218,165,32,0.4) !important; border: 1px solid #d4af37 !important; }
 
         /* ================= 卡片排版與特效 ================= */
-        /* 👉 調整上方 Padding，從原本 15px 加大為 24px，留空間給徽章 */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
             padding: 24px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
@@ -90,7 +87,24 @@
         .mooncake-hint { font-size: 12px; color: #b8860b; font-weight: bold; margin-top: 15px; opacity: 0.8; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
-        .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; }
+        
+        /* 👉 卡片內文智慧摺疊設定 */
+        .card-text { 
+            font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; 
+            word-wrap: break-word; white-space: pre-wrap; pointer-events: none; 
+            display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; /* 預設在牆上超過 5 行就折疊 */
+        }
+        /* 👉 點擊放大後的完整閱讀模式 */
+        .message-card.focused .card-text {
+            display: block; /* 解除折疊 */
+            max-height: 40vh; /* 最高佔畫面 40% */
+            overflow-y: auto; /* 超過可捲動 */
+            pointer-events: auto; /* 允許手指捲動文字 */
+            padding-right: 5px;
+        }
+        .message-card.focused .card-text::-webkit-scrollbar { width: 4px; }
+        .message-card.focused .card-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
@@ -225,10 +239,21 @@
         
         .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
 
-        .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 50px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
+        /* 👉 調整外框弧度以適應多行文字 */
+        .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 24px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
-        .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 0 5px; color: var(--text-main); min-width: 100px; }
+        
+        /* 👉 替換為 Textarea 多行文字的樣式 */
+        .input-msg { 
+            flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
+            padding: 8px 5px; color: var(--text-main); min-width: 100px;
+            resize: none; font-family: inherit; line-height: 1.4;
+            height: 38px; box-sizing: border-box; overflow-y: hidden;
+        }
+        .input-msg::-webkit-scrollbar { width: 4px; }
+        .input-msg::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
         .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
         
         .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; } .anon-label input { cursor: pointer; margin:0; }
@@ -245,7 +270,6 @@
             .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } 
             .icon-btn { padding: 6px; font-size: 16px; }
             
-            /* 👉 手機版調整：加大上方 padding 避免徽章壓到字 */
             .message-card { padding: 24px 12px 34px 12px; border-radius: 12px; } 
             .card-text { font-size: 16px; margin-bottom: 8px; } 
             .card-receiver { font-size: 13px; } 
@@ -257,7 +281,10 @@
             .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; z-index: 96000 !important; }
             .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
-            .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
+            
+            /* 👉 手機版的 Textarea 高度也調整 */
+            .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px; height: 42px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
+            
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } .theme-selector { flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;} .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
             .designer-signature { bottom: 6px; right: 50%; transform: translateX(50%); font-size: 10px; padding: 4px 10px; white-space: nowrap; background: transparent; border: none; box-shadow: none; }
         }
@@ -301,7 +328,6 @@
         </div>
     </div>
 
-    <!-- 👉 防快取安全更新面板的 Z-index 拉至 99999 -->
     <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 99999 !important; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
         <div class="modal-box" id="forceUpdateBox" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
             <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
@@ -328,7 +354,6 @@
         </div>
     </div>
 
-    <!-- 👉 編輯面板 Z-index 調高 -->
     <div class="focus-overlay" id="editOverlay" style="z-index: 97000 !important;">
         <div class="modal-box" style="text-align: center; max-width: 400px; padding: 25px;">
             <h3 style="margin-top:0; color:#d64966;">✏️ 編輯留言</h3>
@@ -490,7 +515,10 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
                 <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字"><div id="autocompleteList" class="autocomplete-list"></div></div>
-                <input type="text" id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20">
+                
+                <!-- 👉 換成多行文字區域 Textarea -->
+                <textarea id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20" rows="1"></textarea>
+                
                 <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
                 <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
                 <button id="sendBtn" class="send-btn">送出</button>
@@ -519,8 +547,15 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.5"; 
+        const CURRENT_APP_VERSION = "3.6"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
+
+        // 👉 文字框自動長高邏輯
+        const msgInput = document.getElementById('msgInput');
+        msgInput.addEventListener('input', function() {
+            this.style.height = '38px'; // 預設單行高度
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px'; // 自動延伸，最高到 100px 後出現捲軸
+        });
 
         function checkIsMidAutumn(ts) {
             const d = new Date(ts);
@@ -834,7 +869,6 @@
 
             if (isAdminUser) maxLength = 2000;
 
-            const msgInput = document.getElementById('msgInput');
             msgInput.maxLength = maxLength;
             msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (無限字數)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
 
@@ -954,7 +988,7 @@
         const emojiFullList = ['😀','😃','😄','😁','😆','😅','😂','🤣','🥲','☺️','😊','😇','😍','🥰','😘','😋','😛','😜','🤪','😎','🤩','🥳','😏','🤗','🤔','🤭','🤫','😬','🙄','😮','😲','🥱','😴','🤤','😵','🥴','🤠','😈','👻','💀','👽','👾','🤖','🎃','👋','🤚','🖐','✋','🖖','👌','🤌','🤏','✌️','🤞','🤟','🤘','🤙','👈','👉','👆','👇','👍','👎','✊','👊','👏','🙌','👐','🤲','🤝','🙏','💪','👀','❤️','🧡','💛','💚','💙','💜','🖤','🤍','🤎','💔','❤️‍🔥','❣️','💕','💞','💓','💗','💖','💘','💝','🐶','🐱','🐭','🐹','🐰','🦊','🐻','🐼','🐻‍❄️','🐨','🐯','🦁','🐮','🐷','🐸','🐵','🐧','🐦','🐤','🦆','🦅','🦉','🦇','🐺','🐗','🐴','🦄','🐝','🐛','🦋','🐌','🐞','🐜','🐢','🐍','🦎','🦖','🦕','🐙','🦑','🦐','🦞','🦀','🐡','🐠','🐟','🐬','🐳','🐋','🦈','🦭','🐊','🐅','🐆','🦓','🦍','🐘','🦛','🦏','🐪','🐫','🦒','🦘','🐃','🐂','🐄','🐎','🐖','🐏','🐑','🐐','🦌','🐕','🐩','🐈','🐈‍⬛','🐓','🦃','🦚','🦜','🦢','🦩','🕊','🐇','🦝','🦨','🦡','🦦','🦥','🐁','🐀','🐿','🦔','🐾','🐉','🐲','🍎','🍐','🍊','🍋','🍌','🍉','🍇','🍓','🫐','🍈','🍒','🍑','🥭','🍍','🥥','🥝','🍅','🍆','🥑','🥦','🥬','🥒','🌶','🫑','🌽','🥕','🥐','🥯','🍞','🥖','🥨','🧀','🥚','🍳','🧈','🥞','🧇','🥓','🥩','🍗','🍖','🦴','🌭','🍔','🍟','🍕','🥪','🥙','🌮','🌯','🥗','🥘','🥫','🍝','🍜','🍲','🍛','🍣','🍱','🥟','🍤','🍙','🍚','🍘','🍥','🥮','🍢','🍡','🍧','🍨','🍦','🥧','🧁','🍰','🎂','🍮','🍭','🍬','🍫','🍿','🍩','🍪','🌰','🥜','🍯','🥛','🍼','☕️','🍵','🧃','🥤','🧋','🍶','🍺','🍻','🥂','🍷','🥃','🍸','🍹','🍾','🧊','✨','🔥','🎉','💡','💯','✅','🎵','🎶','🔔','📣','💬','💭'];
         const emojiBasicList = ['😀','😂','🥰','🙏','👍','💪','🎉','❤️'];
         const emojiMidList = [...emojiBasicList, '🤣','🥲','😊','😎','🤩','🥳','🤔','👏','🙌','🤝','🔥','✨','💯','💡','🍰','☕','🎁','🎈','🏆','🌟','🚀','💼','💻','🎵'];
-        const picker = document.getElementById('emojiPicker'); const msgInput = document.getElementById('msgInput');
+        const picker = document.getElementById('emojiPicker'); 
         
         function renderEmojis() {
             picker.innerHTML = '';
@@ -1030,7 +1064,7 @@
         receiverInput.addEventListener('input', () => {
             if (userLevel < 5 && receiverInput.value.includes(',') && !(currentUser && currentUser.email === ADMIN_EMAIL)) {
                 receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click');
-                alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
+                alert('👥 多人標記功能需要達到「Lv.5 感謝達ర్ణ (15則留言)」才能解鎖喔！'); return;
             }
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
@@ -1050,6 +1084,7 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
+        // 👉 改寫 Enter 送出邏輯（支援 Shift+Enter 換行）
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
@@ -1141,7 +1176,11 @@
                 
                 rawMessages.push({ timestamp: Date.now(), uid: currentUser.uid, isEventExtra: useExtraQuota });
 
-                msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
+                // 👉 送出後將多行文字區高度重置
+                msgInput.value = ''; 
+                msgInput.style.height = '38px';
+                
+                receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 
                 if (IS_MID_AUTUMN) {
                     const maBtn = document.querySelector('.theme-moonlight-btn');
@@ -1164,7 +1203,14 @@
                 btn.innerHTML = '送出';
             }
         });
-        msgInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') document.getElementById('sendBtn').click(); });
+        
+        // 👉 攔截 Enter 鍵：Shift+Enter 為換行，單純 Enter 為送出
+        msgInput.addEventListener('keydown', function(e) { 
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // 阻止換行
+                document.getElementById('sendBtn').click(); 
+            } 
+        });
 
         let systemSettings = { maxMessages: 50, retentionDays: 30 };
         let rawMessages = []; 
