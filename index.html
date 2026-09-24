@@ -196,6 +196,7 @@
         .action-btn.primary:hover { background: #bd3a54; }
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
+        
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -524,7 +525,7 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.7"; 
+        const CURRENT_APP_VERSION = "3.8"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const msgInput = document.getElementById('msgInput');
@@ -591,6 +592,7 @@
         }
         initFestivalUI();
 
+        // 👉 徹底洗乾淨的預設名單
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
             'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
@@ -1044,11 +1046,22 @@
             }
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
-            const matches = Array.from(companyDirectory).filter(item => item.split(' (')[0].toLowerCase().includes(currentVal));
+            
+            // 👉 加入 Set 防重疊顯示
+            const uniqueNames = new Set();
+            const matches = [];
+            Array.from(companyDirectory).forEach(item => {
+                const name = item.split(' (')[0];
+                if (name.toLowerCase().includes(currentVal) && !uniqueNames.has(name)) {
+                    uniqueNames.add(name);
+                    matches.push(name);
+                }
+            });
+
             if (matches.length > 0 && matches.length <= 6) {
-                matches.forEach(item => {
-                    const div = document.createElement('div'); div.className = 'autocomplete-item'; div.innerText = item.split(' (')[0]; 
-                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(item.split(' (')[0]); receiverInput.value = cleanParts.join(', ') + ((userLevel>=5 || (currentUser && currentUser.email === ADMIN_EMAIL)) ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
+                matches.forEach(name => {
+                    const div = document.createElement('div'); div.className = 'autocomplete-item'; div.innerText = name; 
+                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(name); receiverInput.value = cleanParts.join(', ') + ((userLevel>=5 || (currentUser && currentUser.email === ADMIN_EMAIL)) ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
                     autocompleteList.appendChild(div);
                 }); autocompleteList.style.display = 'flex';
             } else { autocompleteList.style.display = 'none'; }
