@@ -206,7 +206,6 @@
 
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 1001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 8px; }
         
-        /* 👉 更新狀態列佈局，融入額度倒數計時器 */
         .level-status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); flex-wrap: wrap; gap: 5px; }
         .level-title { color: #d64966; font-size: 13px; display: flex; align-items: center; gap: 6px; }
         .level-hint { color: #888; font-size: 12px; display: flex; align-items: center; gap: 6px; }
@@ -456,7 +455,6 @@
         <div id="inputPanel" style="display: none; width: 100%;">
             <div class="level-status-bar" id="levelStatusBar" style="display: none;">
                 <span id="levelTitle" class="level-title">🌱 新手幼苗</span>
-                <!-- 👉 額度倒數計時器容器 -->
                 <span id="levelHint" class="level-hint"></span>
             </div>
 
@@ -505,13 +503,13 @@
         let highestZ = 100;
 
         let userLevel = 1;
-        let userLifetimeMessageCount = 0; // 現在嚴格對應 "經驗值" 數量
+        let userLifetimeMessageCount = 0;
         let dragWarned = false; 
 
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.0"; 
+        const CURRENT_APP_VERSION = "3.1"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         function checkIsMidAutumn(ts) {
@@ -770,7 +768,6 @@
             });
         });
 
-        // 👉 全新改寫：等級與額度精準計算引擎
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
 
@@ -784,12 +781,11 @@
             let totalCount = 0;
             let todayCount = 0;
             let eventExtraCount = 0;
-            let monthMessages = []; // 用來精準追蹤 30 天內的每一則留言時間
+            let monthMessages = [];
 
             rawMessages.forEach(m => {
                 if (m.uid === currentUser.uid || (!m.uid && m.author === currentUser.displayName && m.author !== '匿名')) {
                     totalCount++;
-                    // 如果是中秋活動備用彈匣，不列入經驗值與日常額度
                     if (m.isEventExtra) {
                         if (checkIsMidAutumn(m.timestamp)) eventExtraCount++;
                     } else {
@@ -802,10 +798,8 @@
                 }
             });
 
-            // 嚴格將升級機制與「日常經驗值」綁定
             userLifetimeMessageCount = expCount;
             
-            // 排序 30 天內的訊息 (由舊到新)
             monthMessages.sort((a, b) => a - b);
             let monthCount = monthMessages.length;
 
@@ -829,10 +823,8 @@
             const statusBar = document.getElementById('levelStatusBar');
             statusBar.style.display = 'flex';
             
-            // 👉 精準顯示「總留言數」與「經驗值」
             document.getElementById('levelTitle').innerHTML = `${title} <span style="color:#888; font-size:11px; margin-left:5px;">(經驗值: ${expCount} / 總發送: ${totalCount})</span>`;
             
-            // 👉 精準倒數計時與額度狀態判斷
             const hintSpan = document.getElementById('levelHint');
             if (isAdminUser) {
                 hintSpan.innerHTML = `<span class="quota-status">🛡️ 管理員無限配額</span>`;
@@ -847,7 +839,6 @@
                 } else if (todayCount >= 10) {
                     hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">🚫 今日已滿，明天 00:00 恢復</span>`;
                 } else if (monthCount >= 30) {
-                    // 精準算出 30 天內最舊的那一則，在什麼時候過期
                     let unlockTime = new Date(monthMessages[0] + 30 * 24 * 60 * 60 * 1000);
                     let dStr = `${unlockTime.getMonth()+1}/${unlockTime.getDate()} ${String(unlockTime.getHours()).padStart(2,'0')}:${String(unlockTime.getMinutes()).padStart(2,'0')}`;
                     hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">⏳ 將於 ${dStr} 恢復 1 則</span>`;
@@ -1206,7 +1197,7 @@
         document.addEventListener('touchend', () => { if (activeDragCard) { activeDragCard.classList.remove('dragging'); activeDragCard = null; } });
 
         function generateCardHTML(msg, maxLikes) {
-            // 👉 自動開箱防呆邏輯：只要中秋結束，或是已開啟，就不會顯示月餅外觀
+            // 👉 當非中秋期間時，即使 isOpened 為 false 也不會顯示為月餅，強制自動開箱
             if (IS_MID_AUTUMN && msg.isMooncake && !msg.isOpened) {
                 return `
                     <div class="mooncake-icon">🥮</div>
@@ -1472,6 +1463,7 @@
 
                 const card = document.createElement('div'); 
                 
+                // 👉 動態渲染判斷：依據時效決定是否為月餅外觀
                 if (IS_MID_AUTUMN && msg.isMooncake && !msg.isOpened) {
                     card.className = `message-card mooncake-box`;
                 } else {
@@ -1525,7 +1517,7 @@
                 window.wallRotationInterval = setInterval(() => {
                     if (document.hidden || activeDragCard || currentFocusedCard) return; 
 
-                    let swapCount = Math.min(3, Math.max(1, Math.floor(validMessages.length / 15)));
+                    let swapCount = Math.min(12, Math.max(1, Math.floor(validMessages.length / 25)));
 
                     let availableCards = Array.from(wall.querySelectorAll('.message-card:not(.focused):not(.dragging)'));
                     if (availableCards.length === 0) return;
@@ -1542,6 +1534,8 @@
                             if(!indicesToAdd.includes(r)) indicesToAdd.push(r);
                         }
                     }
+
+                    const staggerDelay = Math.min(1200, Math.floor(6000 / actualSwapCount));
 
                     cardsToRemove.forEach((cardToSwap, i) => {
                         setTimeout(() => {
@@ -1615,9 +1609,9 @@
                                     }, 50);
                                 });
                             }, 1500); 
-                        }, i * 1200); 
+                        }, i * staggerDelay); 
                     });
-                }, 6000); 
+                }, 8000); 
             }
         }
         window.addEventListener('resize', renderWall);
