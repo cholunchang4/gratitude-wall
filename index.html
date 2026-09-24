@@ -55,13 +55,16 @@
         .theme-moonlight { background: rgba(15, 32, 39, 0.85) !important; border: 1px solid #ffd700 !important; color: #fff8dc !important; box-shadow: 0 0 15px rgba(255,215,0,0.3) !important; }
         .theme-moonlight .card-receiver, .theme-moonlight .card-author { color: #ffd700 !important; }
         .theme-moonlight-btn { background: linear-gradient(135deg, #0f2027, #ffd700) !important; border: 2px solid #ffd700 !important; }
-        .festival-badge { position: absolute; top: -14px; left: 15px; background: linear-gradient(135deg, #ff8c00 0%, #ffd700 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(-8deg); z-index: 11; pointer-events: none; border: 1px solid #fff; }
+        
+        /* 👉 調整團圓大使徽章位置，往左側移出避免跟管理員徽章打架 */
+        .festival-badge { position: absolute; top: -12px; left: -6px; background: linear-gradient(135deg, #ff8c00 0%, #ffd700 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(-8deg); z-index: 11; pointer-events: none; border: 1px solid #fff; }
         .ma-liked { color: #d4af37 !important; background: #fff8dc !important; box-shadow: 0 2px 5px rgba(218,165,32,0.4) !important; border: 1px solid #d4af37 !important; }
 
         /* ================= 卡片排版與特效 ================= */
+        /* 👉 調整上方 Padding，從原本 15px 加大為 24px，留空間給徽章 */
         .message-card { 
             position: absolute; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); 
-            padding: 15px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
+            padding: 24px 20px 38px 20px; border-radius: 16px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.12); 
             width: max-content; max-width: 280px; text-align: center; display: flex; flex-direction: column; justify-content: center; cursor: grab; user-select: none; -webkit-user-select: none;
             --c-scale: 1; --c-rotate: 0deg;
             transform: translate(-50%, -50%) scale(var(--c-scale)) rotate(var(--c-rotate));
@@ -242,7 +245,8 @@
             .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } 
             .icon-btn { padding: 6px; font-size: 16px; }
             
-            .message-card { padding: 10px 12px 34px 12px; border-radius: 12px; } 
+            /* 👉 手機版調整：加大上方 padding 避免徽章壓到字 */
+            .message-card { padding: 24px 12px 34px 12px; border-radius: 12px; } 
             .card-text { font-size: 16px; margin-bottom: 8px; } 
             .card-receiver { font-size: 13px; } 
             .card-author { font-size: 11px; margin-top: 4px; } 
@@ -297,6 +301,7 @@
         </div>
     </div>
 
+    <!-- 👉 防快取安全更新面板的 Z-index 拉至 99999 -->
     <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 99999 !important; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
         <div class="modal-box" id="forceUpdateBox" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
             <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
@@ -323,6 +328,7 @@
         </div>
     </div>
 
+    <!-- 👉 編輯面板 Z-index 調高 -->
     <div class="focus-overlay" id="editOverlay" style="z-index: 97000 !important;">
         <div class="modal-box" style="text-align: center; max-width: 400px; padding: 25px;">
             <h3 style="margin-top:0; color:#d64966;">✏️ 編輯留言</h3>
@@ -513,7 +519,7 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.4"; 
+        const CURRENT_APP_VERSION = "3.5"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         function checkIsMidAutumn(ts) {
@@ -560,7 +566,6 @@
             maTheme.title = '🌕 皓月當空 (中秋限定)';
             ts.insertBefore(maTheme, ts.firstChild);
 
-            // 👉 強制預設選取中秋限定主題
             setTimeout(() => {
                 document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
                 maTheme.classList.add('active');
@@ -763,7 +768,6 @@
         const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin'];
         let currentTheme = themeList[0];
         
-        // 👉 防禦性重構：改用認名字 (data-theme) 來判定等級鎖定
         document.querySelectorAll('.theme-btn').forEach((btn) => {
             btn.addEventListener('click', function() { 
                 if (this.classList.contains('locked')) {
@@ -879,7 +883,6 @@
                 document.getElementById('btnAdmin').style.display = 'none';
                 document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
                 
-                // 👉 防禦性重構：改用認名字來鎖定，避免新增按鈕導致順序跑掉
                 document.querySelectorAll('.theme-btn').forEach((btn) => { 
                     btn.classList.remove('locked');
                     const t = btn.getAttribute('data-theme');
@@ -1140,7 +1143,6 @@
 
                 msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 
-                // 👉 中秋期間發完文後，重新預設為中秋主題
                 if (IS_MID_AUTUMN) {
                     const maBtn = document.querySelector('.theme-moonlight-btn');
                     if(maBtn) {
