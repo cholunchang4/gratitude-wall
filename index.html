@@ -32,7 +32,6 @@
         .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 1s ease; }
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
-        /* 👉 圖層拉高至 90000 避免被卡片蓋住 */
         .header-container { 
             position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
             z-index: 90000; width: max-content; max-width: 90%; pointer-events: none; 
@@ -147,7 +146,6 @@
         .theme-admin .card-text { text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
 
         /* ================= Modal 彈窗 ================= */
-        /* 👉 所有彈窗的 Z-index 拉高到 95000 */
         .focus-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 95000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; display: flex; align-items: center; justify-content: center; }
         .focus-overlay.active { opacity: 1; pointer-events: auto; }
         .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; transform: translate(-50%, -50%) scale(1.6) rotate(0deg) !important; z-index: 96000 !important; animation: none !important; box-shadow: 0 25px 60px rgba(0,0,0,0.4) !important; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); cursor: default; }
@@ -196,13 +194,11 @@
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
         
-        /* 👉 自動選字清單圖層拉高 */
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .autocomplete-item:hover { background: rgba(230,57,70,0.1); color: #e63946; }
         
-        /* 👉 表情符號選單圖層拉高至 90005 */
         .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 90005; }
         .emoji-picker::-webkit-scrollbar { width: 6px; } .emoji-picker::-webkit-scrollbar-track { background: transparent; } .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
         .emoji-picker.active { display: flex; align-content: flex-start; }
@@ -210,7 +206,6 @@
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 3px; outline: none; transition: transform 0.2s; position: relative; } .emoji-btn:hover { transform: scale(1.1); }
         .image-indicator { position: absolute; top: -5px; right: -5px; background: #e63946; color: white; font-size: 10px; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
 
-        /* 👉 底部輸入面板整體圖層拉高 */
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 90001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 8px; }
         
         .level-status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); flex-wrap: wrap; gap: 5px; }
@@ -238,7 +233,6 @@
         .mooncake-label:hover { background: #ffebcd; }
         .mooncake-label input { cursor: pointer; margin:0; }
 
-        /* 👉 簽名圖層也拉高 */
         .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 90000; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
 
         @media (max-width: 768px) {
@@ -256,7 +250,7 @@
             .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
             
             .card-image { max-height: 140px; }
-            .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; }
+            .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; z-index: 96000 !important; }
             .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
             .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
@@ -303,7 +297,6 @@
         </div>
     </div>
 
-    <!-- 👉 防快取安全更新面板的 Z-index 拉至 99999 -->
     <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 99999 !important; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
         <div class="modal-box" id="forceUpdateBox" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
             <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
@@ -330,7 +323,6 @@
         </div>
     </div>
 
-    <!-- 👉 編輯面板 Z-index 調高 -->
     <div class="focus-overlay" id="editOverlay" style="z-index: 97000 !important;">
         <div class="modal-box" style="text-align: center; max-width: 400px; padding: 25px;">
             <h3 style="margin-top:0; color:#d64966;">✏️ 編輯留言</h3>
@@ -512,7 +504,6 @@
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
         let highestZ = 100;
         
-        // 👉 新增防護罩代碼：記錄目前渲染世代，用來截斷舊動畫
         let currentRenderGen = 0;
 
         let userLevel = 1;
@@ -522,7 +513,7 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.3"; 
+        const CURRENT_APP_VERSION = "3.4"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         function checkIsMidAutumn(ts) {
@@ -568,6 +559,14 @@
             maTheme.setAttribute('data-theme', 'theme-moonlight');
             maTheme.title = '🌕 皓月當空 (中秋限定)';
             ts.insertBefore(maTheme, ts.firstChild);
+
+            // 👉 強制預設選取中秋限定主題
+            setTimeout(() => {
+                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                maTheme.classList.add('active');
+                currentTheme = 'theme-moonlight';
+                themeManuallySelected = true; 
+            }, 100);
 
             document.querySelector('#leaderboardOverlay h2').innerHTML = '🌕 中秋限定英雄榜 🌕';
             document.querySelector('#leaderboardOverlay h2').style.color = '#ffd700';
@@ -764,15 +763,17 @@
         const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin'];
         let currentTheme = themeList[0];
         
-        document.querySelectorAll('.theme-btn').forEach((btn, idx) => {
+        // 👉 防禦性重構：改用認名字 (data-theme) 來判定等級鎖定
+        document.querySelectorAll('.theme-btn').forEach((btn) => {
             btn.addEventListener('click', function() { 
                 if (this.classList.contains('locked')) {
                     playSound('click');
-                    if (idx >= 14) return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
-                    if (idx >= 13) return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
-                    if (idx >= 12) return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
-                    if (idx >= 11) return alert('🔮 極光玻璃模板需要「Lv.11 極光幻境 (70則留言)」才能解鎖！');
-                    if (idx >= 10) return alert('🪩 霓虹幻影模板需要「Lv.10 霓虹幻影 (60則留言)」才能解鎖！');
+                    const t = this.getAttribute('data-theme');
+                    if (t === 'theme-ultimate') return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
+                    if (t === 'theme-cosmic') return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
+                    if (t === 'theme-gold') return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
+                    if (t === 'theme-holo') return alert('🔮 極光玻璃模板需要「Lv.11 極光幻境 (70則留言)」才能解鎖！');
+                    if (t === 'theme-neon') return alert('🪩 霓虹幻影模板需要「Lv.10 霓虹幻影 (60則留言)」才能解鎖！');
                     return alert('🌈 需要達到「Lv.4 色彩魔術師 (10則留言)」才能解鎖全彩顏色喔！');
                 }
                 playSound('click'); themeManuallySelected = true;
@@ -877,10 +878,17 @@
             } else {
                 document.getElementById('btnAdmin').style.display = 'none';
                 document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
-                document.querySelectorAll('.theme-btn').forEach((btn, idx) => { 
+                
+                // 👉 防禦性重構：改用認名字來鎖定，避免新增按鈕導致順序跑掉
+                document.querySelectorAll('.theme-btn').forEach((btn) => { 
                     btn.classList.remove('locked');
-                    if (userLevel < 4 && idx >= 3 && idx <= 9) btn.classList.add('locked'); 
+                    const t = btn.getAttribute('data-theme');
+                    const basicLockedThemes = ['theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+                    if (userLevel < 4 && basicLockedThemes.includes(t)) {
+                        btn.classList.add('locked'); 
+                    }
                 });
+
                 document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
                 document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
                 document.getElementById('anonCheck').disabled = userLevel < 7;
@@ -1131,7 +1139,20 @@
                 rawMessages.push({ timestamp: Date.now(), uid: currentUser.uid, isEventExtra: useExtraQuota });
 
                 msgInput.value = ''; receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
-                themeManuallySelected = false; 
+                
+                // 👉 中秋期間發完文後，重新預設為中秋主題
+                if (IS_MID_AUTUMN) {
+                    const maBtn = document.querySelector('.theme-moonlight-btn');
+                    if(maBtn) {
+                        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                        maBtn.classList.add('active');
+                        currentTheme = 'theme-moonlight';
+                        themeManuallySelected = true;
+                    }
+                } else {
+                    themeManuallySelected = false; 
+                }
+
                 playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 99999 });
             } catch (err) {
                 alert('發送失敗，請稍後重試！');
@@ -1554,7 +1575,7 @@
 
                     cardsToRemove.forEach((cardToSwap, i) => {
                         setTimeout(() => {
-                            if (myGen !== currentRenderGen) return; // 👉 世代防護網 1：攔截失效動畫
+                            if (myGen !== currentRenderGen) return;
 
                             const removeId = cardToSwap.getAttribute('data-id');
                             const removeIdx = displayedMessages.findIndex(m => m.id === removeId);
@@ -1576,7 +1597,7 @@
                             cardToSwap.style.opacity = '0';
                             
                             setTimeout(() => {
-                                if (myGen !== currentRenderGen) return; // 👉 世代防護網 2：攔截失效動畫
+                                if (myGen !== currentRenderGen) return;
 
                                 if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
 
@@ -1622,7 +1643,7 @@
                                 
                                 requestAnimationFrame(() => {
                                     setTimeout(() => {
-                                        if (myGen !== currentRenderGen) return; // 👉 世代防護網 3：攔截失效動畫
+                                        if (myGen !== currentRenderGen) return; 
                                         newCard.style.opacity = (0.85 + Math.random() * 0.15).toString();
                                         newCard.classList.add('floating');
                                         newCard.style.setProperty('--float-duration', `${4 + Math.random() * 3}s`); 
