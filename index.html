@@ -7,7 +7,7 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <title>公司感謝牆</title>
+    <title>RDTW感謝牆</title>
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -87,24 +87,10 @@
         .mooncake-hint { font-size: 12px; color: #b8860b; font-weight: bold; margin-top: 15px; opacity: 0.8; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
-        
-        /* 👉 卡片內文智慧摺疊設定 */
-        .card-text { 
-            font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; 
-            word-wrap: break-word; white-space: pre-wrap; pointer-events: none; 
-            display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; /* 預設在牆上超過 5 行就折疊 */
-        }
-        /* 👉 點擊放大後的完整閱讀模式 */
-        .message-card.focused .card-text {
-            display: block; /* 解除折疊 */
-            max-height: 40vh; /* 最高佔畫面 40% */
-            overflow-y: auto; /* 超過可捲動 */
-            pointer-events: auto; /* 允許手指捲動文字 */
-            padding-right: 5px;
-        }
+        .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+        .message-card.focused .card-text { display: block; max-height: 40vh; overflow-y: auto; pointer-events: auto; padding-right: 5px; }
         .message-card.focused .card-text::-webkit-scrollbar { width: 4px; }
         .message-card.focused .card-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
-
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
@@ -210,7 +196,6 @@
         .action-btn.primary:hover { background: #bd3a54; }
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
-        
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -239,12 +224,10 @@
         
         .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
 
-        /* 👉 調整外框弧度以適應多行文字 */
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 24px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         
-        /* 👉 替換為 Textarea 多行文字的樣式 */
         .input-msg { 
             flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
             padding: 8px 5px; color: var(--text-main); min-width: 100px;
@@ -281,10 +264,7 @@
             .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; z-index: 96000 !important; }
             .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
-            
-            /* 👉 手機版的 Textarea 高度也調整 */
             .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px; height: 42px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
-            
             .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } .theme-selector { flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;} .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
             .designer-signature { bottom: 6px; right: 50%; transform: translateX(50%); font-size: 10px; padding: 4px 10px; white-space: nowrap; background: transparent; border: none; box-shadow: none; }
         }
@@ -515,10 +495,7 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
                 <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字"><div id="autocompleteList" class="autocomplete-list"></div></div>
-                
-                <!-- 👉 換成多行文字區域 Textarea -->
                 <textarea id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20" rows="1"></textarea>
-                
                 <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
                 <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
                 <button id="sendBtn" class="send-btn">送出</button>
@@ -547,14 +524,13 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.6"; 
+        const CURRENT_APP_VERSION = "3.7"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
-        // 👉 文字框自動長高邏輯
         const msgInput = document.getElementById('msgInput');
         msgInput.addEventListener('input', function() {
-            this.style.height = '38px'; // 預設單行高度
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px'; // 自動延伸，最高到 100px 後出現捲軸
+            this.style.height = '38px'; 
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px'; 
         });
 
         function checkIsMidAutumn(ts) {
@@ -636,7 +612,7 @@
             'Eric Chen (eric.chen.ec1@roche.com)', 'Erika Chen (erika.chen@roche.com)', 'Ethan Chien (ethan.chien@roche.com)',
             'Eva Yeh (eva.yeh@roche.com)', 'Felicity Chen (felicity.chen@roche.com)', 'Fenny Wu (fenny.wu@roche.com)',
             'Fred Yu (fred.yu@roche.com)', 'Gallon Chang (gallon.chang@external.roche.com)', 'Gary Lee (gary.lee.gl3@roche.com)',
-            'Gina Liao (gina.liao@roche.com)', 'Giselle Huang (giselle.huang@roche.com)', 'grace...@roche.com (grace.fang@roche.com)',
+            'Gina Liao (gina.liao@roche.com)', 'Giselle Huang (giselle.huang@roche.com)', 'Grace Fang (grace.fang@roche.com)',
             'Hank Chi (hank.chi@roche.com)', 'Hank Su (hank.su@roche.com)', 'Hank Wu (hank.wu.hw1@roche.com)',
             'Heather Hung (heather.hung@roche.com)', 'Henry Cheng (henry.cheng.hc1@roche.com)', 'Hilda Chang (hilda.chang@roche.com)',
             'Irene Lee (irene.lee.il1@roche.com)', 'Irene Liao (irene.liao@roche.com)', 'Ivy Hsu (ivy.hsu.ih1@roche.com)',
@@ -675,14 +651,14 @@
             'Wendy Huang (wendy.huang@roche.com)', 'Wendy PY Yu (wendy_py.yu@roche.com)', 'William Shen (william.shen.ws1@roche.com)',
             'YaChu Chao (yachu.chao@roche.com)', 'Yi-Wen Chen (yi-wen.chen@roche.com)', 'Yifan Chen (yifan.chen.yc1@roche.com)',
             'Yvonne Lee (yvonne.lee.yl5@roche.com)', 'Zach Wei (optional.wei@external.roche.com)', 'Zoe Chen (zoe.chen.zc2@roche.com)',
-            'allen.tsai (allen.tsai@roche.com)', 'amanda.liu (amanda.liu@roche.com)', 'astrid.yang (astrid.yang@roche.com)',
-            'cindy.huang.ch2 (cindy.huang.ch2@roche.com)', 'edward.kuo (edward.kuo@roche.com)', 'edward.tan (edward.tan@roche.com)',
-            'elin.shen (elin.shen@roche.com)', 'fanny.tseng (fanny.tseng@roche.com)', 'jack.chiu (jack.chiu@roche.com)',
-            'jeff.chen.jc2 (jeff.chen.jc2@roche.com)', 'jerry.lee (jerry.lee@roche.com)', 'jessie.tseng (jessie.tseng@roche.com)',
-            'joan.wu.jw1 (joanne.wu@roche.com)', 'lisa.tsai (lisa.tsai@roche.com)', 'mike.lin (mike.lin@roche.com)',
-            'olivia.chen (olivia.chen@roche.com)', 'raymond.hsieh (raymond.hsieh@roche.com)', 'stelly.tsai (stelly.tsai@roche.com)',
-            'taiwan.services-hotline (taiwan.services-hotline@roche.com)', 'tina.lin (tina.lin@roche.com)', 'tony.su (tony.su@roche.com)',
-            'wendy.wang (wendy.wang@roche.com)', 'yuehmei.chou (yuehmei.chou@roche.com)'
+            'Allen Tsai (allen.tsai@roche.com)', 'Amanda Liu (amanda.liu@roche.com)', 'Astrid Yang (astrid.yang@roche.com)',
+            'Cindy Huang (cindy.huang.ch2@roche.com)', 'Edward Kuo (edward.kuo@roche.com)', 'Edward Tan (edward.tan@roche.com)',
+            'Elin Shen (elin.shen@roche.com)', 'Fanny Tseng (fanny.tseng@roche.com)', 'Jack Chiu (jack.chiu@roche.com)',
+            'Jeff Chen (jeff.chen.jc2@roche.com)', 'Jerry Lee (jerry.lee@roche.com)', 'Jessie Tseng (jessie.tseng@roche.com)',
+            'Joan Wu (joanne.wu@roche.com)', 'Lisa Tsai (lisa.tsai@roche.com)', 'Mike Lin (mike.lin@roche.com)',
+            'Olivia Chen (olivia.chen@roche.com)', 'Raymond Hsieh (raymond.hsieh@roche.com)', 'Stelly Tsai (stelly.tsai@roche.com)',
+            'Taiwan Services Hotline (taiwan.services-hotline@roche.com)', 'Tina Lin (tina.lin@roche.com)', 'Tony Su (tony.su@roche.com)',
+            'Wendy Wang (wendy.wang@roche.com)', 'Yuehmei Chou (yuehmei.chou@roche.com)'
         ];
         const validNamesForLeaderboard = new Set(defaultDirectory.map(item => item.split(' (')[0]));
 
@@ -1064,7 +1040,7 @@
         receiverInput.addEventListener('input', () => {
             if (userLevel < 5 && receiverInput.value.includes(',') && !(currentUser && currentUser.email === ADMIN_EMAIL)) {
                 receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click');
-                alert('👥 多人標記功能需要達到「Lv.5 感謝達ర్ణ (15則留言)」才能解鎖喔！'); return;
+                alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
             }
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
@@ -1084,7 +1060,6 @@
             if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
         });
 
-        // 👉 改寫 Enter 送出邏輯（支援 Shift+Enter 換行）
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
@@ -1176,7 +1151,6 @@
                 
                 rawMessages.push({ timestamp: Date.now(), uid: currentUser.uid, isEventExtra: useExtraQuota });
 
-                // 👉 送出後將多行文字區高度重置
                 msgInput.value = ''; 
                 msgInput.style.height = '38px';
                 
@@ -1204,10 +1178,9 @@
             }
         });
         
-        // 👉 攔截 Enter 鍵：Shift+Enter 為換行，單純 Enter 為送出
         msgInput.addEventListener('keydown', function(e) { 
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // 阻止換行
+                e.preventDefault();
                 document.getElementById('sendBtn').click(); 
             } 
         });
