@@ -196,7 +196,6 @@
         .action-btn.primary:hover { background: #bd3a54; }
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
-        
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
         .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -513,7 +512,10 @@
 
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         
-        let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; let companyDirectory = new Set(); let attachedImageBase64 = null; 
+        let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; 
+        
+        // 👉 將 directory 改為只有唯一來源
+        let attachedImageBase64 = null; 
         let highestZ = 100;
         
         let currentRenderGen = 0;
@@ -525,7 +527,7 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "3.8"; 
+        const CURRENT_APP_VERSION = "3.9"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const msgInput = document.getElementById('msgInput');
@@ -592,7 +594,7 @@
         }
         initFestivalUI();
 
-        // 👉 徹底洗乾淨的預設名單
+        // 👉 修正版：將 Joan Wu 改為 Joanne Wu，不再動態增加名單
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
             'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
@@ -657,12 +659,15 @@
             'Cindy Huang (cindy.huang.ch2@roche.com)', 'Edward Kuo (edward.kuo@roche.com)', 'Edward Tan (edward.tan@roche.com)',
             'Elin Shen (elin.shen@roche.com)', 'Fanny Tseng (fanny.tseng@roche.com)', 'Jack Chiu (jack.chiu@roche.com)',
             'Jeff Chen (jeff.chen.jc2@roche.com)', 'Jerry Lee (jerry.lee@roche.com)', 'Jessie Tseng (jessie.tseng@roche.com)',
-            'Joan Wu (joanne.wu@roche.com)', 'Lisa Tsai (lisa.tsai@roche.com)', 'Mike Lin (mike.lin@roche.com)',
+            'Joanne Wu (joanne.wu@roche.com)', 'Lisa Tsai (lisa.tsai@roche.com)', 'Mike Lin (mike.lin@roche.com)',
             'Olivia Chen (olivia.chen@roche.com)', 'Raymond Hsieh (raymond.hsieh@roche.com)', 'Stelly Tsai (stelly.tsai@roche.com)',
             'Taiwan Services Hotline (taiwan.services-hotline@roche.com)', 'Tina Lin (tina.lin@roche.com)', 'Tony Su (tony.su@roche.com)',
             'Wendy Wang (wendy.wang@roche.com)', 'Yuehmei Chou (yuehmei.chou@roche.com)'
         ];
-        const validNamesForLeaderboard = new Set(defaultDirectory.map(item => item.split(' (')[0]));
+
+        // 👉 鎖定公司名單，不再隨意增加
+        const companyDirectoryList = Array.from(new Set(defaultDirectory.map(item => item.split(' (')[0])));
+        const validNamesForLeaderboard = new Set(companyDirectoryList);
 
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
@@ -1047,16 +1052,8 @@
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
             
-            // 👉 加入 Set 防重疊顯示
-            const uniqueNames = new Set();
-            const matches = [];
-            Array.from(companyDirectory).forEach(item => {
-                const name = item.split(' (')[0];
-                if (name.toLowerCase().includes(currentVal) && !uniqueNames.has(name)) {
-                    uniqueNames.add(name);
-                    matches.push(name);
-                }
-            });
+            // 👉 從嚴格過濾的官方名單中撈取，不再混入隨機輸入的名字
+            const matches = companyDirectoryList.filter(name => name.toLowerCase().includes(currentVal));
 
             if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(name => {
@@ -1238,7 +1235,7 @@
                 }
 
                 if(!IS_MID_AUTUMN) {
-                    document.getElementById('mainTitle').innerText = data.mainTitle || '羅氏感謝牆'; 
+                    document.getElementById('mainTitle').innerText = data.mainTitle || 'RDTW感謝牆'; 
                     document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
                 }
                 systemSettings.maxMessages = data.maxMessages || 50; 
@@ -1415,11 +1412,10 @@
         }
 
         onValue(query(ref(db, 'messages')), (snapshot) => {
-            rawMessages = []; leaderboardData = { senders: {}, receivers: {} }; companyDirectory.clear(); defaultDirectory.forEach(name => companyDirectory.add(name));
+            rawMessages = []; leaderboardData = { senders: {}, receivers: {} }; 
             snapshot.forEach((child) => { 
                 try {
                     const msg = { id: child.key, ...child.val() }; rawMessages.push(msg); 
-                    if (msg.author && msg.author !== '匿名') companyDirectory.add(String(msg.author));
                     let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
                     
                     let shouldCountInLeaderboard = false;
