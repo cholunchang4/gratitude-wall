@@ -494,7 +494,7 @@
                 <div class="emoji-picker" id="emojiPicker"></div>
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
-                <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字"><div id="autocompleteList" class="autocomplete-list"></div></div>
+                <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字" list="contactList"><datalist id="contactList"></datalist><div id="autocompleteList" class="autocomplete-list"></div></div>
                 <textarea id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20" rows="1"></textarea>
                 <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
                 <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
@@ -1242,6 +1242,36 @@
                 systemSettings.retentionDays = data.retentionDays || 30; 
                 renderWall(); 
             } 
+        });
+
+        // 👉 新增：即時抓取資料庫通訊錄名單，提供給前台選單自動完成
+        onValue(ref(db, 'contacts'), (snapshot) => {
+            const contactList = document.getElementById('contactList');
+            if(contactList) {
+                contactList.innerHTML = ''; 
+                const contacts = snapshot.val();
+                if (contacts) {
+                    const uniqueNames = new Set();
+                    contacts.forEach(user => {
+                        if (user.name) {
+                            uniqueNames.add(user.name);
+                        }
+                    });
+                    
+                    uniqueNames.forEach(name => {
+                        const option = document.createElement('option');
+                        option.value = name; 
+                        contactList.appendChild(option);
+                    });
+                    
+                    companyDirectoryList.length = 0;
+                    validNamesForLeaderboard.clear();
+                    uniqueNames.forEach(name => {
+                        companyDirectoryList.push(name);
+                        validNamesForLeaderboard.add(name);
+                    });
+                }
+            }
         });
 
         let activeDragCard = null; let dragStartX, dragStartY, dragInitialLeft, dragInitialTop; let cardHasMoved = false; 
