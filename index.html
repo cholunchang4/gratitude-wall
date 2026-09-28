@@ -494,7 +494,13 @@
                 <div class="emoji-picker" id="emojiPicker"></div>
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
-                <div class="receiver-wrapper"><input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字" list="contactList"><datalist id="contactList"></datalist><div id="autocompleteList" class="autocomplete-list"></div></div>
+                
+                <!-- 👉 移除原生 datalist，保留您原本的 autocompleteList 容器 -->
+                <div class="receiver-wrapper">
+                    <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字">
+                    <div id="autocompleteList" class="autocomplete-list"></div>
+                </div>
+
                 <textarea id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20" rows="1"></textarea>
                 <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
                 <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
@@ -527,7 +533,8 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        const CURRENT_APP_VERSION = "4.0"; 
+        // 👉 更新版號到 4.1
+        const CURRENT_APP_VERSION = "4.1"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const msgInput = document.getElementById('msgInput');
@@ -594,7 +601,7 @@
         }
         initFestivalUI();
 
-        // 👉 修正版：將 Joan Wu 改為 Joanne Wu，不再動態增加名單
+        // 👉 保留為備用名單
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
             'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
@@ -665,7 +672,6 @@
             'Wendy Wang (wendy.wang@roche.com)', 'Yuehmei Chou (yuehmei.chou@roche.com)'
         ];
 
-        // 👉 鎖定公司名單，不再隨意增加
         const companyDirectoryList = Array.from(new Set(defaultDirectory.map(item => item.split(' (')[0])));
         const validNamesForLeaderboard = new Set(companyDirectoryList);
 
@@ -1244,33 +1250,25 @@
             } 
         });
 
-        // 👉 新增：即時抓取資料庫通訊錄名單，提供給前台選單自動完成
+        // 👉 即時抓取資料庫通訊錄名單，同步到內部陣列以供客製化搜尋模組使用
         onValue(ref(db, 'contacts'), (snapshot) => {
-            const contactList = document.getElementById('contactList');
-            if(contactList) {
-                contactList.innerHTML = ''; 
-                const contacts = snapshot.val();
-                if (contacts) {
-                    const uniqueNames = new Set();
-                    contacts.forEach(user => {
-                        if (user.name) {
-                            uniqueNames.add(user.name);
-                        }
-                    });
-                    
-                    uniqueNames.forEach(name => {
-                        const option = document.createElement('option');
-                        option.value = name; 
-                        contactList.appendChild(option);
-                    });
-                    
-                    companyDirectoryList.length = 0;
-                    validNamesForLeaderboard.clear();
-                    uniqueNames.forEach(name => {
-                        companyDirectoryList.push(name);
-                        validNamesForLeaderboard.add(name);
-                    });
-                }
+            const contacts = snapshot.val();
+            if (contacts) {
+                // 使用 Set 確保名單不重複
+                const uniqueNames = new Set();
+                contacts.forEach(user => {
+                    if (user.name) {
+                        uniqueNames.add(user.name);
+                    }
+                });
+                
+                // 清空原本的靜態陣列，載入最新資料
+                companyDirectoryList.length = 0;
+                validNamesForLeaderboard.clear();
+                uniqueNames.forEach(name => {
+                    companyDirectoryList.push(name);
+                    validNamesForLeaderboard.add(name);
+                });
             }
         });
 
