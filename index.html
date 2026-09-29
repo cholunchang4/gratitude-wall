@@ -8,6 +8,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>RDTW感謝牆</title>
+    <!-- 新增：愛心網頁標籤 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
@@ -495,7 +497,6 @@
                 <button id="emojiBtn" class="emoji-btn" title="加入表情">😀</button>
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
                 
-                <!-- 👉 移除原生 datalist，保留您原本的 autocompleteList 容器 -->
                 <div class="receiver-wrapper">
                     <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字">
                     <div id="autocompleteList" class="autocomplete-list"></div>
@@ -1058,7 +1059,6 @@
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
             
-            // 👉 從嚴格過濾的官方名單中撈取，不再混入隨機輸入的名字
             const matches = companyDirectoryList.filter(name => name.toLowerCase().includes(currentVal));
 
             if (matches.length > 0 && matches.length <= 6) {
@@ -1254,7 +1254,6 @@
         onValue(ref(db, 'contacts'), (snapshot) => {
             const contacts = snapshot.val();
             if (contacts) {
-                // 使用 Set 確保名單不重複
                 const uniqueNames = new Set();
                 contacts.forEach(user => {
                     if (user.name) {
@@ -1262,7 +1261,6 @@
                     }
                 });
                 
-                // 清空原本的靜態陣列，載入最新資料
                 companyDirectoryList.length = 0;
                 validNamesForLeaderboard.clear();
                 uniqueNames.forEach(name => {
