@@ -90,9 +90,12 @@
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
-        .message-card.focused .card-text { display: block; max-height: 40vh; overflow-y: auto; pointer-events: auto; padding-right: 5px; }
-        .message-card.focused .card-text::-webkit-scrollbar { width: 4px; }
-        .message-card.focused .card-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        
+        /* 針對放大的卡片游標微調加粗 */
+        .message-card.focused .card-text { display: block; max-height: 40vh; overflow-y: auto; pointer-events: auto; padding-right: 8px; }
+        .message-card.focused .card-text::-webkit-scrollbar { width: 6px; }
+        .message-card.focused .card-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.25); border-radius: 6px; }
+        
         .card-receiver { font-size: 15px; font-weight: bold; text-align: left; opacity: 0.95; margin-bottom: 2px; color: #d64966; word-wrap: break-word; pointer-events: none; }
         .card-author { font-size: 12px; font-weight: 600; text-align: right; opacity: 0.8; margin-top: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 5px; pointer-events: none; }
         .card-author img { width: 18px; height: 18px; border-radius: 50%; pointer-events: none; }
@@ -230,14 +233,15 @@
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         
+        /* 針對輸入框增加自動捲動與游標微調 */
         .input-msg { 
             flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
             padding: 8px 5px; color: var(--text-main); min-width: 100px;
             resize: none; font-family: inherit; line-height: 1.4;
-            height: 38px; box-sizing: border-box; overflow-y: hidden;
+            height: 38px; box-sizing: border-box; overflow-y: auto;
         }
-        .input-msg::-webkit-scrollbar { width: 4px; }
-        .input-msg::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+        .input-msg::-webkit-scrollbar { width: 6px; }
+        .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
 
         .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
         
@@ -534,8 +538,8 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        // 👉 更新版號到 4.1
-        const CURRENT_APP_VERSION = "4.1"; 
+        // 👉 更新版號到 4.2
+        const CURRENT_APP_VERSION = "4.2"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const msgInput = document.getElementById('msgInput');
