@@ -233,13 +233,14 @@
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
         .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         
-        /* 針對輸入框增加自動捲動與游標微調 */
+        /* 👉 針對輸入框增加自動捲動與游標微調：預設隱藏捲動條 */
         .input-msg { 
             flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
             padding: 8px 5px; color: var(--text-main); min-width: 100px;
             resize: none; font-family: inherit; line-height: 1.4;
-            height: 38px; box-sizing: border-box; overflow-y: auto;
+            height: 38px; box-sizing: border-box; overflow-y: hidden;
         }
+        /* 👉 捲動游標加粗到 6px */
         .input-msg::-webkit-scrollbar { width: 6px; }
         .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
 
@@ -538,14 +539,16 @@
         let themeManuallySelected = false;
         let isFilterMeOnly = false; 
 
-        // 👉 更新版號到 4.2
-        const CURRENT_APP_VERSION = "4.2"; 
+        // 👉 更新版號到 4.3
+        const CURRENT_APP_VERSION = "4.3"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
+        // 👉 動態控制輸入框捲動條顯示時機
         const msgInput = document.getElementById('msgInput');
         msgInput.addEventListener('input', function() {
             this.style.height = '38px'; 
             this.style.height = Math.min(this.scrollHeight, 100) + 'px'; 
+            this.style.overflowY = this.scrollHeight > 100 ? 'auto' : 'hidden';
         });
 
         function checkIsMidAutumn(ts) {
@@ -606,7 +609,6 @@
         }
         initFestivalUI();
 
-        // 👉 保留為備用名單
         const defaultDirectory = [
             'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
             'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
@@ -1173,6 +1175,7 @@
 
                 msgInput.value = ''; 
                 msgInput.style.height = '38px';
+                msgInput.style.overflowY = 'hidden'; 
                 
                 receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 
