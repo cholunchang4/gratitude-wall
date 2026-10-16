@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <!-- 加入防快取 Meta 標籤雙重保險 -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>RDTW感謝牆</title>
-    <!-- 新增：愛心網頁標籤 -->
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+    <!-- 萬聖節圖示 -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎃</text></svg>">
     
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
     <style>
-        /* ================= 基礎設定 ================= */
+        /* ================= 基礎設定與萬聖節分階段背景 ================= */
         :root {
             --bg-gradient: linear-gradient(135deg, #fae0d4 0%, #f7c5b9 100%);
             --text-main: #4a4a4a;
@@ -28,21 +27,45 @@
             --icon-color: #333;
         }
 
-        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); overscroll-behavior: none; transition: background 1s ease; }
+        html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: var(--bg-gradient); overscroll-behavior: none; transition: background 1.5s ease; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: var(--text-main); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; right: 0; bottom: 0; }
 
-        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 1s ease; }
+        /* 被感染時的螢幕血痕閃爍特效 */
+        .blood-flash { animation: bloodFlash 2.5s ease-out; }
+        @keyframes bloodFlash { 0% { box-shadow: inset 0 0 0 100vmax rgba(255,0,0,0.85); } 10% { box-shadow: inset 0 0 100px 20px rgba(255,0,0,0.9); } 100% { box-shadow: inset 0 0 0 0 rgba(255,0,0,0); } }
+
+        .geometry-bg { position: absolute; top: -10%; left: -10%; width: 400px; height: 400px; background: var(--geo-bg-1); border-radius: 50%; filter: blur(40px); z-index: 0; transition: background 1.5s ease; pointer-events: none;}
         .geometry-bg.right { top: auto; bottom: -10%; left: auto; right: -10%; background: var(--geo-bg-2); }
         
+        /* 萬聖節背景 Stage 1 (0-49人) */
+        body.hw-stage-1 { --bg-gradient: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); --geo-bg-1: rgba(138, 43, 226, 0.15); --geo-bg-2: rgba(72, 61, 139, 0.15); }
+        /* 萬聖節背景 Stage 2 (50-149人) */
+        body.hw-stage-2 { --bg-gradient: linear-gradient(135deg, #140921 0%, #3b1747 50%, #291219 100%); --geo-bg-1: rgba(255, 140, 0, 0.2); --geo-bg-2: rgba(138, 43, 226, 0.2); }
+        /* 萬聖節背景 Stage 3 (150人+) */
+        body.hw-stage-3 { --bg-gradient: linear-gradient(135deg, #2b0000 0%, #4a0000 40%, #1a0024 100%); --geo-bg-1: rgba(255, 0, 0, 0.25); --geo-bg-2: rgba(255, 140, 0, 0.25); }
+
         .header-container { 
-            position: absolute; top: 35px; left: 50%; transform: translateX(-50%); text-align: center; 
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%); text-align: center; 
             z-index: 90000; width: max-content; max-width: 90%; pointer-events: none; 
             background: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-            padding: 15px 45px; border-radius: 60px;
+            padding: 12px 30px; border-radius: 40px;
             box-shadow: 0 10px 30px rgba(230, 100, 120, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+            transition: all 1s ease;
         }
-        #mainTitle { font-size: 42px; font-weight: 900; margin: 0 0 8px 0; letter-spacing: 4px; background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 2px 2px rgba(230, 57, 70, 0.15)); }
-        #subTitle { font-size: 17px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
+        body.hw-stage-1 .header-container, body.hw-stage-2 .header-container, body.hw-stage-3 .header-container {
+            background: rgba(15, 12, 41, 0.7); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 140, 0, 0.5); border: 1px solid #ff8c00;
+        }
+
+        #mainTitle { font-size: 34px; font-weight: 900; margin: 0 0 5px 0; letter-spacing: 4px; background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 2px 2px rgba(230, 57, 70, 0.15)); }
+        body.hw-stage-1 #mainTitle, body.hw-stage-2 #mainTitle, body.hw-stage-3 #mainTitle { background: linear-gradient(135deg, #ff8c00 0%, #ff0080 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0px 2px 5px rgba(255, 140, 0, 0.4)); }
+        
+        #subTitle { font-size: 14px; font-weight: 700; margin: 0; color: #d64966; letter-spacing: 2px; opacity: 0.9; }
+        body.hw-stage-1 #subTitle, body.hw-stage-2 #subTitle, body.hw-stage-3 #subTitle { color: #dda0dd; }
+
+        /* 全服進度條 */
+        .hw-progress-wrapper { width: 100%; min-width: 250px; max-width: 300px; height: 16px; background: rgba(0,0,0,0.5); border-radius: 10px; margin: 10px auto 0; overflow: hidden; position: relative; border: 1px solid #ff8c00; display: none; pointer-events: auto; cursor: help; }
+        .hw-progress-fill { height: 100%; background: linear-gradient(90deg, #8a2be2, #ff4500); width: 0%; transition: width 1.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); box-shadow: inset 0 0 10px rgba(255,140,0,0.8); }
+        .hw-progress-text { position: absolute; top: 0; left: 0; width: 100%; text-align: center; font-size: 11px; color: #fff; line-height: 16px; font-weight: bold; text-shadow: 0 1px 2px #000; letter-spacing: 1px; }
 
         #wall { flex: 1; position: relative; width: 100%; height: 100%; z-index: auto; transition: all 0.5s ease; overflow: hidden; }
 
@@ -51,14 +74,11 @@
         .icon-btn:hover { transform: scale(1.1); }
         .icon-btn.active { background: #ffe4e1; border-color: #d64966; color: #d64966; }
 
-        /* ================= 中秋限定特效 ================= */
-        .lantern { position: fixed; bottom: -50px; font-size: 24px; opacity: 0.6; pointer-events: none; animation: floatUp linear infinite; z-index: 1; filter: drop-shadow(0 0 10px rgba(255,215,0,0.8)); }
-        @keyframes floatUp { 0% { transform: translateY(0) rotate(0deg); opacity: 0; } 10% { opacity: 0.8; } 90% { opacity: 0.8; } 100% { transform: translateY(-120vh) rotate(20deg); opacity: 0; } }
-        .theme-moonlight { background: rgba(15, 32, 39, 0.85) !important; border: 1px solid #ffd700 !important; color: #fff8dc !important; box-shadow: 0 0 15px rgba(255,215,0,0.3) !important; }
-        .theme-moonlight .card-receiver, .theme-moonlight .card-author { color: #ffd700 !important; }
-        .theme-moonlight-btn { background: linear-gradient(135deg, #0f2027, #ffd700) !important; border: 2px solid #ffd700 !important; }
-        .festival-badge { position: absolute; top: -12px; left: -6px; background: linear-gradient(135deg, #ff8c00 0%, #ffd700 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(-8deg); z-index: 11; pointer-events: none; border: 1px solid #fff; }
-        .ma-liked { color: #d4af37 !important; background: #fff8dc !important; box-shadow: 0 2px 5px rgba(218,165,32,0.4) !important; border: 1px solid #d4af37 !important; }
+        /* 萬聖飄浮特效 */
+        .hw-entity { position: fixed; font-size: 28px; opacity: 0.5; pointer-events: none; animation: drift linear infinite; z-index: 1; filter: drop-shadow(0 0 10px rgba(255,255,255,0.3)); display: none; }
+        body.hw-stage-2 .hw-entity.ghost { display: block; }
+        body.hw-stage-3 .hw-entity { display: block; filter: drop-shadow(0 0 10px rgba(255,0,0,0.5)); }
+        @keyframes drift { 0% { transform: translate(-10vw, 110vh) scale(0.8) rotate(-15deg); opacity: 0; } 10% { opacity: 0.6; } 90% { opacity: 0.6; } 100% { transform: translate(110vw, -10vh) scale(1.2) rotate(15deg); opacity: 0; } }
 
         /* ================= 卡片排版與特效 ================= */
         .message-card { 
@@ -80,18 +100,10 @@
         .crown-badge { position: absolute; top: -14px; right: -12px; background: linear-gradient(135deg, #ffd700 0%, #ff8c00 100%); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 900; letter-spacing: 1px; box-shadow: 0 4px 10px rgba(255, 140, 0, 0.4); transform: rotate(12deg); z-index: 10; pointer-events: none; }
         .master-badge { position: absolute; top: -12px; left: -12px; background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%); color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; box-shadow: 0 4px 10px rgba(138, 43, 226, 0.4); transform: rotate(-10deg); z-index: 10; pointer-events: none; }
         .admin-badge { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f); background-size: 300%; color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 13px; font-weight: 900; letter-spacing: 2px; box-shadow: 0 4px 20px rgba(0, 212, 255, 0.8); z-index: 15; pointer-events: none; white-space: nowrap; animation: adminBadgeGlow 4s linear infinite; border: 1px solid rgba(255,255,255,0.8); }
-        @keyframes adminBadgeGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
-
-        .mooncake-box { background: linear-gradient(135deg, #fff9d7 0%, #ffdf85 100%) !important; border: 2px dashed #d4af37 !important; box-shadow: 0 10px 30px rgba(212, 175, 55, 0.4) !important; padding: 30px 20px !important; cursor: pointer !important; animation: mooncakePulse 2.5s infinite alternate !important; }
-        @keyframes mooncakePulse { 0% { box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3); } 100% { box-shadow: 0 15px 40px rgba(212, 175, 55, 0.6); transform: translate(-50%, -50%) scale(calc(var(--c-scale) * 1.05)) rotate(var(--c-rotate)); } }
-        .mooncake-icon { font-size: 50px; margin-bottom: 10px; animation: gentleBounce 2s ease-in-out infinite; pointer-events: none; }
-        @keyframes gentleBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-        .mooncake-hint { font-size: 12px; color: #b8860b; font-weight: bold; margin-top: 15px; opacity: 0.8; pointer-events: none; }
 
         .card-image { max-width: 100%; max-height: 180px; object-fit: contain; border-radius: 10px; margin-bottom: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: #fff; pointer-events: none; }
         .card-text { font-weight: 800; font-size: 20px; line-height: 1.4; margin-bottom: 12px; word-wrap: break-word; white-space: pre-wrap; pointer-events: none; display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
         
-        /* 針對放大的卡片游標微調加粗 */
         .message-card.focused .card-text { display: block; max-height: 40vh; overflow-y: auto; pointer-events: auto; padding-right: 8px; }
         .message-card.focused .card-text::-webkit-scrollbar { width: 6px; }
         .message-card.focused .card-text::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.25); border-radius: 6px; }
@@ -104,6 +116,9 @@
         .card-likes { position: absolute; bottom: 6px; right: 15px; font-size: 12px; background: rgba(255,255,255,0.5); padding: 4px 10px; border-radius: 12px; cursor: pointer; pointer-events: auto; transition: 0.2s; font-weight: bold; color: #888; }
         .card-likes:hover { transform: scale(1.1); background: rgba(255,255,255,0.9); }
         .card-likes.liked { color: #e63946; background: #ffe4e1; box-shadow: 0 2px 5px rgba(230,57,70,0.2); }
+        
+        /* 萬聖節專屬給糖樣式 */
+        .hw-liked { color: #ff8c00 !important; background: #3b1747 !important; box-shadow: 0 2px 5px rgba(255,140,0,0.4) !important; border: 1px solid #ff8c00 !important; }
 
         .card-owner-actions { display: none; position: absolute; bottom: -45px; left: 50%; transform: translateX(-50%); gap: 15px; z-index: 2005; width: max-content; }
         .message-card.focused .card-owner-actions { display: flex; animation: slideUp 0.3s ease forwards; }
@@ -123,9 +138,16 @@
         .theme-terracotta { background: rgba(210, 115, 85, 0.9); border: 1px solid rgba(235, 151, 122, 0.8); color: #FFF5F2; } .theme-terracotta .card-receiver, .theme-terracotta .card-author { color: #FFD4C4; }
         .theme-ice { background: rgba(224, 242, 254, 0.92); border: 1px solid rgba(186, 230, 253, 0.9); color: #0369A1; }
 
+        /* 萬聖節專屬主題：午夜南瓜 */
+        .theme-halloween { background: linear-gradient(135deg, #1a0b2e 0%, #000000 100%) !important; border: 2px solid #ff4500 !important; color: #fff !important; box-shadow: 0 0 20px rgba(255,69,0,0.6) !important; position: relative; overflow: hidden; }
+        .theme-halloween::before { content: '🦇'; position: absolute; top: 8px; right: 12px; font-size: 24px; opacity: 0.2; pointer-events: none; }
+        .theme-halloween .card-receiver { color: #ff8c00 !important; text-shadow: 0 0 5px rgba(255,140,0,0.5); }
+        .theme-halloween .card-author { color: #dda0dd !important; }
+        .theme-hw-btn { background: linear-gradient(135deg, #1a0b2e, #ff4500) !important; border: 2px solid #ff8c00 !important; }
+
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
-        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
         .theme-holo .card-receiver, .theme-holo .card-author { color: #e0e0e0 !important; text-shadow: none; }
         .theme-gold { background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%) !important; border: 2px solid #d4af37 !important; color: #f9f1d8 !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2) !important; }
         .theme-gold .card-receiver, .theme-gold .card-author { color: #d4af37 !important; }
@@ -135,20 +157,8 @@
         @keyframes ultimateBg { 0% { background-position: 0% 0%; } 100% { background-position: 400% 0%; } }
         .theme-ultimate .card-receiver, .theme-ultimate .card-author { color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.8); }
 
-        .theme-admin { 
-            background: linear-gradient(135deg, rgba(15,32,39,0.95), rgba(32,58,67,0.95), rgba(44,83,100,0.95)) !important;
-            border: none !important; 
-            color: #fff !important; 
-            box-shadow: 0 0 30px rgba(0, 212, 255, 0.4) !important;
-            position: relative;
-            background-clip: padding-box;
-        }
-        .theme-admin::before {
-            content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px;
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5, #ff007f, #00d2ff);
-            background-size: 300%; z-index: -1; border-radius: 19px;
-            animation: adminBorderGlow 4s linear infinite;
-        }
+        .theme-admin { background: linear-gradient(135deg, rgba(15,32,39,0.95), rgba(32,58,67,0.95), rgba(44,83,100,0.95)) !important; border: none !important; color: #fff !important; box-shadow: 0 0 30px rgba(0, 212, 255, 0.4) !important; position: relative; background-clip: padding-box; }
+        .theme-admin::before { content: ''; position: absolute; top: -3px; left: -3px; right: -3px; bottom: -3px; background: linear-gradient(45deg, #00d2ff, #3a7bd5, #ff007f, #00d2ff); background-size: 300%; z-index: -1; border-radius: 19px; animation: adminBorderGlow 4s linear infinite; }
         @keyframes adminBorderGlow { 0% { background-position: 0% 0%; } 100% { background-position: 300% 0%; } }
         .theme-admin .card-receiver, .theme-admin .card-author { color: #00d4ff !important; text-shadow: 0 0 8px rgba(0, 212, 255, 0.8); }
         .theme-admin .card-text { text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
@@ -188,37 +198,37 @@
         input[type="color"]::-webkit-color-swatch { border: 2px solid #ccc; border-radius: 50%; }
         input[type="range"] { width: 100px; cursor: pointer; }
         .tool-btn { background: #fff; border: 2px solid #ddd; color: #555; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
-        .tool-btn:hover { background: #f0f0f0; }
         .tool-btn.active { border-color: #d64966; color: #d64966; background: #ffe4e1; }
-        .canvas-container { position: relative; width: 100%; aspect-ratio: 8/5; max-height: 55vh; margin: 0 auto; border: 2px dashed #e8a0ad; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
+        .canvas-container { position: relative; width: 100%; aspect-ratio: 8/5; max-height: 55vh; margin: 0 auto; border: 2px dashed #e8a0ad; border-radius: 12px; overflow: hidden; background: #fff; }
         .layer-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #bgCanvas { z-index: 1; pointer-events: none; }
-        #drawCanvas { z-index: 2; cursor: crosshair; touch-action: none; }
+        #bgCanvas { z-index: 1; pointer-events: none; } #drawCanvas { z-index: 2; cursor: crosshair; touch-action: none; }
         .draw-actions { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .action-btn { background: #fff; border: 1px solid #d64966; color: #d64966; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 15px; }
-        .action-btn:hover { background: #ffe4e1; }
+        .action-btn { background: #fff; border: 1px solid #d64966; color: #d64966; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 15px; }
         .action-btn.primary { background: #d64966; color: #fff; }
-        .action-btn.primary:hover { background: #bd3a54; }
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-        .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .autocomplete-item:hover { background: rgba(230,57,70,0.1); color: #e63946; }
         
-        .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 90005; }
-        .emoji-picker::-webkit-scrollbar { width: 6px; } .emoji-picker::-webkit-scrollbar-track { background: transparent; } .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 90005; }
+        .emoji-picker::-webkit-scrollbar { width: 6px; } .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
         .emoji-picker.active { display: flex; align-content: flex-start; }
         .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; width: 32px; text-align: center; } .emoji-item:hover { transform: scale(1.3); }
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 3px; outline: none; transition: transform 0.2s; position: relative; } .emoji-btn:hover { transform: scale(1.1); }
         .image-indicator { position: absolute; top: -5px; right: -5px; background: #e63946; color: white; font-size: 10px; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
 
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 90001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 8px; }
-        
         .level-status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); flex-wrap: wrap; gap: 5px; }
+        body.hw-stage-1 .level-status-bar, body.hw-stage-2 .level-status-bar, body.hw-stage-3 .level-status-bar { background: rgba(15, 12, 41, 0.85); border: 1px solid #ff8c00; color: #fff; }
+
         .level-title { color: #d64966; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        body.hw-stage-1 .level-title, body.hw-stage-2 .level-title, body.hw-stage-3 .level-title { color: #ff8c00; }
         .level-hint { color: #888; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+        
         .quota-status { color: #555; background: rgba(0,0,0,0.05); padding: 3px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+        body.hw-stage-1 .quota-status, body.hw-stage-2 .quota-status, body.hw-stage-3 .quota-status { color: #ddd; background: rgba(255,255,255,0.1); }
 
         .locked { opacity: 0.3 !important; cursor: not-allowed !important; position: relative; filter: grayscale(100%); pointer-events: auto; }
         .locked::after { content: '🔒'; position: absolute; top: -8px; right: -8px; font-size: 12px; opacity: 1 !important; filter: none; }
@@ -226,53 +236,42 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
-        
         .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
 
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 24px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
+        body.hw-stage-1 .input-container, body.hw-stage-2 .input-container, body.hw-stage-3 .input-container { background: rgba(30, 20, 45, 0.9); border: 1px solid #ff8c00; box-shadow: 0 10px 30px rgba(255, 140, 0, 0.2); }
+
         .user-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer; }
-        .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
+        .input-receiver { width: 130px; border: none; background: #ffe4e1; padding: 8px 12px; border-radius: 20px; font-size: 15px; outline: none; text-align: center; color: #d64966; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } 
+        body.hw-stage-1 .input-receiver, body.hw-stage-2 .input-receiver, body.hw-stage-3 .input-receiver { background: rgba(255, 140, 0, 0.2); color: #ff8c00; }
+        .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
+        body.hw-stage-1 .input-receiver::placeholder, body.hw-stage-2 .input-receiver::placeholder, body.hw-stage-3 .input-receiver::placeholder { color: rgba(255,140,0,0.5); }
         
-        /* 👉 針對輸入框增加自動捲動與游標微調：預設隱藏捲動條 */
-        .input-msg { 
-            flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
-            padding: 8px 5px; color: var(--text-main); min-width: 100px;
-            resize: none; font-family: inherit; line-height: 1.4;
-            height: 38px; box-sizing: border-box; overflow-y: hidden;
-        }
-        /* 👉 捲動游標加粗到 6px */
-        .input-msg::-webkit-scrollbar { width: 6px; }
-        .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
+        .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 8px 5px; color: var(--text-main); min-width: 100px; resize: none; font-family: inherit; line-height: 1.4; height: 38px; box-sizing: border-box; overflow-y: hidden; }
+        body.hw-stage-1 .input-msg, body.hw-stage-2 .input-msg, body.hw-stage-3 .input-msg { color: #fff; }
+        .input-msg::-webkit-scrollbar { width: 6px; } .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
 
-        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } .send-btn:hover { transform: translateY(-2px); }
+        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; } 
+        body.hw-stage-1 .send-btn, body.hw-stage-2 .send-btn, body.hw-stage-3 .send-btn { background: linear-gradient(135deg, #ff8c00, #ff0080); }
+        .send-btn:hover { transform: translateY(-2px); }
         
-        .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; } .anon-label input { cursor: pointer; margin:0; }
-        .mooncake-label { font-size: 13px; font-weight: bold; color: #b8860b; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; background: #fff8dc; padding: 4px 10px; border-radius: 12px; border: 1px solid #f0e68c; transition: 0.2s; }
-        .mooncake-label:hover { background: #ffebcd; }
-        .mooncake-label input { cursor: pointer; margin:0; }
+        .anon-label { font-size: 13px; font-weight: 600; color: #777; display: flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; }
+        body.hw-stage-1 .anon-label, body.hw-stage-2 .anon-label, body.hw-stage-3 .anon-label { color: #dda0dd; }
+        .anon-label input { cursor: pointer; margin:0; }
 
-        .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 90000; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
+        .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 90000; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        body.hw-stage-1 .designer-signature, body.hw-stage-2 .designer-signature, body.hw-stage-3 .designer-signature { background: rgba(0,0,0,0.5); color: #888; border: none; }
 
         @media (max-width: 768px) {
             .header-container { padding: 10px 20px; top: 15px; } 
-            #mainTitle { font-size: 24px; letter-spacing: 2px; } 
-            #subTitle { font-size: 12px; }
-            .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } 
-            .icon-btn { padding: 6px; font-size: 16px; }
-            
-            .message-card { padding: 24px 12px 34px 12px; border-radius: 12px; } 
-            .card-text { font-size: 16px; margin-bottom: 8px; } 
-            .card-receiver { font-size: 13px; } 
-            .card-author { font-size: 11px; margin-top: 4px; } 
-            .card-date { font-size: 9px; left: 12px; bottom: 8px; } 
-            .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
-            
-            .card-image { max-height: 140px; }
-            .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; z-index: 96000 !important; }
-            .modal-box.draw-modal { padding: 15px; width: 95%; } .draw-toolbar { gap: 8px; padding: 8px; } .tool-btn { padding: 5px 10px; font-size: 13px; }
+            #mainTitle { font-size: 22px; letter-spacing: 2px; } #subTitle { font-size: 12px; }
+            .top-btn-group { top: 12px; right: 12px; flex-direction: row; flex-wrap: wrap; justify-content: flex-end; width: 90px; gap: 8px; } .icon-btn { padding: 6px; font-size: 16px; }
+            .message-card { padding: 24px 12px 34px 12px; border-radius: 12px; } .card-text { font-size: 16px; margin-bottom: 8px; } .card-receiver { font-size: 13px; } .card-author { font-size: 11px; margin-top: 4px; } .card-date { font-size: 9px; left: 12px; bottom: 8px; } .card-likes { font-size: 11px; bottom: 5px; right: 10px; padding: 3px 6px; }
+            .card-image { max-height: 140px; } .message-card.focused { transform: translate(-50%, -50%) scale(1.05) rotate(0deg) !important; width: 90%; z-index: 96000 !important; }
             .input-container { flex-wrap: wrap; border-radius: 20px; justify-content: center; padding: 12px; gap: 6px;} .receiver-wrapper { width: calc(50% - 30px); } .input-receiver { width: 100%; } .autocomplete-list { width: 100%; }
-            .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px; height: 42px;} .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
-            .emoji-picker { bottom: calc(100% + 5px); width: 85%; max-height: 180px; } .theme-selector { flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;} .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
+            .input-msg { width: 100%; flex: none; padding: 10px; background: var(--name-bg); border-radius: 15px; height: 42px;} body.hw-stage-1 .input-msg, body.hw-stage-2 .input-msg, body.hw-stage-3 .input-msg { background: rgba(0,0,0,0.3); }
+            .anon-label { width: 100%; justify-content: flex-end; margin-top: 2px; margin-bottom: 2px;} .send-btn { width: 100%; }
+            .theme-selector { flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding-bottom: 5px; justify-content: flex-start;} .theme-btn { width: 22px; height: 22px; flex-shrink: 0; } .board-container { flex-direction: column; gap: 15px; }
             .designer-signature { bottom: 6px; right: 50%; transform: translateX(50%); font-size: 10px; padding: 4px 10px; white-space: nowrap; background: transparent; border: none; box-shadow: none; }
         }
     </style>
@@ -285,10 +284,14 @@
     <div class="header-container">
         <h1 id="mainTitle">載入中...</h1>
         <p id="subTitle"></p>
+        <!-- 👉 全服感染進度條 -->
+        <div class="hw-progress-wrapper" id="hwProgressBar" title="全公司吸血鬼傳染進度 (達 150 人解鎖一年份萬聖模板)">
+            <div class="hw-progress-fill" id="hwProgressFill"></div>
+            <div class="hw-progress-text" id="hwProgressText">0 / 200 人被傳染</div>
+        </div>
     </div>
 
     <div class="top-btn-group">
-        <button id="festivalBtn" class="icon-btn" title="中秋活動說明" style="display: none; background: #fff8dc; border-color: #ffd700; filter: drop-shadow(0 0 5px rgba(255,215,0,0.5));">🌕</button>
         <button id="guideBtn" class="icon-btn" title="使用說明">📖</button>
         <button id="rulesBtn" class="icon-btn" title="暖心公約">📜</button>
         <button id="filterMeBtn" class="icon-btn" title="我的回憶">👀</button>
@@ -297,20 +300,21 @@
     
     <div class="focus-overlay" id="focusOverlay"></div>
 
-    <div class="focus-overlay" id="festivalOverlay">
-        <div class="modal-box" style="max-width: 550px; background: linear-gradient(135deg, #1e232e 0%, #0f2027 100%); color: #fff; border: 1px solid #ffd700; box-shadow: 0 20px 50px rgba(255,215,0,0.2);">
-            <button class="close-btn" id="closeFestival" style="color: #ffd700;">✖</button>
-            <h2 style="text-align: center; color: #ffd700; margin-top: 0; font-size: 24px; text-shadow: 0 2px 5px rgba(255,215,0,0.5);">🌕 中秋限時特別企劃 🥮</h2>
+    <!-- 👉 萬聖節故事彈窗 -->
+    <div class="focus-overlay" id="hwStoryOverlay">
+        <div class="modal-box" style="max-width: 550px; background: linear-gradient(135deg, #11091a 0%, #1a0000 100%); color: #fff; border: 1px solid #ff4500; box-shadow: 0 20px 50px rgba(255,69,0,0.3);">
+            <button class="close-btn" id="closeHwStory" style="color: #ff4500;">✖</button>
+            <h2 style="text-align: center; color: #ff8c00; margin-top: 0; font-size: 26px; text-shadow: 0 2px 5px rgba(255,69,0,0.5);">🦇 暮夜狂歡：吸血鬼傳染計畫 🎃</h2>
             <div style="font-size: 15px; color: #f0f0f0; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
-                <p style="text-align: center; margin-bottom: 20px;">歡迎來到中秋限定感謝牆！<br>9/24 - 9/30 期間，我們為大家準備了專屬的互動驚喜：</p>
+                <p style="text-align: center; margin-bottom: 20px;">夜幕降臨，公司感謝牆已被吸血鬼入侵...</p>
+                <p style="text-align: center; color: #dda0dd; font-weight: bold; margin-bottom: 20px;">歷史發文最活躍的五位神隊友已率先覺醒為<br>【🧛 始祖吸血鬼】！</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li style="margin-bottom: 12px;">🌌 <b>星夜與玉兔</b>：版面已自動切換為星夜模式，偶爾會有祈福天燈與小玉兔飄過喔！發文時也可選擇限定的「皓月當空」主題。</li>
-                    <li style="margin-bottom: 12px;">🥮 <b>送月餅取代按讚</b>：日常的「按讚」全面替換為「送月餅」！點擊時還會噴發金黃色的專屬彩帶。</li>
-                    <li style="margin-bottom: 12px;">🎁 <b>首創「月餅盲盒」玩法</b>：發文時勾選盲盒並指定收件人，卡片在牆上會偽裝成一顆未開箱的月餅！<b>只有「收件人本人」登入點擊才能解鎖</b>，且解鎖瞬間全公司的牆面都會同步看見裡面的真心話！</li>
-                    <li style="margin-bottom: 12px;">🏆 <b>團圓大使與限定英雄榜</b>：活動期間發送的卡片將永久獲得「🥮 團圓大使」徽章！英雄榜也會限時轉變為中秋爭霸模式。</li>
-                    <li style="margin-bottom: 12px;">✨ <b>活動專屬加碼</b>：若您的發文配額已滿，系統將為您自動解鎖額外 10 則的中秋備用彈匣，讓您暢所欲言！</li>
+                    <li style="margin-bottom: 12px;">🩸 <b>被動感染</b>：只要你被吸血鬼標記感謝，或是點開吸血鬼以前發送的舊卡片，就會被感染！</li>
+                    <li style="margin-bottom: 12px;">🦇 <b>專屬配額</b>：所有人皆可獲得 <b>10 則萬聖配額</b>。一般配額用盡後，自動動用萬聖配額！但只有<b>被感染的吸血鬼</b>，才能在選單使用「🎃 萬聖專屬模板」發文，並擁有傳染其他人的能力！</li>
+                    <li style="margin-bottom: 12px;">🍬 <b>給糖取代按讚</b>：日常的「❤️ 按讚」全面替換為「🍬 給糖」，快去給發文者驚喜吧！</li>
+                    <li style="margin-bottom: 12px;">🎭 <b>萬聖假面舞會</b>：活動期間，<b>無條件開放所有人匿名功能</b>！系統將為你戴上面具分配搞怪稱號（如：調皮南瓜、嗜血伯爵）。</li>
+                    <li style="margin-bottom: 12px; color: #ff0080; font-weight: bold;">🎯 <b>全服共鬥目標</b>：上方進度條顯示目前全公司的感染人數。只要達 150 人感染，所有參與者將解鎖模板 60 天使用權；達 200 人，將解鎖永久使用權！</li>
                 </ul>
-                <p style="font-size: 13px; text-align: center; color: #b8860b; margin-top: 20px; font-weight: bold;">(此活動模式將於 9/30 23:59 自動結束，未拆封的盲盒將會自動轉為一般卡片！)</p>
             </div>
         </div>
     </div>
@@ -360,15 +364,12 @@
                 <p>歡迎來到公司感謝牆！這是一個充滿溫暖與驚喜的空間：</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
                     <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。滿滿的隱藏彩蛋等你發現！</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「👀」，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點擊放大你曾發布過的卡片，左下方會出現編輯與刪除按鈕，隨時可修改錯字！</li>
                     <li style="margin-bottom: 8px;"><b>🏆 英雄榜</b>：點擊「🏆」看看團隊中最暖心、最受歡迎的神隊友是誰。</li>
                 </ul>
-                <div style="background: #ffe4e1; padding: 10px 15px; border-radius: 12px; color: #d64966; font-weight: bold; text-align: center; font-size: 14px;">
-                    趕快登入發送你的第一張感謝卡吧！🚀
-                </div>
             </div>
         </div>
     </div>
@@ -391,9 +392,7 @@
                     <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
                     <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
                     <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
-                    <li><b>🌱 拒絕洗版</b>：每日限發 10 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
                 </ol>
-                <p style="font-size: 13px; text-align: center; opacity: 0.8; margin-top: 15px;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
             </div>
         </div>
     </div>
@@ -401,27 +400,8 @@
     <div class="focus-overlay" id="onboardingOverlay">
         <div class="modal-box" style="max-width: 550px;">
             <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">👋 歡迎來到感謝牆！</h2>
-            <div style="font-size: 15px; color: #555; line-height: 1.6; max-height: 50vh; overflow-y: auto; padding-right: 10px;">
-                <p style="font-weight: bold; color: #d64966; font-size: 16px;">📖 快速使用說明</p>
-                <ul style="padding-left: 20px; margin-bottom: 15px;">
-                    <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示 50 則最新留言，保留 30 天。</li>
-                    <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。<br><span style="color: #d64966; font-size: 13px;">🎁 中秋活動加碼：配額用盡後，自動開啟 10 則活動專屬名額！</span></li>
-                    <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。</li>
-                    <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊「👀」可篩選出與你相關的卡片（<b>不受 30 天限制</b>，完整保留你的專屬感動！）。</li>
-                    <li style="margin-bottom: 8px;"><b>✏️ 修改留言</b>：點擊放大自己發的卡片，即可隨時編輯文字或刪除。</li>
-                </ul>
-                <hr style="border: 0; border-top: 1px dashed #e8a0ad; margin: 15px 0;">
-                <p style="font-weight: bold; color: #d64966; font-size: 16px;">🌟 暖心公約約定</p>
-                <ol style="padding-left: 20px; margin-bottom: 15px;">
-                    <li><b>💖 大方具名</b>：公開署名為神隊友打氣，讓真心被看見！</li>
-                    <li><b>🚫 零負能量</b>：嚴禁指責與謾罵，把反饋變成彼此變強的禮物。</li>
-                    <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字或他人隱私。</li>
-                    <li><b>🌱 拒絕洗版</b>：請勿為了「刷等級」連發無意義的字句。</li>
-                </ol>
-                <p style="font-size: 13px; text-align: center; opacity: 0.8;">(註：為維護溫暖空間，管理團隊將適時隱藏違規的卡片喔！)</p>
-            </div>
             <div style="text-align: center; margin-top: 20px;">
-                <button id="acceptOnboardingBtn" class="action-btn primary" style="padding: 12px 35px; font-size: 16px; width: 100%;">✅ 我已閱讀並同意遵守</button>
+                <button id="acceptOnboardingBtn" class="action-btn primary" style="padding: 12px 35px; font-size: 16px; width: 100%;">✅ 進入感謝牆</button>
             </div>
         </div>
     </div>
@@ -503,13 +483,13 @@
                 <button id="openDrawBtn" class="emoji-btn" title="手繪/上傳">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
                 
                 <div class="receiver-wrapper">
-                    <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字">
+                    <input type="text" id="receiverInput" class="input-receiver" placeholder="感謝誰？" autocomplete="off" title="輸入名字" list="contactList">
+                    <datalist id="contactList"></datalist>
                     <div id="autocompleteList" class="autocomplete-list"></div>
                 </div>
 
                 <textarea id="msgInput" class="input-msg" placeholder="寫下感謝內容... (上限 20 字)" autocomplete="off" maxlength="20" rows="1"></textarea>
-                <label class="anon-label" id="anonWrapper" title="隱藏真實姓名與照片 (將不列入英雄榜計分)"><input type="checkbox" id="anonCheck">匿名</label>
-                <label class="mooncake-label" id="mooncakeWrapper" title="將這份感謝包進月餅裡！(必須指定單一收件人喔)"><input type="checkbox" id="mooncakeCheck">🥮 月餅盲盒</label>
+                <label class="anon-label" id="anonWrapper" title="萬聖節化裝舞會：隱藏真實姓名並獲得隨機怪物稱號"><input type="checkbox" id="anonCheck">🎭 假面舞會</label>
                 <button id="sendBtn" class="send-btn">送出</button>
             </div>
         </div>
@@ -525,25 +505,13 @@
         const app = initializeApp(firebaseConfig); const db = getDatabase(app); const auth = getAuth(app); const provider = new GoogleAuthProvider();
         
         let currentUser = null; let leaderboardData = { senders: {}, receivers: {} }; 
-        
-        // 👉 將 directory 改為只有唯一來源
-        let attachedImageBase64 = null; 
-        let highestZ = 100;
-        
-        let currentRenderGen = 0;
+        let attachedImageBase64 = null; let highestZ = 100; let currentRenderGen = 0;
+        let userLevel = 1; let userLifetimeMessageCount = 0; let dragWarned = false; 
+        let themeManuallySelected = false; let isFilterMeOnly = false; 
 
-        let userLevel = 1;
-        let userLifetimeMessageCount = 0;
-        let dragWarned = false; 
-
-        let themeManuallySelected = false;
-        let isFilterMeOnly = false; 
-
-        // 👉 更新版號到 4.3
-        const CURRENT_APP_VERSION = "4.3"; 
+        const CURRENT_APP_VERSION = "4.4"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
-        // 👉 動態控制輸入框捲動條顯示時機
         const msgInput = document.getElementById('msgInput');
         msgInput.addEventListener('input', function() {
             this.style.height = '38px'; 
@@ -551,132 +519,139 @@
             this.style.overflowY = this.scrollHeight > 100 ? 'auto' : 'hidden';
         });
 
-        function checkIsMidAutumn(ts) {
-            const d = new Date(ts);
-            const m = d.getMonth() + 1;
-            const date = d.getDate();
-            return m === 9 && date >= 24 && date <= 30;
+        // ================= 萬聖節企劃核心邏輯 =================
+        const HW_EVENT_START = new Date('2026-10-18T00:00:00+08:00').getTime();
+        const HW_EVENT_END = new Date('2026-10-31T23:59:59+08:00').getTime();
+        function checkIsHalloween(ts) {
+            return ts >= HW_EVENT_START && ts <= HW_EVENT_END;
         }
-        const IS_MID_AUTUMN = checkIsMidAutumn(Date.now());
+        const IS_HALLOWEEN = checkIsHalloween(Date.now());
+        
+        let hwInfectedUsers = {}; // uid: displayName
+        let hwTop5Senders = [];   // ['name1', 'name2']
+        let isCurrentUserVampire = false;
+        let isCurrentUserProgenitor = false;
+        const hwTotalTarget = 200;
+        
+        const hwMasks = ['🎃 搗蛋南瓜', '🦇 迷路蝙蝠', '🧛 嗜血伯爵', '🧟 貪吃殭屍', '👻 搞怪幽靈', '🧙‍♀️ 熬夜女巫', '💀 骷髏先生'];
 
-        function initFestivalUI() {
-            if (!IS_MID_AUTUMN) {
-                document.getElementById('mooncakeWrapper').style.display = 'none';
-                document.getElementById('festivalBtn').style.display = 'none';
+        // 讀取感染資料並更新 UI
+        onValue(ref(db, 'halloween/infected'), (snapshot) => {
+            hwInfectedUsers = snapshot.val() || {};
+            updateHalloweenUI();
+        });
+
+        function updateHalloweenUI() {
+            if (!IS_HALLOWEEN) return;
+            const count = Object.keys(hwInfectedUsers).length;
+            
+            const pb = document.getElementById('hwProgressBar');
+            const pf = document.getElementById('hwProgressFill');
+            const pt = document.getElementById('hwProgressText');
+            
+            pb.style.display = 'block';
+            let pct = Math.min(100, (count / hwTotalTarget) * 100);
+            pf.style.width = pct + '%';
+            pt.innerText = `${count} / ${hwTotalTarget} 人被傳染`;
+
+            // 分階段改變背景
+            document.body.classList.remove('hw-stage-1', 'hw-stage-2', 'hw-stage-3');
+            if (count < 50) { document.body.classList.add('hw-stage-1'); }
+            else if (count < 150) { document.body.classList.add('hw-stage-2'); createHwEntities('👻'); }
+            else { document.body.classList.add('hw-stage-3'); createHwEntities('🦇'); }
+
+            // 檢查當前使用者的吸血鬼狀態
+            if (currentUser) {
+                const currentName = currentUser.displayName.split(' (')[0];
+                isCurrentUserProgenitor = hwTop5Senders.includes(currentName) || hwTop5Senders.includes(currentUser.displayName);
+                isCurrentUserVampire = !!hwInfectedUsers[currentUser.uid] || isCurrentUserProgenitor;
+                
+                // 動態處理選單中的萬聖節模板
+                let ts = document.getElementById('themeSelector');
+                let hwTheme = document.querySelector('.theme-hw-btn');
+                if (isCurrentUserVampire && !hwTheme) {
+                    hwTheme = document.createElement('div');
+                    hwTheme.className = 'theme-btn theme-hw-btn';
+                    hwTheme.setAttribute('data-theme', 'theme-halloween');
+                    hwTheme.title = '🎃 萬聖驚魂 (活動專屬)';
+                    ts.insertBefore(hwTheme, ts.firstChild);
+                    
+                    hwTheme.addEventListener('click', function() {
+                        playSound('click'); themeManuallySelected = true;
+                        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); 
+                        this.classList.add('active'); currentTheme = 'theme-halloween'; 
+                    });
+                } else if (!isCurrentUserVampire && hwTheme) {
+                    hwTheme.remove();
+                }
+
+                updateUserLevelUI();
+            }
+        }
+
+        let entitiesCreated = false;
+        function createHwEntities(emoji) {
+            if (entitiesCreated) {
+                // 如果表情改變了(進到下一階段)，更新現有幽靈
+                document.querySelectorAll('.hw-entity').forEach(el => el.innerText = emoji);
                 return;
             }
-            
-            const festivalBtn = document.getElementById('festivalBtn');
-            festivalBtn.style.display = 'inline-block';
-            festivalBtn.style.animation = 'goldenPulse 2s infinite alternate';
-
-            document.documentElement.style.setProperty('--bg-gradient', 'linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%)');
-            document.documentElement.style.setProperty('--geo-bg-1', 'rgba(255, 215, 0, 0.08)');
-            document.documentElement.style.setProperty('--geo-bg-2', 'rgba(255, 140, 0, 0.08)');
-            
-            for(let i=0; i<15; i++) {
+            entitiesCreated = true;
+            for(let i=0; i<10; i++) {
                 let l = document.createElement('div');
-                l.className = 'lantern';
-                l.innerText = Math.random() > 0.6 ? '🐇' : '🏮';
-                l.style.left = Math.random() * 100 + 'vw';
+                l.className = 'hw-entity ghost';
+                l.innerText = emoji;
+                l.style.left = (Math.random() * 80) + 'vw';
                 l.style.animationDuration = (15 + Math.random() * 20) + 's';
-                l.style.animationDelay = (Math.random() * 10) + 's';
+                l.style.animationDelay = (Math.random() * 15) + 's';
                 document.body.appendChild(l);
             }
+        }
 
-            document.getElementById('mainTitle').innerHTML = '🌕 中秋感謝牆 🥮';
-            document.getElementById('subTitle').innerHTML = '送上一顆月餅，表達你最真摯的感謝';
-            document.getElementById('subTitle').style.color = '#ffd700';
-
-            const ts = document.getElementById('themeSelector');
-            const maTheme = document.createElement('div');
-            maTheme.className = 'theme-btn theme-moonlight-btn';
-            maTheme.setAttribute('data-theme', 'theme-moonlight');
-            maTheme.title = '🌕 皓月當空 (中秋限定)';
-            ts.insertBefore(maTheme, ts.firstChild);
-
+        function triggerInfection(message) {
+            if (!currentUser) return;
+            set(ref(db, `halloween/infected/${currentUser.uid}`), currentUser.displayName);
+            isCurrentUserVampire = true;
+            
+            // 血痕特效
+            document.body.classList.add('blood-flash');
+            playSound('levelup');
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 99999, colors: ['#ff4500', '#8a2be2', '#ff0000'] });
+            
             setTimeout(() => {
-                document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                maTheme.classList.add('active');
-                currentTheme = 'theme-moonlight';
-                themeManuallySelected = true; 
-            }, 100);
+                document.body.classList.remove('blood-flash');
+                alert(`【系統廣播】\n\n${message}`);
+                updateHalloweenUI();
+            }, 2500);
+        }
 
-            document.querySelector('#leaderboardOverlay h2').innerHTML = '🌕 中秋限定英雄榜 🌕';
-            document.querySelector('#leaderboardOverlay h2').style.color = '#ffd700';
-            document.querySelector('#leaderboardOverlay .board-col:nth-child(1) h3').innerHTML = '💖 團圓天使 <br><span style="font-size:12px; color:#888;">(送出最多感謝)</span>';
-            document.querySelector('#leaderboardOverlay .board-col:nth-child(2) h3').innerHTML = '🥮 人氣月餅王 <br><span style="font-size:12px; color:#888;">(收到最多月餅/讚)</span>';
+        function showHalloweenStory() {
+            if (!IS_HALLOWEEN) return;
+            const storageKey = `hw_story_seen_${CURRENT_APP_VERSION}_${currentUser ? currentUser.uid : 'guest'}`;
+            if (!localStorage.getItem(storageKey)) {
+                document.getElementById('hwStoryOverlay').classList.add('active');
+                document.getElementById('closeHwStory').addEventListener('click', () => {
+                    localStorage.setItem(storageKey, 'true');
+                    document.getElementById('hwStoryOverlay').classList.remove('active');
+                });
+            }
+        }
+
+        function initFestivalUI() {
+            if (!IS_HALLOWEEN) return;
+            
+            document.getElementById('mainTitle').innerHTML = '🦇 萬聖狂歡 🎃';
+            document.getElementById('subTitle').innerHTML = '不給感謝就搗蛋！全公司集氣解鎖傳說外觀';
+
+            document.querySelector('#leaderboardOverlay h2').innerHTML = '🦇 萬聖英雄榜 🦇';
+            document.querySelector('#leaderboardOverlay h2').style.color = '#ff8c00';
+            document.querySelector('#leaderboardOverlay .board-col:nth-child(1) h3').innerHTML = '🧛 傳染大師 <br><span style="font-size:12px; color:#888;">(送出最多)</span>';
+            document.querySelector('#leaderboardOverlay .board-col:nth-child(2) h3').innerHTML = '🍬 糖果富翁 <br><span style="font-size:12px; color:#888;">(收到最多)</span>';
         }
         initFestivalUI();
 
         const defaultDirectory = [
-            'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)',
-            'Allen Lai (allen.lai.al1@roche.com)', 'Allen Liu (allen.liu@roche.com)', 'Allison Tseng (allison.tseng.at1@roche.com)',
-            'Alvan Wang (alvan.wang@roche.com)', 'Alvin Chen (alvin.chen.ac2@roche.com)', 'Alvin Hsiang (alvin.hsiang@roche.com)',
-            'Alyssa Chang (alyssa.chang@roche.com)', 'Amanda Wu (amanda.wu.aw2@roche.com)', 'Amy Hwang (amy.hwang@roche.com)',
-            'Anita Yu (anita.yu@roche.com)', 'Anna Ho (anna.ho@roche.com)', 'Anne Lee (anne.lee.al2@roche.com)',
-            'Annie Shih (annie.shih@roche.com)', 'Anson Chang (anson.chang@roche.com)', 'Ariel Hwang (ariel.hwang@roche.com)',
-            'Becky Fan (becky.fan@roche.com)', 'Benny Yu (benny.yu@roche.com)', 'Berlin Yeh (berlin.yeh@external.roche.com)',
-            'Brenda Ip (brenda.ip@roche.com)', 'Bruce Lee (bruce.lee.bl5@roche.com)', 'Bryan Lu (bryan.lu@roche.com)',
-            'Carol Chiang (carol.chiang@roche.com)', 'Castial Lee (castial.lee@roche.com)', 'Catherine Chang (catherine.chang.cc1@roche.com)',
-            'Chandra Chuang (chandra.chuang@roche.com)', 'Charis Shih (charis.shih@roche.com)', 'Charles Chou (charles.chou@roche.com)',
-            'Charlie Jiang (charlie.jiang@roche.com)', 'Chloe Tsai (chloe.tsai@roche.com)', 'Cholun Chang (cholun.chang@roche.com)',
-            'Chun Chen (chun.chen@external.roche.com)', 'Claire Hsu (claire.hsu.ch1@external.roche.com)', 'Corrine Wang (corrine.wang@roche.com)',
-            'Crystal Huang (crystal.huang.ch1@roche.com)', 'Crystal Lo (crystal.lo@external.roche.com)', 'Cynthia Lee (cynthia.lee.cl1@roche.com)',
-            'Danny Kuan (danny.kuan@roche.com)', 'Danny Lin (danny.lin@roche.com)', 'Darren Lin (darren.lin@roche.com)',
-            'David Liu (david.liu.dl5@roche.com)', 'Deniz Huang (deniz.huang@roche.com)', 'Eason Lee (eason.lee@roche.com)',
-            'Elaine Cheng (elaine.cheng@roche.com)', 'Elena Chen (elena.chen.ec2@external.roche.com)', 'Elis Kuan (elis.kuan@roche.com)',
-            'Elvis Shen (elvis.shen@roche.com)', 'Emily Chang (emily.chang.ec1@roche.com)', 'Emma Liu (emma.liu.el1@external.roche.com)',
-            'Eric Chen (eric.chen.ec1@roche.com)', 'Erika Chen (erika.chen@roche.com)', 'Ethan Chien (ethan.chien@roche.com)',
-            'Eva Yeh (eva.yeh@roche.com)', 'Felicity Chen (felicity.chen@roche.com)', 'Fenny Wu (fenny.wu@roche.com)',
-            'Fred Yu (fred.yu@roche.com)', 'Gallon Chang (gallon.chang@external.roche.com)', 'Gary Lee (gary.lee.gl3@roche.com)',
-            'Gina Liao (gina.liao@roche.com)', 'Giselle Huang (giselle.huang@roche.com)', 'Grace Fang (grace.fang@roche.com)',
-            'Hank Chi (hank.chi@roche.com)', 'Hank Su (hank.su@roche.com)', 'Hank Wu (hank.wu.hw1@roche.com)',
-            'Heather Hung (heather.hung@roche.com)', 'Henry Cheng (henry.cheng.hc1@roche.com)', 'Hilda Chang (hilda.chang@roche.com)',
-            'Irene Lee (irene.lee.il1@roche.com)', 'Irene Liao (irene.liao@roche.com)', 'Ivy Hsu (ivy.hsu.ih1@roche.com)',
-            'Jack Huang (jack.huang.jh2@roche.com)', 'Jackal Wang (jackal.wang@roche.com)', 'Jacky Kuo (jacky.kuo@roche.com)',
-            'Jacky Wang (jacky.wang.jw2@roche.com)', 'James Chiang (james.chiang@roche.com)', 'James Hsieh (james.hsieh@roche.com)',
-            'James Kuo (james.kuo@roche.com)', 'Jamie Chou (jamie.chou@external.roche.com)', 'Jamie Lin (jamie.lin@external.roche.com)',
-            'Jane Li (jane.li.jl2@roche.com)', 'Janet Tsai (janet.tsai@roche.com)', 'Jason Lee (jason.lee.jl2@roche.com)',
-            'Jay Liu (jay.liu@roche.com)', 'Jeff Yu (jeff.yu@roche.com)', 'Jeffrey Chung (jeffrey.chung@roche.com)',
-            'Jennifer Huang (jennifer.huang.jh2@roche.com)', 'Jenny Lai (jenny.lai@roche.com)', 'Jerome Yang (jerome.yang@roche.com)',
-            'Joan Yen (joan.yen@roche.com)', 'Joe Lin (joe.lin@roche.com)', 'Johan Chien (johan.chien@roche.com)',
-            'Jovi Chen (jovi.chen@roche.com)', 'Junet Choi (junet.choi@roche.com)', 'Just Shen (just.shen@roche.com)',
-            'Kan Shih (kan.shih@roche.com)', 'Kathleen Wang (kathleen.wang@roche.com)', 'Kevin Chang (kevin.chang.kc2@roche.com)',
-            'Kimberly Chen (kimberly.chen@external.roche.com)', 'Kite Yen (kite.yen@roche.com)', 'Kyle Hu (kyle.hu.kh1@roche.com)',
-            'Kyra Chiu (kyra.chiu@external.roche.com)', 'Latrell Xie (latrell.xie@roche.com)', 'Lauren Shih (lauren.shih@roche.com)',
-            'Lena Lan (lena.lan@roche.com)', 'Libra Lu (libra.lu@roche.com)', 'Lilian Li (lilian.li@external.roche.com)',
-            'Lily Huang (lily.huang.lh5@roche.com)', 'Louis Tseng (louis.tseng@roche.com)', 'Louise Yu (louise.yu@roche.com)',
-            'Maggie Wu (maggie.wu.mw2@roche.com)', 'Mandy Wu (mandy.wu@external.roche.com)', 'Menu Huang (menu.huang@external.roche.com)',
-            'Michelle Gui (michelle.gui@roche.com)', 'Mini Yang (mini.yang@roche.com)', 'Misty Huang (misty.huang@roche.com)',
-            'Nancy Lin (nancy.lin@roche.com)', 'Norman Chu (norman.chu@roche.com)', 'Oliver Chang (oliver.chang@roche.com)',
-            'Oona Kuo (oona.kuo@roche.com)', 'Pareto Liu (pareto.liu@external.roche.com)', 'Patty Chen (patty.chen@roche.com)',
-            'Paul Chang (paul.chang.pc3@roche.com)', 'Peggy Liu (peggy.liu@roche.com)', 'Peter Chen (peter.chen.pc2@roche.com)',
-            'Phil Chang (phil.chang@roche.com)', 'Ray Lin (ray.lin@external.roche.com)', 'Rebecca Liao (rebecca.liao@roche.com)',
-            'Renee Tol (renee.tol@external.roche.com)', 'Rex Ku (rex.ku@roche.com)', 'Rita Lee (rita.lee@external.roche.com)',
-            'Riyi Wu (riyi.wu@roche.com)', 'Rob Liu (rob.liu@roche.com)', 'Roy Chen (roy.chen.rc1@roche.com)',
-            'Ruby Chao (ruby.chao@external.roche.com)', 'Ryan Lin (ryan.lin.rl1@roche.com)', 'Sally Liu (sally.liu.sl2@roche.com)',
-            'Sally Tseng (sally.tseng.st1@external.roche.com)', 'Sam Wang (sam.wang@external.roche.com)', 'Samuel Li (samuel.li@roche.com)',
-            'Sandra Chu (sandra.chu@roche.com)', 'Sara Chen (sara.chen.sc1@roche.com)', 'Sasa Sha (sasa.sha@roche.com)',
-            'Sean Huang (sean.huang@roche.com)', 'Sean Tung (sean.tung@roche.com)', 'Sean Wang (sean.wang.sw4@roche.com)',
-            'Sherby Lin (sherby.lin@roche.com)', 'Shih-En Chang (shih-en.chang@roche.com)', 'Shiloh Yu (shiloh.yu@roche.com)',
-            'Simon Lin (simon.lin@roche.com)', 'Sophia Chao (sophia.chao@roche.com)', 'Soy Sun (soy.sun@roche.com)',
-            'Stacy Huang (stacy.huang@roche.com)', 'Stanley Lin (stanley.lin@roche.com)', 'Stanly BX Lin (stanly_bx.lin@roche.com)',
-            'Steven Chen (steven.chen@roche.com)', 'Steven Huang (steven.huang@roche.com)', 'Susan Liao (susan.liao@external.roche.com)',
-            'Ten Li (ten.li@roche.com)', 'Ting Zhan (ting.zhan@external.roche.com)', 'Tom Suen (tom.suen@roche.com)',
-            'Tony Huang (tony.huang.th1@roche.com)', 'Vanson Huang (vanson.huang@roche.com)', 'Vic Chen (vic.chen@roche.com)',
-            'Vivien Tan (vivien.tan.vt1@roche.com)', 'Wayne Lin (wayne.lin@roche.com)', 'Wendy Chen (wendy.chen@roche.com)',
-            'Wendy Huang (wendy.huang@roche.com)', 'Wendy PY Yu (wendy_py.yu@roche.com)', 'William Shen (william.shen.ws1@roche.com)',
-            'YaChu Chao (yachu.chao@roche.com)', 'Yi-Wen Chen (yi-wen.chen@roche.com)', 'Yifan Chen (yifan.chen.yc1@roche.com)',
-            'Yvonne Lee (yvonne.lee.yl5@roche.com)', 'Zach Wei (optional.wei@external.roche.com)', 'Zoe Chen (zoe.chen.zc2@roche.com)',
-            'Allen Tsai (allen.tsai@roche.com)', 'Amanda Liu (amanda.liu@roche.com)', 'Astrid Yang (astrid.yang@roche.com)',
-            'Cindy Huang (cindy.huang.ch2@roche.com)', 'Edward Kuo (edward.kuo@roche.com)', 'Edward Tan (edward.tan@roche.com)',
-            'Elin Shen (elin.shen@roche.com)', 'Fanny Tseng (fanny.tseng@roche.com)', 'Jack Chiu (jack.chiu@roche.com)',
-            'Jeff Chen (jeff.chen.jc2@roche.com)', 'Jerry Lee (jerry.lee@roche.com)', 'Jessie Tseng (jessie.tseng@roche.com)',
-            'Joanne Wu (joanne.wu@roche.com)', 'Lisa Tsai (lisa.tsai@roche.com)', 'Mike Lin (mike.lin@roche.com)',
-            'Olivia Chen (olivia.chen@roche.com)', 'Raymond Hsieh (raymond.hsieh@roche.com)', 'Stelly Tsai (stelly.tsai@roche.com)',
-            'Taiwan Services Hotline (taiwan.services-hotline@roche.com)', 'Tina Lin (tina.lin@roche.com)', 'Tony Su (tony.su@roche.com)',
-            'Wendy Wang (wendy.wang@roche.com)', 'Yuehmei Chou (yuehmei.chou@roche.com)'
+            'Ai-Zhen Weng (ai-zhen.weng@roche.com)', 'Alex Yang (alex.yang.ay2@roche.com)', 'Alice Hsieh (alice.hsieh.ah2@roche.com)'
         ];
 
         const companyDirectoryList = Array.from(new Set(defaultDirectory.map(item => item.split(' (')[0])));
@@ -685,86 +660,37 @@
         document.getElementById('loginBtn').addEventListener('click', () => { signInWithPopup(auth, provider).catch(e => { alert("登入失敗"); }); });
         userAvatar.addEventListener('click', () => { if(confirm('確定要登出嗎？')) signOut(auth); });
         
-        document.getElementById('forceUpdateBtn').addEventListener('click', () => {
-            playSound('click');
-            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
-        });
+        document.getElementById('forceUpdateBtn').addEventListener('click', () => { window.location.href = window.location.pathname + '?v=' + new Date().getTime(); });
         
         onAuthStateChanged(auth, (user) => {
             if (user) { 
                 currentUser = user; loginPanel.style.display = 'none'; inputPanel.style.display = 'block'; userAvatar.src = user.photoURL || 'https://via.placeholder.com/36'; 
                 
                 const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
-                if (!localStorage.getItem(onboardingKey)) {
-                    document.getElementById('onboardingOverlay').classList.add('active');
-                }
-
-                updateUserLevelUI(); 
-                renderWall(); 
-            } 
-            else { 
-                currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; 
-                isFilterMeOnly = false; document.getElementById('filterMeBtn').classList.remove('active'); 
-                updateUserLevelUI(); 
-                renderWall(); 
+                if (!localStorage.getItem(onboardingKey)) { document.getElementById('onboardingOverlay').classList.add('active'); }
+                
+                updateUserLevelUI(); renderWall(); 
+                setTimeout(showHalloweenStory, 1500); // 延遲顯示萬聖故事
+            } else { 
+                currentUser = null; loginPanel.style.display = 'block'; inputPanel.style.display = 'none'; isFilterMeOnly = false; document.getElementById('filterMeBtn').classList.remove('active'); 
+                updateUserLevelUI(); renderWall(); 
             }
         });
 
         document.getElementById('acceptOnboardingBtn').addEventListener('click', () => {
-            playSound('click');
-            const onboardingKey = `has_seen_onboarding_${currentUser.uid}`;
-            localStorage.setItem(onboardingKey, 'true');
-            document.getElementById('onboardingOverlay').classList.remove('active');
+            playSound('click'); localStorage.setItem(`has_seen_onboarding_${currentUser.uid}`, 'true'); document.getElementById('onboardingOverlay').classList.remove('active');
         });
 
-        let audioCtx;
-        function playSound(type) {
-            try {
-                if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator(); const gainNode = audioCtx.createGain();
-                osc.connect(gainNode); gainNode.connect(audioCtx.destination);
-                
-                if (type === 'click') { 
-                    osc.type = 'sine'; osc.frequency.setValueAtTime(800, audioCtx.currentTime); gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); osc.start(); osc.stop(audioCtx.currentTime + 0.05);
-                } else if (type === 'send') { 
-                    osc.type = 'triangle'; osc.frequency.setValueAtTime(523.25, audioCtx.currentTime); osc.frequency.setValueAtTime(659.25, audioCtx.currentTime + 0.1); gainNode.gain.setValueAtTime(0.15, audioCtx.currentTime); gainNode.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); osc.start(); osc.stop(audioCtx.currentTime + 0.3);
-                } else if (type === 'levelup') {
-                    const now = audioCtx.currentTime; const notes = [523.25, 659.25, 783.99, 1046.50]; 
-                    notes.forEach((freq, idx) => {
-                        const o = audioCtx.createOscillator(); const g = audioCtx.createGain(); o.connect(g); g.connect(audioCtx.destination);
-                        o.type = 'sine'; o.frequency.setValueAtTime(freq, now + idx * 0.1); g.gain.setValueAtTime(0.15, now + idx * 0.1); g.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.1 + 0.3);
-                        o.start(now + idx * 0.1); o.stop(now + idx * 0.1 + 0.3);
-                    });
-                }
-            } catch(e) {}
-        }
-
-        function triggerLevelUpCelebration() {
-            playSound('levelup');
-            const count = 250; const defaults = { origin: { y: 0.7 } };
-            function fire(ratio, opts) { confetti(Object.assign({}, defaults, opts, { particleCount: Math.floor(count * ratio) })); }
-            fire(0.25, { spread: 26, startVelocity: 55 }); fire(0.2, { spread: 60 }); fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8 }); fire(0.1, { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2 }); fire(0.1, { spread: 120, startVelocity: 45 });
-        }
-
         const wall = document.getElementById('wall');
-        
-        const festivalOverlay = document.getElementById('festivalOverlay');
-        document.getElementById('festivalBtn').addEventListener('click', () => { playSound('click'); festivalOverlay.classList.add('active'); });
-        document.getElementById('closeFestival').addEventListener('click', () => { playSound('click'); festivalOverlay.classList.remove('active'); });
-
         const rulesOverlay = document.getElementById('rulesOverlay');
         document.getElementById('rulesBtn').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.add('active'); });
         document.getElementById('closeRules').addEventListener('click', () => { playSound('click'); rulesOverlay.classList.remove('active'); });
-
         const guideOverlay = document.getElementById('guideOverlay');
         document.getElementById('guideBtn').addEventListener('click', () => { playSound('click'); guideOverlay.classList.add('active'); });
         document.getElementById('closeGuide').addEventListener('click', () => { playSound('click'); guideOverlay.classList.remove('active'); });
-
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
         document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
-
         const levelUpOverlay = document.getElementById('levelUpOverlay');
         document.getElementById('closeLevelUpBtn').addEventListener('click', () => { playSound('click'); levelUpOverlay.classList.remove('active'); });
 
@@ -774,21 +700,11 @@
         });
 
         let currentEditMsgId = null;
-        document.getElementById('cancelEditBtn').addEventListener('click', () => {
-            playSound('click'); document.getElementById('editOverlay').classList.remove('active'); currentEditMsgId = null;
-        });
+        document.getElementById('cancelEditBtn').addEventListener('click', () => { playSound('click'); document.getElementById('editOverlay').classList.remove('active'); currentEditMsgId = null; });
         document.getElementById('saveEditBtn').addEventListener('click', () => {
-            playSound('click');
-            if (!currentEditMsgId) return;
+            playSound('click'); if (!currentEditMsgId) return;
             const newText = document.getElementById('editMsgInput').value.trim();
-            if (newText) {
-                update(ref(db, `messages/${currentEditMsgId}`), { text: newText });
-                document.getElementById('editOverlay').classList.remove('active');
-                closeFocus();
-                currentEditMsgId = null;
-            } else {
-                alert('留言文字不能為空喔！');
-            }
+            if (newText) { update(ref(db, `messages/${currentEditMsgId}`), { text: newText }); document.getElementById('editOverlay').classList.remove('active'); closeFocus(); currentEditMsgId = null; } else { alert('留言文字不能為空喔！'); }
         });
 
         const focusOverlay = document.getElementById('focusOverlay');
@@ -802,8 +718,7 @@
         document.querySelectorAll('.theme-btn').forEach((btn) => {
             btn.addEventListener('click', function() { 
                 if (this.classList.contains('locked')) {
-                    playSound('click');
-                    const t = this.getAttribute('data-theme');
+                    playSound('click'); const t = this.getAttribute('data-theme');
                     if (t === 'theme-ultimate') return alert('🦄 傳說神話模板需要「Lv.14 傳說之神 (100則留言)」才能解鎖！');
                     if (t === 'theme-cosmic') return alert('🌌 星際宇宙模板需要「Lv.13 星際領航 (90則留言)」才能解鎖！');
                     if (t === 'theme-gold') return alert('👑 璀璨鑽金模板需要「Lv.12 璀璨鑽金 (80則留言)」才能解鎖！');
@@ -819,39 +734,25 @@
 
         function updateUserLevelUI() {
             if (!currentUser) { document.getElementById('levelStatusBar').style.display = 'none'; return; }
-
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
+            const now = Date.now(); const todayStart = new Date().setHours(0,0,0,0); const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
             
-            const now = Date.now();
-            const todayStart = new Date().setHours(0,0,0,0);
-            const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
-
-            let expCount = 0;
-            let totalCount = 0;
-            let todayCount = 0;
-            let eventExtraCount = 0;
-            let monthMessages = [];
+            let expCount = 0; let totalCount = 0; let todayCount = 0; let eventExtraCount = 0; let monthMessages = [];
 
             rawMessages.forEach(m => {
                 if (m.uid === currentUser.uid || (!m.uid && m.author === currentUser.displayName && m.author !== '匿名')) {
                     totalCount++;
                     if (m.isEventExtra) {
-                        if (checkIsMidAutumn(m.timestamp)) eventExtraCount++;
+                        if (checkIsHalloween(m.timestamp)) eventExtraCount++;
                     } else {
                         expCount++;
                         if (m.timestamp >= todayStart) todayCount++;
-                        if (m.timestamp >= thirtyDaysAgo) {
-                            monthMessages.push(m.timestamp);
-                        }
+                        if (m.timestamp >= thirtyDaysAgo) { monthMessages.push(m.timestamp); }
                     }
                 }
             });
 
-            userLifetimeMessageCount = expCount;
-            
-            monthMessages.sort((a, b) => a - b);
-            let monthCount = monthMessages.length;
-
+            userLifetimeMessageCount = expCount; monthMessages.sort((a, b) => a - b); let monthCount = monthMessages.length;
             let title = '', maxLength = 20;
 
             if (expCount >= 50) { userLevel = 8; title = '✨ Lv.8 感謝大師'; maxLength = 1000; } 
@@ -862,120 +763,58 @@
             else if (expCount >= 5) { userLevel = 3; title = '🌷 Lv.3 溫暖園丁'; maxLength = 50; } 
             else if (expCount >= 1) { userLevel = 2; title = '🍀 Lv.2 熱心路人'; maxLength = 20; } 
             else { userLevel = 1; title = '🌱 Lv.1 新手幼苗'; maxLength = 20; }
-
             if (isAdminUser) maxLength = 2000;
 
-            msgInput.maxLength = maxLength;
-            msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (無限字數)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
-
-            const statusBar = document.getElementById('levelStatusBar');
-            statusBar.style.display = 'flex';
-            
+            msgInput.maxLength = maxLength; msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (無限字數)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
+            const statusBar = document.getElementById('levelStatusBar'); statusBar.style.display = 'flex';
             document.getElementById('levelTitle').innerHTML = `${title} <span style="color:#888; font-size:11px; margin-left:5px;">(經驗值: ${expCount} / 總發送: ${totalCount})</span>`;
             
             const hintSpan = document.getElementById('levelHint');
             if (isAdminUser) {
                 hintSpan.innerHTML = `<span class="quota-status">🛡️ 管理員無限配額</span>`;
             } else {
-                if (IS_MID_AUTUMN && (todayCount >= 10 || monthCount >= 30)) {
-                    let extraLeft = 10 - eventExtraCount;
-                    if (extraLeft > 0) {
-                        hintSpan.innerHTML = `<span class="quota-status" style="background:#fff8dc; color:#b8860b;">🎁 中秋加碼：剩餘 ${extraLeft} 則</span>`;
-                    } else {
-                        hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">🚫 中秋加碼已用盡</span>`;
-                    }
-                } else if (todayCount >= 10) {
-                    hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">🚫 今日已滿，明天 00:00 恢復</span>`;
-                } else if (monthCount >= 30) {
-                    let unlockTime = new Date(monthMessages[0] + 30 * 24 * 60 * 60 * 1000);
-                    let dStr = `${unlockTime.getMonth()+1}/${unlockTime.getDate()} ${String(unlockTime.getHours()).padStart(2,'0')}:${String(unlockTime.getMinutes()).padStart(2,'0')}`;
-                    hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">⏳ 將於 ${dStr} 恢復 1 則</span>`;
+                let regLeft = Math.max(0, Math.min(10 - todayCount, 30 - monthCount));
+                let evtLeft = Math.max(0, 10 - eventExtraCount);
+
+                if (IS_HALLOWEEN) {
+                    let identityText = '👤 正常人類';
+                    if (isCurrentUserProgenitor) identityText = '🧛 始祖吸血鬼';
+                    else if (isCurrentUserVampire) identityText = '🦇 被感染的吸血鬼';
+
+                    hintSpan.innerHTML = `<span class="quota-status" style="background:rgba(255,140,0,0.2); color:#ff8c00;">${identityText} | 一般配額: ${regLeft} | 萬聖配額: ${evtLeft}</span>`;
                 } else {
-                    hintSpan.innerHTML = `<span class="quota-status">📝 今日剩 ${10 - todayCount} / 本月剩 ${30 - monthCount} 則</span>`;
+                    if (todayCount >= 10) hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">🚫 今日已滿，明天 00:00 恢復</span>`;
+                    else if (monthCount >= 30) {
+                        let unlockTime = new Date(monthMessages[0] + 30 * 24 * 60 * 60 * 1000);
+                        let dStr = `${unlockTime.getMonth()+1}/${unlockTime.getDate()} ${String(unlockTime.getHours()).padStart(2,'0')}:${String(unlockTime.getMinutes()).padStart(2,'0')}`;
+                        hintSpan.innerHTML = `<span class="quota-status" style="background:#ffe4e1; color:#d64966;">⏳ 將於 ${dStr} 恢復 1 則</span>`;
+                    }
+                    else hintSpan.innerHTML = `<span class="quota-status">📝 今日剩 ${regLeft} / 本月剩 ${30 - monthCount} 則</span>`;
                 }
             }
 
+            // 權限控制
             if (isAdminUser) {
-                document.getElementById('btnAdmin').style.display = 'inline-block';
-                document.getElementById('btnNeon').style.display = 'inline-block';
-                document.getElementById('btnHolo').style.display = 'inline-block';
-                document.getElementById('btnGold').style.display = 'inline-block';
-                document.getElementById('btnCosmic').style.display = 'inline-block';
-                document.getElementById('btnUltimate').style.display = 'inline-block';
-
-                document.getElementById('emojiBtn').classList.remove('locked');
-                document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('locked'));
-                document.getElementById('openDrawBtn').classList.remove('locked');
+                document.getElementById('btnAdmin').style.display = 'inline-block'; document.getElementById('btnNeon').style.display = 'inline-block'; document.getElementById('btnHolo').style.display = 'inline-block'; document.getElementById('btnGold').style.display = 'inline-block'; document.getElementById('btnCosmic').style.display = 'inline-block'; document.getElementById('btnUltimate').style.display = 'inline-block';
+                document.getElementById('emojiBtn').classList.remove('locked'); document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('locked')); document.getElementById('openDrawBtn').classList.remove('locked'); document.getElementById('uploadImgLabel').classList.remove('locked');
+            } else {
+                document.getElementById('btnAdmin').style.display = 'none'; document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
+                document.querySelectorAll('.theme-btn').forEach((btn) => { 
+                    btn.classList.remove('locked'); const t = btn.getAttribute('data-theme');
+                    const basicLockedThemes = ['theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
+                    if (userLevel < 4 && basicLockedThemes.includes(t)) btn.classList.add('locked'); 
+                });
+                document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6); document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
+                document.getElementById('btnNeon').style.display = expCount >= 60 ? 'inline-block' : 'none'; document.getElementById('btnHolo').style.display = expCount >= 70 ? 'inline-block' : 'none'; document.getElementById('btnGold').style.display = expCount >= 80 ? 'inline-block' : 'none'; document.getElementById('btnCosmic').style.display = expCount >= 90 ? 'inline-block' : 'none'; document.getElementById('btnUltimate').style.display = expCount >= 100 ? 'inline-block' : 'none';
+            }
+            
+            // 萬聖節無條件開放假面舞會(匿名)，並給予所有人 10 則配額使用的機會
+            if (IS_HALLOWEEN) {
                 document.getElementById('anonWrapper').classList.remove('locked');
                 document.getElementById('anonCheck').disabled = false;
-                document.getElementById('uploadImgLabel').classList.remove('locked');
             } else {
-                document.getElementById('btnAdmin').style.display = 'none';
-                document.getElementById('emojiBtn').classList.toggle('locked', userLevel < 2);
-                
-                document.querySelectorAll('.theme-btn').forEach((btn) => { 
-                    btn.classList.remove('locked');
-                    const t = btn.getAttribute('data-theme');
-                    const basicLockedThemes = ['theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice'];
-                    if (userLevel < 4 && basicLockedThemes.includes(t)) {
-                        btn.classList.add('locked'); 
-                    }
-                });
-
-                document.getElementById('openDrawBtn').classList.toggle('locked', userLevel < 6);
                 document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
                 document.getElementById('anonCheck').disabled = userLevel < 7;
-                document.getElementById('uploadImgLabel').classList.toggle('locked', userLevel < 8);
-                
-                document.getElementById('btnNeon').style.display = expCount >= 60 ? 'inline-block' : 'none';
-                document.getElementById('btnHolo').style.display = expCount >= 70 ? 'inline-block' : 'none';
-                document.getElementById('btnGold').style.display = expCount >= 80 ? 'inline-block' : 'none';
-                document.getElementById('btnCosmic').style.display = expCount >= 90 ? 'inline-block' : 'none';
-                document.getElementById('btnUltimate').style.display = expCount >= 100 ? 'inline-block' : 'none';
-            }
-
-            const storageKey = `seen_pub_lvl_${currentUser.uid}`;
-            const seenLevel = parseInt(localStorage.getItem(storageKey) || '1');
-            let shouldShowModal = false;
-            let mIcon = '', mBadge = '', mTitle = '', mDesc = '';
-
-            if (userLevel > seenLevel && !isAdminUser) {
-                shouldShowModal = true;
-                if (userLevel === 8) { mIcon = '👑'; mBadge = '獲得稱號：✨ Lv.8 感謝大師'; mTitle = '🔓 解鎖：📷 插入相片 & 大師徽章！'; mDesc = '最高榮譽！現在你可以在塗鴉畫布中直接上傳真實照片，且你發布的卡片將永久獲得專屬的「🏅 大師徽章」特權！'; } 
-                else if (userLevel === 7) { mIcon = '🤫'; mBadge = '獲得稱號：🕵️‍♂️ Lv.7 藏鏡天使'; mTitle = '🔓 解鎖：🎭 匿名發佈 & 200字 & 完整表情包！'; mDesc = '有愛大聲說！字數上限擴充至 200 字，解鎖所有隱藏表情，並可勾選「匿名」化身不具名天使！'; } 
-                else if (userLevel === 6) { mIcon = '🖌️'; mBadge = '獲得稱號：🎨 Lv.6 塗鴉畫家'; mTitle = '🔓 解鎖：🖌️ 親筆手繪塗鴉畫布！'; mDesc = '文字無法表達的情感，就畫出來吧！點擊 🎨 按鈕，即可開啟全螢幕塗鴉畫布，親筆簽名或畫插圖！'; } 
-                else if (userLevel === 5) { mIcon = '👥'; mBadge = '獲得稱號：🗣️ Lv.5 感謝達人'; mTitle = '🔓 解鎖：👥 多人標記功能 (@)！'; mDesc = '現在只要在接收者欄位輸入名字並點擊選字單，系統會自動加上逗號，讓你一次標記整個團隊！'; } 
-                else if (userLevel === 4) { mIcon = '🌈'; mBadge = '獲得稱號：🌈 Lv.4 色彩魔術師'; mTitle = '🔓 解鎖：🎨 全套 10 色主題 & 中級表情包！'; mDesc = '解鎖勃根地紅、薰衣草紫等所有隱藏主題，並獲得包含動物、食物等更豐富的表情符號！'; } 
-                else if (userLevel === 3) { mIcon = '🖐️'; mBadge = '獲得稱號：🌷 Lv.3 溫暖園丁'; mTitle = '🔓 解鎖：🖐️ 卡片自由拖曳 & 50字上限！'; mDesc = '感謝牆不再死板！你現在可以隨意按住並拖曳牆上的任何卡片，字數上限也提升到了 50 字！'; } 
-                else if (userLevel === 2) { mIcon = '👍'; mBadge = '獲得稱號：🍀 Lv.2 熱心路人'; mTitle = '🔓 解鎖：❤️ 按讚功能 & 基礎表情符號！'; mDesc = '恭喜跨出第一步！現在你可以給其他同事的卡片點讚，並在留言裡加入笑臉、愛心等基礎表情了！'; }
-                localStorage.setItem(storageKey, userLevel.toString());
-            } else if (!isAdminUser) {
-                let hiddenLevel = 0;
-                if (expCount >= 100) hiddenLevel = 5;
-                else if (expCount >= 90) hiddenLevel = 4;
-                else if (expCount >= 80) hiddenLevel = 3;
-                else if (expCount >= 70) hiddenLevel = 2;
-                else if (expCount >= 60) hiddenLevel = 1;
-
-                const hiddenStorageKey = `seen_hid_lvl_${currentUser.uid}`;
-                const seenHidden = parseInt(localStorage.getItem(hiddenStorageKey) || '0');
-
-                if (hiddenLevel > seenHidden) {
-                    shouldShowModal = true;
-                    mIcon = '🎁'; mBadge = '🎊 發現隱藏彩蛋！';
-                    if (hiddenLevel === 5) { mTitle = '🔓 隱藏解鎖：🦄 傳說神話動態模板！'; mDesc = '太神啦！你已累積 100 點經驗值！已為你解鎖全場唯一的「動態 RGB 幻彩光效」發文背景，每次發文都將閃耀傳說光芒！快去調色盤找找看。'; } 
-                    else if (hiddenLevel === 4) { mTitle = '🔓 隱藏解鎖：🌌 星際宇宙光暈模板！'; mDesc = '狂賀！你累積了 90 點經驗值！你的心意超越了地球，現已解鎖深紫色的星雲漸層與光暈外框。'; } 
-                    else if (hiddenLevel === 3) { mTitle = '🔓 隱藏解鎖：👑 璀璨鑽金尊爵模板！'; mDesc = '狂賀！你累積了 80 點經驗值！已解鎖尊爵不凡的黑金搭配，專屬鑽金光澤邊框，只有真正的大佬能駕馭！'; } 
-                    else if (hiddenLevel === 2) { mTitle = '🔓 隱藏解鎖：🔮 極光毛玻璃特效模板！'; mDesc = '狂賀！你累積了 70 點經驗值！質感大升級！解鎖具有半透明毛玻璃材質與極光漸層的神秘發文背景。'; } 
-                    else if (hiddenLevel === 1) { mTitle = '🔓 隱藏解鎖：🪩 賽博龐克霓虹模板！'; mDesc = '狂賀！你累積了 60 點經驗值！打破平凡！解鎖超高調的青粉螢光發光邊框，讓你的卡片成為全場焦點。'; }
-                    localStorage.setItem(hiddenStorageKey, hiddenLevel.toString());
-                }
-            }
-
-            if (shouldShowModal) {
-                document.getElementById('levelUpIcon').innerText = mIcon; document.getElementById('levelUpBadge').innerText = mBadge;
-                document.getElementById('levelUpFeatureTitle').innerText = mTitle; document.getElementById('levelUpFeatureDesc').innerText = mDesc;
-                levelUpOverlay.classList.add('active'); triggerLevelUpCelebration();
             }
 
             renderEmojis();
@@ -987,24 +826,15 @@
         const picker = document.getElementById('emojiPicker'); 
         
         function renderEmojis() {
-            picker.innerHTML = '';
-            let currentList = emojiBasicList;
+            picker.innerHTML = ''; let currentList = emojiBasicList;
             if (userLevel >= 7 || (currentUser && currentUser.email === ADMIN_EMAIL)) currentList = emojiFullList;
             else if (userLevel >= 4) currentList = emojiMidList;
-
-            currentList.forEach(e => { 
-                const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; 
-                span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; 
-                picker.appendChild(span); 
-            });
+            currentList.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; picker.appendChild(span); });
         }
-
         document.getElementById('emojiBtn').addEventListener('click', (e) => { 
-            e.stopPropagation(); 
-            if (userLevel < 2 && !(currentUser && currentUser.email === ADMIN_EMAIL)) { playSound('click'); return alert('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
+            e.stopPropagation(); if (userLevel < 2 && !(currentUser && currentUser.email === ADMIN_EMAIL)) { playSound('click'); return alert('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
             picker.classList.toggle('active'); playSound('click'); 
-        }); 
-        picker.addEventListener('click', (e) => e.stopPropagation());
+        }); picker.addEventListener('click', (e) => e.stopPropagation());
 
         const drawOverlay = document.getElementById('drawOverlay');
         const bgCanvas = document.getElementById('bgCanvas'); const bgCtx = bgCanvas.getContext('2d');
@@ -1028,25 +858,18 @@
         function startDraw(e) { isDrawing = true; draw(e); } function endDraw() { isDrawing = false; ctx.beginPath(); }
         function draw(e) {
             if (!isDrawing) return; e.preventDefault();
-            const rect = drawCanvas.getBoundingClientRect();
-            const x = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (drawCanvas.width / rect.width);
-            const y = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (drawCanvas.height / rect.height);
+            const rect = drawCanvas.getBoundingClientRect(); const x = ((e.touches ? e.touches[0].clientX : e.clientX) - rect.left) * (drawCanvas.width / rect.width); const y = ((e.touches ? e.touches[0].clientY : e.clientY) - rect.top) * (drawCanvas.height / rect.height);
             ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            if (isEraser) { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = penWidth * 4; ctx.strokeStyle = 'rgba(0,0,0,1)'; } 
-            else { ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = penWidth; ctx.strokeStyle = penColor; }
+            if (isEraser) { ctx.globalCompositeOperation = 'destination-out'; ctx.lineWidth = penWidth * 4; ctx.strokeStyle = 'rgba(0,0,0,1)'; } else { ctx.globalCompositeOperation = 'source-over'; ctx.lineWidth = penWidth; ctx.strokeStyle = penColor; }
             ctx.lineTo(x, y); ctx.stroke(); ctx.beginPath(); ctx.moveTo(x, y);
         }
         drawCanvas.addEventListener('mousedown', startDraw); drawCanvas.addEventListener('mousemove', draw); drawCanvas.addEventListener('mouseup', endDraw); drawCanvas.addEventListener('mouseleave', endDraw);
         drawCanvas.addEventListener('touchstart', startDraw, {passive: false}); drawCanvas.addEventListener('touchmove', draw, {passive: false}); drawCanvas.addEventListener('touchend', endDraw);
 
-        document.getElementById('uploadImgInput').addEventListener('click', function(e) {
-            if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 攝影大師 (40則留言)」才能解鎖喔！'); }
-        });
-
+        document.getElementById('uploadImgInput').addEventListener('click', function(e) { if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('📷 照片上傳需要達到「Lv.8 攝影大師 (40則留言)」才能解鎖喔！'); } });
         document.getElementById('uploadImgInput').addEventListener('change', function(e){
             const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader();
-            reader.onload = function(event){ const img = new Image(); img.onload = function(){ clearAllCanvas(); const scale = Math.min(bgCanvas.width / img.width, bgCanvas.height / img.height); const w = img.width * scale; const h = img.height * scale; bgCtx.drawImage(img, (bgCanvas.width - w)/2, (bgCanvas.height - h)/2, w, h); }; img.src = event.target.result; }
+            const reader = new FileReader(); reader.onload = function(event){ const img = new Image(); img.onload = function(){ clearAllCanvas(); const scale = Math.min(bgCanvas.width / img.width, bgCanvas.height / img.height); const w = img.width * scale; const h = img.height * scale; bgCtx.drawImage(img, (bgCanvas.width - w)/2, (bgCanvas.height - h)/2, w, h); }; img.src = event.target.result; }
             reader.readAsDataURL(file);
         });
 
@@ -1059,95 +882,69 @@
         const receiverInput = document.getElementById('receiverInput'); const autocompleteList = document.getElementById('autocompleteList');
         receiverInput.addEventListener('input', () => {
             if (userLevel < 5 && receiverInput.value.includes(',') && !(currentUser && currentUser.email === ADMIN_EMAIL)) {
-                receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click');
-                alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
+                receiverInput.value = receiverInput.value.replace(/,/g, ''); playSound('click'); alert('👥 多人標記功能需要達到「Lv.5 感謝達人 (15則留言)」才能解鎖喔！'); return;
             }
             const parts = receiverInput.value.split(','); const currentVal = parts[parts.length - 1].trim().toLowerCase(); 
             autocompleteList.innerHTML = ''; if (!currentVal) { autocompleteList.style.display = 'none'; return; }
-            
             const matches = companyDirectoryList.filter(name => name.toLowerCase().includes(currentVal));
-
             if (matches.length > 0 && matches.length <= 6) {
                 matches.forEach(name => {
                     const div = document.createElement('div'); div.className = 'autocomplete-item'; div.innerText = name; 
-                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(name); receiverInput.value = cleanParts.join(', ') + ((userLevel>=5 || (currentUser && currentUser.email === ADMIN_EMAIL)) ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); };
-                    autocompleteList.appendChild(div);
+                    div.onclick = () => { const cleanParts = parts.slice(0, -1).map(p => p.trim()); cleanParts.push(name); receiverInput.value = cleanParts.join(', ') + ((userLevel>=5 || (currentUser && currentUser.email === ADMIN_EMAIL)) ? ', ' : ''); autocompleteList.style.display = 'none'; receiverInput.focus(); playSound('click'); }; autocompleteList.appendChild(div);
                 }); autocompleteList.style.display = 'flex';
             } else { autocompleteList.style.display = 'none'; }
         });
         document.addEventListener('click', (e) => { if(e.target !== receiverInput) autocompleteList.style.display = 'none'; });
 
         const anonCheck = document.getElementById('anonCheck');
-        document.getElementById('anonWrapper').addEventListener('click', function(e) {
-            if (this.classList.contains('locked')) { e.preventDefault(); playSound('click'); return alert('🎭 匿名發佈需要達到「Lv.7 藏鏡天使 (30則留言)」才能解鎖喔！'); }
-        });
 
         document.getElementById('sendBtn').addEventListener('click', async function() {
             if (this.disabled) return; 
             if (!currentUser) return alert("請先登入 Google 帳號！");
 
             const isAdminUser = currentUser.email === ADMIN_EMAIL;
-            
-            const isMooncake = document.getElementById('mooncakeCheck').checked;
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '');
-            
-            if (isMooncake) {
-                if (!validNamesForLeaderboard.has(receiver)) {
-                    playSound('click');
-                    return alert('🥮 月餅盲盒必須指定「一位特定的同事」才能贈送喔！\n請從下拉選單中選擇正確的名字。');
-                }
-            }
             if (!receiver) receiver = '大家';
 
             let useExtraQuota = false; 
 
             if (!isAdminUser) {
-                const now = Date.now();
-                const todayStart = new Date().setHours(0,0,0,0);
-                const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
-                
-                let todayCount = 0; 
-                let monthCount = 0;
-                let eventExtraCount = 0; 
+                const now = Date.now(); const todayStart = new Date().setHours(0,0,0,0); const thirtyDaysAgo = now - (30 * 24 * 60 * 60 * 1000);
+                let todayCount = 0; let monthCount = 0; let eventExtraCount = 0; 
                 
                 rawMessages.forEach(msg => {
-                    if (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名')) {
-                        if (msg.isEventExtra) {
-                            if (checkIsMidAutumn(msg.timestamp)) eventExtraCount++;
-                        } else {
-                            if (msg.timestamp >= todayStart) todayCount++;
-                            if (msg.timestamp >= thirtyDaysAgo) monthCount++;
-                        }
+                    if (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名' && !hwMasks.includes(msg.author))) {
+                        if (msg.isEventExtra) { if (checkIsHalloween(msg.timestamp)) eventExtraCount++; } 
+                        else { if (msg.timestamp >= todayStart) todayCount++; if (msg.timestamp >= thirtyDaysAgo) monthCount++; }
                     }
                 });
                 
-                if (todayCount >= 10 || monthCount >= 30) {
-                    if (IS_MID_AUTUMN && eventExtraCount < 10) {
+                let regLeft = Math.max(0, Math.min(10 - todayCount, 30 - monthCount));
+                let evtLeft = Math.max(0, 10 - eventExtraCount);
+
+                if (regLeft <= 0) {
+                    if (IS_HALLOWEEN && evtLeft > 0) {
                         useExtraQuota = true; 
                     } else {
                         playSound('click');
-                        if (IS_MID_AUTUMN && eventExtraCount >= 10) {
-                            return alert('📝 溫馨提醒：您的一般配額與「10則中秋活動額外名額」皆已用盡囉！請過幾天再來分享吧！');
-                        } else if (todayCount >= 10) {
-                            return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！');
-                        } else {
-                            return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！');
-                        }
+                        if (IS_HALLOWEEN && evtLeft <= 0) return alert('📝 溫馨提醒：您的一般配額與「10則萬聖配額」皆已用盡囉！');
+                        else if (todayCount >= 10) return alert('📝 溫馨提醒：你今天已經送出 10 則感謝囉！請明天再來分享吧！');
+                        else return alert('📝 溫馨提醒：你在「過去 30 天內」已經送出 30 則感謝，達上限囉！請過幾天再來分享吧！');
                     }
                 }
             }
 
             const text = msgInput.value.trim();
-            if (text === '' && !attachedImageBase64 && !isMooncake) return;
-            if (isMooncake && text === '') return alert('請在月餅裡包入一句真心的感謝文字喔！');
+            if (text === '' && !attachedImageBase64) return;
             
-            const btn = this;
-            btn.disabled = true;
-            btn.style.opacity = '0.6';
-            btn.innerHTML = '傳送中...';
+            const btn = this; btn.disabled = true; btn.style.opacity = '0.6'; btn.innerHTML = '傳送中...';
             
             const isAnon = anonCheck.checked;
-            const finalAuthor = isAnon ? '匿名' : currentUser.displayName;
+            let finalAuthor = currentUser.displayName;
+            if (isAnon) {
+                if (IS_HALLOWEEN) finalAuthor = hwMasks[Math.floor(Math.random() * hwMasks.length)];
+                else finalAuthor = '匿名';
+            }
             const finalAuthorPic = isAnon ? '' : currentUser.photoURL;
 
             let sentAuthorLevel = userLevel;
@@ -1156,57 +953,29 @@
 
             try {
                 await push(ref(db, 'messages'), { 
-                    text: text, 
-                    receiver: receiver, 
-                    author: finalAuthor, 
-                    authorPic: finalAuthorPic, 
-                    authorLevel: sentAuthorLevel, 
-                    theme: currentTheme, 
-                    image: attachedImageBase64 || null, 
-                    timestamp: Date.now(), 
-                    uid: currentUser.uid, 
-                    email: currentUser.email || '',
-                    isMooncake: isMooncake,
-                    isOpened: false,
-                    isEventExtra: useExtraQuota 
+                    text: text, receiver: receiver, author: finalAuthor, authorPic: finalAuthorPic, authorLevel: sentAuthorLevel, 
+                    theme: currentTheme, image: attachedImageBase64 || null, timestamp: Date.now(), 
+                    uid: currentUser.uid, email: currentUser.email || '', isEventExtra: useExtraQuota 
                 });
-                
                 rawMessages.push({ timestamp: Date.now(), uid: currentUser.uid, isEventExtra: useExtraQuota });
 
-                msgInput.value = ''; 
-                msgInput.style.height = '38px';
-                msgInput.style.overflowY = 'hidden'; 
+                msgInput.value = ''; msgInput.style.height = '38px'; msgInput.style.overflowY = 'hidden'; 
+                receiverInput.value = ''; anonCheck.checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
                 
-                receiverInput.value = ''; anonCheck.checked = false; document.getElementById('mooncakeCheck').checked = false; autocompleteList.style.display = 'none'; clearAllCanvas();
-                
-                if (IS_MID_AUTUMN) {
-                    const maBtn = document.querySelector('.theme-moonlight-btn');
-                    if(maBtn) {
-                        document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-                        maBtn.classList.add('active');
-                        currentTheme = 'theme-moonlight';
-                        themeManuallySelected = true;
-                    }
-                } else {
-                    themeManuallySelected = false; 
-                }
+                if (IS_HALLOWEEN && isCurrentUserVampire) {
+                    const hwBtn = document.querySelector('.theme-hw-btn');
+                    if(hwBtn) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); hwBtn.classList.add('active'); currentTheme = 'theme-halloween'; themeManuallySelected = true; }
+                } else { themeManuallySelected = false; }
 
-                playSound('send'); confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 99999 });
-            } catch (err) {
-                alert('發送失敗，請稍後重試！');
-            } finally {
-                btn.disabled = false;
-                btn.style.opacity = '1';
-                btn.innerHTML = '送出';
-            }
+                playSound('send'); 
+                if(IS_HALLOWEEN && currentTheme === 'theme-halloween') confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 99999, colors: ['#ff8c00', '#8a2be2', '#000000'] });
+                else confetti({ particleCount: 150, spread: 80, origin: { y: 0.8 }, zIndex: 99999 });
+
+            } catch (err) { alert('發送失敗，請稍後重試！'); } 
+            finally { btn.disabled = false; btn.style.opacity = '1'; btn.innerHTML = '送出'; }
         });
         
-        msgInput.addEventListener('keydown', function(e) { 
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('sendBtn').click(); 
-            } 
-        });
+        msgInput.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('sendBtn').click(); } });
 
         let systemSettings = { maxMessages: 50, retentionDays: 30 };
         let rawMessages = []; 
@@ -1216,64 +985,27 @@
             if (data) { 
                 if (data.appVersion && data.appVersion !== CURRENT_APP_VERSION) {
                     const updateAttemptKey = 'updateAttempt_' + data.appVersion;
-                    
                     if (sessionStorage.getItem(updateAttemptKey)) {
-                        const box = document.getElementById('forceUpdateBox');
-                        box.style.background = '#fff';
-                        box.style.borderRadius = '20px';
-                        box.style.padding = '30px 20px';
-                        box.innerHTML = `
-                            <div style="font-size: 50px; margin-bottom: 15px;">😭</div>
-                            <h2 style="color: #d64966; margin-top: 0; text-shadow: none;">瀏覽器快取太頑固了！</h2>
-                            <p style="font-size: 15px; line-height: 1.6; color: #555; margin-bottom: 25px; text-align: left;">
-                                系統偵測到您已嘗試更新，但瀏覽器仍死抓著舊版不放。<br><br>
-                                <b>請嘗試以下動作：</b><br>
-                                1. 完全關閉這個分頁/視窗，重新點擊連結進入。<br>
-                                2. 手動清除瀏覽器快取。
-                            </p>
-                        `;
+                        const box = document.getElementById('forceUpdateBox'); box.style.background = '#fff'; box.style.borderRadius = '20px'; box.style.padding = '30px 20px';
+                        box.innerHTML = `<div style="font-size: 50px; margin-bottom: 15px;">😭</div><h2 style="color: #d64966; margin-top: 0; text-shadow: none;">瀏覽器快取太頑固了！</h2><p style="font-size: 15px; line-height: 1.6; color: #555; margin-bottom: 25px; text-align: left;">系統偵測到您已嘗試更新，但瀏覽器仍死抓著舊版不放。<br><br><b>請嘗試以下動作：</b><br>1. 完全關閉這個分頁/視窗，重新點擊連結進入。<br>2. 手動清除瀏覽器快取。</p>`;
                     } else {
-                        document.getElementById('forceUpdateBtn').onclick = () => {
-                            playSound('click');
-                            sessionStorage.setItem(updateAttemptKey, 'true');
-                            window.location.href = window.location.pathname + '?v=' + new Date().getTime();
-                        };
+                        document.getElementById('forceUpdateBtn').onclick = () => { playSound('click'); sessionStorage.setItem(updateAttemptKey, 'true'); window.location.href = window.location.pathname + '?v=' + new Date().getTime(); };
                     }
+                    document.getElementById('forceUpdateOverlay').style.display = 'flex'; document.getElementById('forceUpdateOverlay').classList.add('active'); return; 
+                } else { sessionStorage.removeItem('updateAttempt_' + CURRENT_APP_VERSION); }
 
-                    document.getElementById('forceUpdateOverlay').style.display = 'flex';
-                    document.getElementById('forceUpdateOverlay').classList.add('active');
-                    return; 
-                } else {
-                    sessionStorage.removeItem('updateAttempt_' + CURRENT_APP_VERSION);
-                }
-
-                if(!IS_MID_AUTUMN) {
-                    document.getElementById('mainTitle').innerText = data.mainTitle || 'RDTW感謝牆'; 
-                    document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; 
-                }
-                systemSettings.maxMessages = data.maxMessages || 50; 
-                systemSettings.retentionDays = data.retentionDays || 30; 
+                if(!IS_HALLOWEEN) { document.getElementById('mainTitle').innerText = data.mainTitle || 'RDTW感謝牆'; document.getElementById('subTitle').innerText = data.subTitle || '每個人都可以在這裡抒發內心的感謝'; }
+                systemSettings.maxMessages = data.maxMessages || 50; systemSettings.retentionDays = data.retentionDays || 30; 
                 renderWall(); 
             } 
         });
 
-        // 👉 即時抓取資料庫通訊錄名單，同步到內部陣列以供客製化搜尋模組使用
         onValue(ref(db, 'contacts'), (snapshot) => {
             const contacts = snapshot.val();
             if (contacts) {
-                const uniqueNames = new Set();
-                contacts.forEach(user => {
-                    if (user.name) {
-                        uniqueNames.add(user.name);
-                    }
-                });
-                
-                companyDirectoryList.length = 0;
-                validNamesForLeaderboard.clear();
-                uniqueNames.forEach(name => {
-                    companyDirectoryList.push(name);
-                    validNamesForLeaderboard.add(name);
-                });
+                const uniqueNames = new Set(); contacts.forEach(user => { if (user.name) uniqueNames.add(user.name); });
+                companyDirectoryList.length = 0; validNamesForLeaderboard.clear();
+                uniqueNames.forEach(name => { companyDirectoryList.push(name); validNamesForLeaderboard.add(name); });
             }
         });
 
@@ -1295,36 +1027,26 @@
         document.addEventListener('touchend', () => { if (activeDragCard) { activeDragCard.classList.remove('dragging'); activeDragCard = null; } });
 
         function generateCardHTML(msg, maxLikes) {
-            if (IS_MID_AUTUMN && msg.isMooncake && !msg.isOpened) {
-                return `
-                    <div class="mooncake-icon">🥮</div>
-                    <div style="font-weight: 900; font-size: 18px; color: #b8860b;">中秋神秘月餅</div>
-                    <div style="font-size: 14px; font-weight: bold; color: #d64966; margin-top: 8px;">To: ${msg.receiver}</div>
-                    <div class="mooncake-hint">(等待收件人解鎖)</div>
-                `;
-            }
-
             const likesObj = msg.likes || {};
             const likeCount = Object.keys(likesObj).length;
             const hasLiked = currentUser && likesObj[currentUser.uid];
             const isTopLiked = (likeCount === maxLikes && maxLikes > 0);
             const crownHtml = isTopLiked ? '<div class="crown-badge">👑 人氣王</div>' : '';
-            const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
+            const isMaster = (msg.authorLevel >= 8 && !hwMasks.includes(msg.author) && msg.author !== '匿名');
             const masterHtml = isMaster ? '<div class="master-badge">🏅 感謝大師</div>' : '';
 
-            const isFestivalMsg = checkIsMidAutumn(msg.timestamp || 0);
-            const festivalBadgeHtml = isFestivalMsg ? '<div class="festival-badge">🥮 團圓大使</div>' : '';
+            const isVampireCard = IS_HALLOWEEN && msg.theme === 'theme-halloween';
+            const vampireBadgeHtml = isVampireCard ? '<div class="vampire-badge">🦇 暮夜吸血鬼</div>' : '';
 
             const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
             const adminHtml = isAdminCard ? '<div class="admin-badge">🛡️ 系統管理員</div>' : '';
             
             let finalBadgeHtml = '';
             if (isAdminCard) finalBadgeHtml = adminHtml;
+            else if (isVampireCard) finalBadgeHtml = vampireBadgeHtml;
             else if (isMaster) finalBadgeHtml = masterHtml;
             
-            finalBadgeHtml += festivalBadgeHtml;
-            
-            const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名'));
+            const isOwner = currentUser && (msg.uid === currentUser.uid || (!msg.uid && msg.author === currentUser.displayName && msg.author !== '匿名' && !hwMasks.includes(msg.author)));
             const actionsHtml = isOwner ? `
                 <div class="card-owner-actions">
                     <button class="edit-msg-btn" title="修改文字">✏️ 編輯</button>
@@ -1340,11 +1062,11 @@
             
             const likers = Object.values(likesObj).map(val => val === true ? '某位同事' : val);
             
-            const likeIcon = IS_MID_AUTUMN ? '🥮' : '❤️';
-            const likeText = IS_MID_AUTUMN ? (likeCount > 0 ? likeCount : '送月餅') : (likeCount > 0 ? likeCount : '讚');
-            const tooltipAction = IS_MID_AUTUMN ? '送了月餅' : '覺得很讚';
-            const tooltipText = likeCount > 0 ? likers.join(', ') + ` ${tooltipAction}` : (IS_MID_AUTUMN ? '送顆月餅！' : '給個讚！');
-            const likedClass = hasLiked ? (IS_MID_AUTUMN ? 'liked ma-liked' : 'liked') : '';
+            const likeIcon = IS_HALLOWEEN ? '🍬' : '❤️';
+            const likeText = IS_HALLOWEEN ? (likeCount > 0 ? likeCount : '給糖') : (likeCount > 0 ? likeCount : '讚');
+            const tooltipAction = IS_HALLOWEEN ? '給了糖果' : '覺得很讚';
+            const tooltipText = likeCount > 0 ? likers.join(', ') + ` ${tooltipAction}` : (IS_HALLOWEEN ? '給顆糖果吧！' : '給個讚！');
+            const likedClass = hasLiked ? (IS_HALLOWEEN ? 'liked hw-liked' : 'liked') : '';
             
             const heartHtml = `<div class="card-likes ${likedClass}" title="${tooltipText}">${likeIcon} ${likeText}</div>`;
 
@@ -1362,31 +1084,6 @@
         }
 
         function bindCardEvents(card, msg) {
-            if (IS_MID_AUTUMN && msg.isMooncake && !msg.isOpened) {
-                card.addEventListener('mousedown', (e) => handleDragStart(e, card));
-                card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
-                
-                card.addEventListener('click', (e) => {
-                    if (cardHasMoved) { cardHasMoved = false; return; }
-                    e.stopPropagation();
-                    playSound('click');
-                    
-                    if (!currentUser) return alert('請先登入才能開啟月餅喔！');
-                    
-                    const currentName = currentUser.displayName.split(' (')[0];
-                    const isAdminUser = currentUser.email === ADMIN_EMAIL;
-
-                    if (currentName === msg.receiver || currentUser.displayName === msg.receiver || isAdminUser) {
-                        confetti({ particleCount: 200, spread: 100, origin: { y: 0.6 }, zIndex: 99999 });
-                        playSound('levelup');
-                        update(ref(db, `messages/${msg.id}`), { isOpened: true });
-                    } else {
-                        alert(`🥮 這是送給【${msg.receiver}】的專屬月餅盲盒！\n快去通知他/她本人登入來開箱吧！`);
-                    }
-                });
-                return; 
-            }
-
             card.addEventListener('mousedown', (e) => handleDragStart(e, card));
             card.addEventListener('touchstart', (e) => handleDragStart(e, card), {passive: false});
 
@@ -1402,10 +1099,10 @@
                     const hasLiked = msg.likes && msg.likes[currentUser.uid];
                     playSound('click');
                     
-                    if (IS_MID_AUTUMN && !hasLiked) {
+                    if (IS_HALLOWEEN && !hasLiked) {
                         const clickX = e.clientX ? e.clientX / window.innerWidth : 0.5;
                         const clickY = e.clientY ? e.clientY / window.innerHeight : 0.8;
-                        confetti({ particleCount: 40, spread: 60, origin: { y: clickY, x: clickX }, colors: ['#FFD700', '#FFA500', '#FF8C00'] });
+                        confetti({ particleCount: 40, spread: 60, origin: { y: clickY, x: clickX }, colors: ['#ff8c00', '#8a2be2', '#ff0080'] });
                     }
 
                     const likeRef = ref(db, `messages/${msg.id}/likes/${currentUser.uid}`);
@@ -1425,8 +1122,6 @@
                     document.getElementById('editOverlay').classList.add('active');
                 });
                 
-                delBtn.addEventListener('mousedown', (e) => e.stopPropagation());
-                delBtn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
                 delBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); playSound('click');
                     if (confirm('確定要刪除這張感謝卡嗎？\n⚠️ 注意：刪除後將無法復原，且該留言將不列入經驗值計算喔！')) {
@@ -1438,6 +1133,14 @@
 
             card.addEventListener('click', () => {
                 if (cardHasMoved) { cardHasMoved = false; return; }
+                
+                // 👉 吸血鬼點擊卡片感染判定
+                if (IS_HALLOWEEN && currentUser && !isCurrentUserVampire && !isCurrentUserProgenitor) {
+                    if (msg.theme === 'theme-halloween') {
+                        triggerInfection("🩸 驚！您觸碰了吸血鬼留下的專屬卡片，已被感染成為吸血鬼！\n\n您已解鎖「🎃 萬聖專屬發文模板」與 10 則額外配額！快去發文感染其他人吧！");
+                    }
+                }
+
                 if (currentFocusedCard === card) { closeFocus(); return; }
                 if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
                 playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); currentFocusedCard = card;
@@ -1446,14 +1149,22 @@
 
         onValue(query(ref(db, 'messages')), (snapshot) => {
             rawMessages = []; leaderboardData = { senders: {}, receivers: {} }; 
+            const senderCounts = {};
+
             snapshot.forEach((child) => { 
                 try {
                     const msg = { id: child.key, ...child.val() }; rawMessages.push(msg); 
+                    
+                    // 計算歷史始祖名單 (只計算活動開始前的真實姓名發文)
+                    if (msg.timestamp < HW_EVENT_START && msg.author && !hwMasks.includes(msg.author) && msg.author !== '匿名') {
+                        senderCounts[msg.author] = (senderCounts[msg.author] || 0) + 1;
+                    }
+
                     let receiversList = (msg.receiver && msg.receiver !== '大家') ? String(msg.receiver).split(',').map(r => r.trim()).filter(r => r) : [];
                     
                     let shouldCountInLeaderboard = false;
-                    if (IS_MID_AUTUMN) {
-                        shouldCountInLeaderboard = checkIsMidAutumn(msg.timestamp || 0);
+                    if (IS_HALLOWEEN) {
+                        shouldCountInLeaderboard = checkIsHalloween(msg.timestamp || 0);
                     } else {
                         if (!msg.isEventExtra) {
                             shouldCountInLeaderboard = (Date.now() - (msg.timestamp || 0)) <= Math.max(parseInt(systemSettings.retentionDays) || 30, 1) * 86400000;
@@ -1467,6 +1178,29 @@
                 } catch (e) {}
             });
             rawMessages.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); 
+            
+            // 取出歷史發文前 5 名作為始祖
+            hwTop5Senders = Object.entries(senderCounts).sort((a,b)=>b[1]-a[1]).slice(0,5).map(x=>x[0]);
+
+            // 👉 吸血鬼自動覺醒 / 被動收信傳染判定
+            if (IS_HALLOWEEN && currentUser && !hwInfectedUsers[currentUser.uid]) {
+                const currentName = currentUser.displayName.split(' (')[0];
+                
+                if (hwTop5Senders.includes(currentName) || hwTop5Senders.includes(currentUser.displayName)) {
+                    triggerInfection("🧛 恭喜！您是感謝牆歷史發文最活躍的神隊友，已率先覺醒為【始祖吸血鬼】！\n\n您已解鎖「🎃 萬聖專屬發文模板」與 10 則額外配額！快用它發卡片感染其他人吧！");
+                } else {
+                    const gotBitten = rawMessages.some(m => {
+                        if (m.theme === 'theme-halloween') {
+                            let receivers = m.receiver ? m.receiver.split(',').map(r=>r.trim()) : [];
+                            if (receivers.includes(currentName) || receivers.includes(currentUser.displayName)) return true;
+                        }
+                        return false;
+                    });
+                    if (gotBitten) {
+                        triggerInfection("🩸 驚！您收到了吸血鬼發送的專屬感謝卡，已被感染成為吸血鬼！\n\n您已解鎖「🎃 萬聖專屬發文模板」與 10 則額外配額！快去發文感染其他人吧！");
+                    }
+                }
+            }
             
             updateUserLevelUI(); renderWall(); if(leaderboardOverlay.classList.contains('active')) renderLeaderboard();
         });
@@ -1557,19 +1291,15 @@
 
             displayedMessages.forEach((msg, index) => {
                 const isTopLiked = (msg.likes && Object.keys(msg.likes).length === maxLikes && maxLikes > 0);
-                const isMaster = (msg.authorLevel >= 8 && msg.author !== '匿名');
+                const isMaster = (msg.authorLevel >= 8 && !hwMasks.includes(msg.author) && msg.author !== '匿名');
                 const isAdminCard = msg.email === ADMIN_EMAIL || (msg.author && msg.author.includes('Cholun Chang'));
 
                 const card = document.createElement('div'); 
                 
-                if (IS_MID_AUTUMN && msg.isMooncake && !msg.isOpened) {
-                    card.className = `message-card mooncake-box`;
-                } else {
-                    card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                    if (isAdminCard) {
-                    } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
-                        card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
-                    }
+                card.className = `message-card ${msg.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                if (isAdminCard) {
+                } else if (isMaster && !msg.theme?.includes('theme-ultimate')) {
+                    card.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                 }
                 
                 card.setAttribute('data-id', msg.id);
@@ -1665,20 +1395,16 @@
                                 if(cardToSwap.parentNode) cardToSwap.parentNode.removeChild(cardToSwap);
 
                                 const isTopLiked = (msgToAdd.likes && Object.keys(msgToAdd.likes).length === maxLikes && maxLikes > 0);
-                                const isMaster = (msgToAdd.authorLevel >= 8 && msgToAdd.author !== '匿名');
+                                const isMaster = (msgToAdd.authorLevel >= 8 && !hwMasks.includes(msgToAdd.author) && msgToAdd.author !== '匿名');
                                 const isAdminCard = msgToAdd.email === ADMIN_EMAIL || (msgToAdd.author && msgToAdd.author.includes('Cholun Chang'));
 
                                 const newCard = document.createElement('div');
                                 newCard.setAttribute('data-id', msgToAdd.id);
                                 
-                                if (IS_MID_AUTUMN && msgToAdd.isMooncake && !msgToAdd.isOpened) {
-                                    newCard.className = `message-card mooncake-box`;
-                                } else {
-                                    newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
-                                    if (isAdminCard) {
-                                    } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
-                                        newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
-                                    }
+                                newCard.className = `message-card ${msgToAdd.theme || 'theme-classic'} ${isTopLiked ? 'top-liked' : ''}`;
+                                if (isAdminCard) {
+                                } else if (isMaster && !msgToAdd.theme?.includes('theme-ultimate')) {
+                                    newCard.style.boxShadow = "0 8px 32px 0 rgba(138, 43, 226, 0.2)";
                                 }
 
                                 newCard.innerHTML = generateCardHTML(msgToAdd, maxLikes);
