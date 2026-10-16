@@ -165,7 +165,7 @@
 
         .theme-neon { background: rgba(15, 15, 20, 0.9) !important; border: 2px solid #0ff !important; color: #fff !important; box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), inset 0 0 10px rgba(0, 255, 255, 0.3) !important; text-shadow: 0 0 5px #0ff; }
         .theme-neon .card-receiver, .theme-neon .card-author { color: #f0f !important; text-shadow: 0 0 5px #f0f; }
-        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+        .theme-holo { background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%) !important; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.8) !important; box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37) !important; color: #fff !important; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
         .theme-holo .card-receiver, .theme-holo .card-author { color: #e0e0e0 !important; text-shadow: none; }
         .theme-gold { background: linear-gradient(135deg, #1c1c1c 0%, #3a3a3a 100%) !important; border: 2px solid #d4af37 !important; color: #f9f1d8 !important; box-shadow: 0 0 20px rgba(212, 175, 55, 0.5), inset 0 0 10px rgba(212, 175, 55, 0.2) !important; }
         .theme-gold .card-receiver, .theme-gold .card-author { color: #d4af37 !important; }
@@ -216,28 +216,33 @@
         input[type="color"]::-webkit-color-swatch { border: 2px solid #ccc; border-radius: 50%; }
         input[type="range"] { width: 100px; cursor: pointer; }
         .tool-btn { background: #fff; border: 2px solid #ddd; color: #555; padding: 6px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .tool-btn:hover { background: #f0f0f0; }
         .tool-btn.active { border-color: #d64966; color: #d64966; background: #ffe4e1; }
         .canvas-container { position: relative; width: 100%; aspect-ratio: 8/5; max-height: 55vh; margin: 0 auto; border: 2px dashed #e8a0ad; border-radius: 12px; overflow: hidden; background: #fff; box-shadow: inset 0 0 10px rgba(0,0,0,0.05); }
         .layer-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
-        #bgCanvas { z-index: 1; pointer-events: none; } #drawCanvas { z-index: 2; cursor: crosshair; touch-action: none; }
+        #bgCanvas { z-index: 1; pointer-events: none; }
+        #drawCanvas { z-index: 2; cursor: crosshair; touch-action: none; }
         .draw-actions { display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .action-btn { background: #fff; border: 1px solid #d64966; color: #d64966; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 15px; transition: 0.2s; }
+        .action-btn { background: #fff; border: 1px solid #d64966; color: #d64966; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s; font-size: 15px; }
+        .action-btn:hover { background: #ffe4e1; }
         .action-btn.primary { background: #d64966; color: #fff; }
+        .action-btn.primary:hover { background: #bd3a54; }
 
         .receiver-wrapper { position: relative; display: flex; align-items: center; }
         .autocomplete-list { position: absolute; bottom: calc(100% + 10px); left: 0; background: var(--panel-bg); backdrop-filter: blur(10px); border: 1px solid var(--card-border); border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 160px; overflow-y: auto; z-index: 90005; width: 180px; display: none; flex-direction: column; padding: 5px; }
         .autocomplete-list::-webkit-scrollbar { width: 4px; } .autocomplete-list::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
-        .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .autocomplete-item { padding: 8px 12px; cursor: pointer; border-radius: 8px; font-size: 14px; color: var(--text-main); font-weight: 600; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .autocomplete-item:hover { background: rgba(230,57,70,0.1); color: #e63946; }
         
-        .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 90005; }
-        .emoji-picker::-webkit-scrollbar { width: 6px; } .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        .emoji-picker { display: none; position: absolute; bottom: calc(100% + 15px); left: 50%; transform: translateX(-50%); background: var(--panel-bg); backdrop-filter: blur(10px); border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 280px; max-height: 220px; overflow-y: auto; flex-wrap: wrap; gap: 10px; justify-content: flex-start; z-index: 90005; }
+        .emoji-picker::-webkit-scrollbar { width: 6px; } .emoji-picker::-webkit-scrollbar-track { background: transparent; } .emoji-picker::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
         .emoji-picker.active { display: flex; align-content: flex-start; }
         .emoji-item { cursor: pointer; font-size: 24px; transition: transform 0.2s; user-select: none; width: 32px; text-align: center; } .emoji-item:hover { transform: scale(1.3); }
         .emoji-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 0 3px; outline: none; transition: transform 0.2s; position: relative; } .emoji-btn:hover { transform: scale(1.1); }
         .image-indicator { position: absolute; top: -5px; right: -5px; background: #e63946; color: white; font-size: 10px; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; display: none; align-items: center; justify-content: center; }
 
         .bottom-panel { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); z-index: 90001; width: 90%; max-width: 800px; display: flex; flex-direction: column; gap: 8px; }
+        
         .level-status-bar { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.85); backdrop-filter: blur(10px); padding: 8px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6); flex-wrap: wrap; gap: 5px; }
         body.hw-stage-1 .level-status-bar, body.hw-stage-2 .level-status-bar, body.hw-stage-3 .level-status-bar { background: rgba(15, 12, 41, 0.85); border: 1px solid #ff8c00; color: #fff; }
 
@@ -254,6 +259,7 @@
         .theme-selector { display: flex; justify-content: center; gap: 10px; padding: 5px; flex-wrap: wrap; }
         .theme-btn { width: 26px; height: 26px; border-radius: 50%; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: 0.2s; position: relative; } 
         .theme-btn.active { border-color: #fff; transform: scale(1.35); box-shadow: 0 0 12px rgba(255,255,255,0.9); }
+        
         .theme-admin-btn { background: linear-gradient(45deg, #00d2ff, #3a7bd5) !important; border: 2px solid #fff !important; animation: adminBadgeGlow 3s linear infinite !important; background-size: 200% !important; }
 
         .input-container { position: relative; display: flex; gap: 8px; background: var(--panel-bg); padding: 8px 12px; border-radius: 24px; box-shadow: 0 15px 35px rgba(230,100,120,0.15); align-items: center; border: 1px solid var(--card-border); }
@@ -265,11 +271,19 @@
         .input-receiver::placeholder { color: #e8a0ad; font-weight: normal; }
         body.hw-stage-1 .input-receiver::placeholder, body.hw-stage-2 .input-receiver::placeholder, body.hw-stage-3 .input-receiver::placeholder { color: rgba(255,140,0,0.5); }
         
-        .input-msg { flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; padding: 8px 5px; color: var(--text-main); min-width: 100px; resize: none; font-family: inherit; line-height: 1.4; height: 38px; box-sizing: border-box; overflow-y: hidden; }
+        /* 👉 針對輸入框增加自動捲動與游標微調：預設隱藏捲動條 */
+        .input-msg { 
+            flex: 1; border: none; background: var(--input-bg); font-size: 16px; outline: none; 
+            padding: 8px 5px; color: var(--text-main); min-width: 100px;
+            resize: none; font-family: inherit; line-height: 1.4;
+            height: 38px; box-sizing: border-box; overflow-y: hidden;
+        }
         body.hw-stage-1 .input-msg, body.hw-stage-2 .input-msg, body.hw-stage-3 .input-msg { color: #fff; }
-        .input-msg::-webkit-scrollbar { width: 6px; } .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
+        /* 👉 捲動游標加粗到 6px */
+        .input-msg::-webkit-scrollbar { width: 6px; }
+        .input-msg::-webkit-scrollbar-thumb { background: #bbb; border-radius: 6px; }
 
-        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 5px; } 
+        .send-btn { background: linear-gradient(135deg, #e63946 0%, #ff8fa3 100%); border: none; padding: 10px 20px; border-radius: 30px; color: #fff; font-weight: bold; font-size: 15px; cursor: pointer; white-space: nowrap; transition: all 0.2s; box-shadow: 0 4px 10px rgba(230,57,70,0.3); display: flex; align-items: center; justify-content: center; gap: 5px; } 
         body.hw-stage-1 .send-btn, body.hw-stage-2 .send-btn, body.hw-stage-3 .send-btn { background: linear-gradient(135deg, #ff8c00, #ff0080); }
         .send-btn:hover { transform: translateY(-2px); }
         
@@ -281,7 +295,7 @@
         .mooncake-label:hover { background: #ffebcd; }
         .mooncake-label input { cursor: pointer; margin:0; }
 
-        .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 90000; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .designer-signature { position: absolute; bottom: 15px; right: 20px; font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.4); z-index: 90000; pointer-events: none; background: rgba(255, 255, 255, 0.45); padding: 6px 14px; border-radius: 20px; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 2px 10px rgba(0,0,0,0.03); letter-spacing: 0.5px; border: 1px solid rgba(255, 255, 255, 0.5); }
         body.hw-stage-1 .designer-signature, body.hw-stage-2 .designer-signature, body.hw-stage-3 .designer-signature { background: rgba(0,0,0,0.5); color: #888; border: none; }
 
         @media (max-width: 768px) {
@@ -551,8 +565,8 @@
         let userLevel = 1; let userLifetimeMessageCount = 0; let dragWarned = false; 
         let themeManuallySelected = false; let isFilterMeOnly = false; 
 
-        // 👉 更新版號到 4.6
-        const CURRENT_APP_VERSION = "4.6"; 
+        // 👉 更新版號到 4.7
+        const CURRENT_APP_VERSION = "4.7"; 
         const ADMIN_EMAIL = 'cholun.chang@roche.com';
 
         const msgInput = document.getElementById('msgInput');
@@ -1375,8 +1389,18 @@
                 if (c > maxLikes) maxLikes = c;
             });
 
-            let displayedMessages = isFilterMeOnly ? validMessages : validMessages.slice(0, safeMax);
-            let hiddenMessages = isFilterMeOnly ? [] : validMessages.slice(safeMax);
+            // 👉 新增：隨機打亂演算法 (Fisher-Yates Shuffle)
+            let pool = [...validMessages];
+            if (!isFilterMeOnly && pool.length > safeMax) {
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+            }
+
+            // 改為從打亂後的 pool 擷取
+            let displayedMessages = isFilterMeOnly ? validMessages : pool.slice(0, safeMax);
+            let hiddenMessages = isFilterMeOnly ? [] : pool.slice(safeMax);
 
             const screenW = window.innerWidth; const screenH = window.innerHeight;
             
@@ -1407,8 +1431,9 @@
                 card.setAttribute('data-id', msg.id);
                 card.innerHTML = generateCardHTML(msg, maxLikes);
 
-                // 👉 恢復完美的縮放與透明度排版邏輯
-                const ageRatio = total > 1 ? index / (total - 1) : 0;
+                // 👉 更新：根據「展示數量」計算遠近景，讓隨機抽出的50張卡片也能呈現完美錯落感
+                const displayTotal = displayedMessages.length;
+                const ageRatio = displayTotal > 1 ? index / (displayTotal - 1) : 0;
                 const scale = (1.5 - (ageRatio * 0.9)) * mobileScaleDown;
                 const opacity = 1 - (ageRatio * 0.35);
 
