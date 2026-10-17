@@ -187,6 +187,13 @@
         .focus-overlay#focusOverlay { z-index: 95000; }
         .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; --lines: 99; transform: translate(-50%, -50%) scale(1.3) rotate(0deg) !important; scale: 1 !important; translate: none !important; z-index: 96000 !important; animation: none !important; cursor: default; box-shadow: var(--sh-3); }
         .message-card.focused .card-date { display: block; }
+        /* 放大卡：#wall 有 z-index（自成一個堆疊層），卡片的 z-index 只在牆內比較，原本整面牆（含放大卡）都在遮罩下面一起被模糊。
+           放大時把整面牆抬到遮罩之上；暗色與模糊改由牆內的 ::before 負責（在其他卡之上、放大卡之下）；#focusOverlay 只負責接「點旁邊關閉」。 */
+        body.card-open #wall { z-index: 95001; pointer-events: none; }
+        body.card-open #wall::before { content: ''; position: fixed; inset: 0; z-index: 95500; background: rgba(40,16,24,.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); pointer-events: none; }
+        body.hw.card-open #wall::before { background: rgba(8,6,20,.55); }
+        body.card-open #wall .message-card.focused { pointer-events: auto; }
+        body.card-open #focusOverlay { background: transparent; backdrop-filter: none; -webkit-backdrop-filter: none; }
         .message-card.focused .card-close-btn { display: inline-flex; }
         .message-card.focused .card-owner-actions { display: flex; }
         .message-card.focused .card-text { pointer-events: auto; max-height: 40vh; overflow-y: auto; display: block; }
@@ -779,7 +786,7 @@
           .lu .reveal-lock .shackle { animation: none !important; transform: rotate(-38deg) translate(-2px, -4px); }
         }
         /* ==========================================================================
-           12. 狀態列：Lv.8 以上顯示「已滿級」，不顯示下一級進度（隱藏等級不預告）
+           12. 狀態列：Lv.8 以上只顯示稱號，不顯示下一級進度（不說滿級、隱藏等級不預告）
            ========================================================================== */
         .status .maxed { color: #92400e; font-weight: 700; }
         body.hw .status .maxed { color: #fdba74; }
@@ -980,7 +987,7 @@
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 版面機制</b>：公開牆面最多顯示最新 50 則留言，且最長保留 30 天，讓感謝保持新鮮！</li>
                     <li style="margin-bottom: 8px;"><b>⏳ 發文限制</b>：每人每天最多發送 10 則，過去 30 天內最多 30 則。</li>
-                    <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。等級一路升到 Lv.8 感謝大師就是滿級。</li>
+                    <li style="margin-bottom: 8px;"><b>🎮 職涯等級系統</b>：累積送出卡片即可自動升級！解鎖按讚、專屬外框、手繪塗鴉甚至照片上傳功能。送得越多，解鎖越多，等你自己探索。</li>
                     <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點擊右上角「我的回憶」按鈕，可篩選出與你相關的所有卡片。<b>此模式不受 30 天限制</b>，幫你找回所有溫暖足跡！</li>
                     <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點擊放大你曾發布過的卡片，下方會出現編輯與刪除按鈕，隨時可修改錯字！</li>
                     <li style="margin-bottom: 8px;"><b>🏆 英雄榜</b>：點擊右上角「英雄榜」按鈕看看團隊中最暖心、最受歡迎的神隊友是誰。</li>
@@ -1192,7 +1199,7 @@
         let themeManuallySelected = false; let isFilterMeOnly = false; 
 
         // 👉 更新版號到 4.8（4.8：開頁分批渲染、按讚不再整面洗牌、XSS 跳脫、萬聖節邏輯修正）
-        const CURRENT_APP_VERSION = "4.8";
+        const CURRENT_APP_VERSION = "4.8.1";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1385,11 +1392,11 @@
         const LEVEL_UNLOCKS = {
             2: ['👍', '🍀 Lv.2 熱心路人', '🔓 解鎖：按讚 & 基礎表情符號', '恭喜跨出第一步！現在可以替同事的卡片按讚，並在留言裡加入笑臉、愛心等基礎表情。'],
             3: ['🖐️', '🌷 Lv.3 溫暖園丁', '🔓 解鎖：卡片自由拖曳 & 50 字上限', '你現在可以按住並拖曳牆上的卡片，字數上限也提升到 50 字！'],
-            4: ['🌈', '🌈 Lv.4 色彩魔術師', '🔓 解鎖：全套 10 色樣式 & 中級表情', '勃根地紅、薰衣草紫等所有基本樣式都開放了，表情符號也更豐富！到「樣式」挑一個吧。'],
+            4: ['🌈', '🌈 Lv.4 色彩魔術師', '🔓 解鎖：10 色發文主題 & 中級表情包', '勃根地紅、薰衣草紫等所有基本樣式都開放了，表情符號也更豐富！到「樣式」挑一個吧。'],
             5: ['👥', '🗣️ Lv.5 感謝達人', '🔓 解鎖：多人標記', '在「感謝誰？」選好一位同事後會自動加上逗號，一次標記整個團隊！'],
             6: ['🖌️', '🎨 Lv.6 塗鴉畫家', '🔓 解鎖：手繪塗鴉畫布', '文字說不完的，就畫出來吧！點 🎨 開啟畫布，親筆簽名或畫插圖。'],
             7: ['🤫', '🕵️‍♂️ Lv.7 藏鏡天使', '🔓 解鎖：匿名發佈、200 字 & 完整表情', '字數上限擴充到 200 字，解鎖所有表情，還可以勾選「匿名」化身不具名天使。'],
-            8: ['👑', '✨ Lv.8 感謝大師', '🔓 解鎖：上傳照片 & 大師徽章', '最高榮譽！現在可以上傳真實照片，你的卡片也會帶著「感謝大師」徽章。'],
+            8: ['👑', '✨ Lv.8 感謝大師', '🔓 解鎖：上傳照片、1000 字 & 大師徽章', '恭喜升上感謝大師！現在可以上傳照片、寫到 1000 字，你的卡片也會帶著「感謝大師」徽章。'],
             9: ['🪩', '🪩 Lv.9 霓虹幻影', 'theme-neon', 60], 10: ['🔮', '🔮 Lv.10 極光幻境', 'theme-holo', 70],
             11: ['👑', '👑 Lv.11 璀璨鑽金', 'theme-gold', 80], 12: ['🌌', '🌌 Lv.12 星際領航', 'theme-cosmic', 90], 13: ['🦄', '🦄 Lv.13 傳說之神', 'theme-ultimate', 100],
         };
@@ -1402,13 +1409,13 @@
         }
         function showLevelUp(level) {
             const NORMAL = {
-                2: ['熱心路人', '按讚＋表情符號', '送出第一張卡了！現在可以替同事的卡片按讚，也可以在感謝裡加入表情符號。', '<path d="M12 21s-7-4.4-9-9c-1.4-3.2.6-7 4.2-7 2 0 3.4 1.1 4.8 2.8C13.4 6.1 14.8 5 16.8 5c3.6 0 5.6 3.8 4.2 7-2 4.6-9 9-9 9z"/>'],
+                2: ['熱心路人', '按讚＋基礎表情符號', '送出第一張卡了！現在可以替同事的卡片按讚，也可以在感謝裡加入表情符號。', '<path d="M12 21s-7-4.4-9-9c-1.4-3.2.6-7 4.2-7 2 0 3.4 1.1 4.8 2.8C13.4 6.1 14.8 5 16.8 5c3.6 0 5.6 3.8 4.2 7-2 4.6-9 9-9 9z"/>'],
                 3: ['溫暖園丁', '自由拖曳＋字數 50 字', '牆上的卡片可以拖到你喜歡的位置；每張卡可以寫到 50 字。', '<path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M12 2v20"/>'],
-                4: ['色彩魔術師', '全彩 10 種卡片樣式＋更多表情', '鼠尾草綠、薰衣草紫、星空黑……10 種基本款任你挑，點撰寫列的「樣式」換上。', '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9" r="1.5"/><circle cx="15.5" cy="9" r="1.5"/><circle cx="9" cy="15" r="1.5"/>'],
+                4: ['色彩魔術師', '10 色發文主題＋中級表情包', '鼠尾草綠、薰衣草紫、星空黑……10 種基本款任你挑，點撰寫列的「樣式」換上。', '<circle cx="12" cy="12" r="9"/><circle cx="8.5" cy="9" r="1.5"/><circle cx="15.5" cy="9" r="1.5"/><circle cx="9" cy="15" r="1.5"/>'],
                 5: ['感謝達人', '多人標記', '在「感謝誰？」選好一位同事後會自動加上逗號，一張卡就能感謝整個小組。', '<circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M15 14.5c3 .2 6 2 6 5.5"/>'],
                 6: ['塗鴉畫家', '手繪塗鴉', '點撰寫列的 🎨 打開畫布，畫一張專屬小圖或親筆簽名。', '<path d="M3 21l3.5-1 11-11-2.5-2.5-11 11L3 21zM14 6.5l2.5 2.5"/>'],
-                7: ['藏鏡天使', '匿名送卡＋字數 200 字＋完整表情', '想低調表達感謝時，可以勾選「匿名」送出；表情符號也全部開放。', '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>'],
-                8: ['感謝大師', '上傳照片＋字數 1000 字', '已滿級！可以附上照片、把完整的故事寫下來，卡片也會掛上「感謝大師」徽章。', '<rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>'],
+                7: ['藏鏡天使', '匿名發佈＋字數 200 字＋完整表情包', '想低調表達感謝時，可以勾選「匿名」送出；表情符號也全部開放。', '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/>'],
+                8: ['感謝大師', '上傳照片＋字數 1000 字＋大師徽章', '恭喜升上感謝大師！可以附上照片、把完整的故事寫下來，卡片也會掛上專屬的「感謝大師」徽章。', '<rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="12" cy="13" r="3.5"/><path d="M8 6l1.5-2h5L16 6"/>'],
             };
             const NEED = { 2: 1, 3: 5, 4: 10, 5: 15, 6: 20, 7: 30, 8: 50 };
             const HIDDEN = { 9: ['霓虹幻影', 'theme-neon'], 10: ['極光幻境', 'theme-holo'], 11: ['璀璨鑽金', 'theme-gold'], 12: ['星際領航', 'theme-cosmic'], 13: ['傳說之神', 'theme-ultimate'] };
@@ -1431,7 +1438,7 @@
                     <div class="medal" aria-hidden="true">${level}<small>LEVEL</small></div>
                     <p class="eyebrow">升級了！</p><h2 id="luT">Lv.${level} ${name}</h2><p class="sub">謝謝你持續把感謝說出口</p>
                     <div class="unlock"><span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24">${icon}</svg></span><div><h4>解鎖：${feat}</h4><p>${desc}</p></div></div>
-                    ${level < 8 ? `<p class="next">下一個目標：再送 <b>${NEED[level + 1] - NEED[level]} 張</b>，升上 Lv.${level + 1} ${NORMAL[level + 1][0]}</p>` : '<p class="next maxed"><b>✨ 已滿級</b>・謝謝你成為感謝牆的中堅力量</p>'}
+                    ${level < 8 ? `<p class="next">下一個目標：再送 <b>${NEED[level + 1] - NEED[level]} 張</b>，升上 Lv.${level + 1} ${NORMAL[level + 1][0]}</p>` : ''}
                     <button type="button" class="ok">太棒了</button></div>`;
             } else if (HIDDEN[level]) {
                 const [name, theme] = HIDDEN[level], tier = level - 8;
@@ -1441,7 +1448,7 @@
                     + (tier >= 5 ? '<div class="motes" aria-hidden="true">' + Array.from({ length: 16 }, (_, i) => `<i style="left:${(i * 6.3 + 2).toFixed(1)}%;--cc:${pal[i % pal.length]};--t:${6 + (i % 5)}s;--d:${(i * -0.7).toFixed(1)}s"></i>`).join('') + '</div>' : '');
                 const glints = tier >= 3 ? [[8, 18], [92, 12], [4, 62], [96, 70], [20, 96], [80, 94]].slice(0, tier + 1).map(([x, y], i) => `<span class="glint" aria-hidden="true" style="left:${x}%;top:${y}%;--d:${i * 0.4}s"></span>`).join('') : '';
                 const shocks = '<span class="shock" aria-hidden="true"></span>' + (tier >= 3 ? '<span class="shock s2" aria-hidden="true"></span>' : '') + (tier >= 5 ? '<span class="shock s3" aria-hidden="true"></span>' : '');
-                const sub = { 9: '原來 Lv.8 不是終點——你發現了隱藏的等級。', 10: '第二道隱藏關卡，為你打開。', 11: '只有少數人走到這裡。', 12: '你的感謝，已經航向星際。', 13: '你抵達了感謝牆的最高傳說。' }[level];
+                const sub = { 9: '你發現了隱藏的等級。', 10: '第二道隱藏關卡，為你打開。', 11: '只有少數人走到這裡。', 12: '你的感謝，已經航向星際。', 13: '你抵達了感謝牆的最高傳說。' }[level];
                 scrim.classList.add('hidden-lv', `tier-${level}`);
                 scrim.setAttribute('aria-describedby', 'luD');
                 scrim.innerHTML = `${extras}<div class="lu hidden-lv tier-${level}">
@@ -1755,7 +1762,7 @@
 
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
-        function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); currentFocusedCard = null; playSound('click'); } }
+        function closeFocus() { if (currentFocusedCard) { currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
         const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin'];
@@ -1814,12 +1821,12 @@
             else { userLevel = 1; title = '🌱 Lv.1 新手幼苗'; maxLength = 20; }
             if (isAdminUser) maxLength = 2000;
 
-            msgInput.maxLength = maxLength; msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (無限字數)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
+            msgInput.maxLength = maxLength; msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (上限 2000 字)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
             const statusBar = document.getElementById('levelStatusBar'); statusBar.style.display = 'flex';
-            // 4.8：Lv.8 以上顯示「已滿級」，不預告隱藏等級（Lv.9～13）
+            // 卓倫決定（10/17）：不強調滿級，讓大家自己探索；Lv.8 以上只顯示稱號，不顯示下一級（隱藏等級不預告）
             const NEXT_AT = [1, 5, 10, 15, 20, 30, 50];
             const lvEl = document.getElementById('levelTitle');
-            lvEl.innerHTML = userLevel >= 8 ? `${title} <span class="lv-next">·</span> <span class="maxed">✨ 已滿級</span>` : `${title} <span class="lv-next">· 再 ${NEXT_AT[userLevel - 1] - expCount} 張升級</span>`;
+            lvEl.innerHTML = userLevel >= 8 ? `${title}` : `${title} <span class="lv-next">· 再 ${NEXT_AT[userLevel - 1] - expCount} 張升級</span>`;
             lvEl.dataset.exp = expCount; lvEl.dataset.total = totalCount; lvEl.title = `經驗值 ${expCount}・總發送 ${totalCount}`;
             
             const hintSpan = document.getElementById('levelHint');
@@ -1873,8 +1880,9 @@
                 document.getElementById('anonWrapper').classList.remove('locked');
                 document.getElementById('anonCheck').disabled = false;
             } else {
-                document.getElementById('anonWrapper').classList.toggle('locked', userLevel < 7);
-                document.getElementById('anonCheck').disabled = userLevel < 7;
+                const anonLocked = !isAdminUser && userLevel < 7; // 管理員無視等級限制
+                document.getElementById('anonWrapper').classList.toggle('locked', anonLocked);
+                document.getElementById('anonCheck').disabled = anonLocked;
             }
 
             renderEmojis();
@@ -2136,11 +2144,10 @@
         const CANDY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0zM8.5 12L3 8.5v7zM15.5 12L21 8.5v7z"/></svg>';
         const AVATAR_COLORS = ['#8b5cf6', '#0ea5e9', '#d97706', '#059669', '#dc2626', '#6366f1', '#db2777', '#0d9488'];
         function themeClassOf(t) { return THEME_CLASS[t] || 't-classic'; }
-        // 畫面上用的主題：管理員的卡一律顯示「金鑽星冕」（萬聖卡除外，保留萬聖外觀）
+        // 畫面上用的主題：照留言本身的主題（中秋月光在活動外另有淺色顯示，見 themeClassOf）
         function displayThemeOf(msg) {
-            const t = THEME_CLASS[msg.theme] ? msg.theme : 'theme-classic';
-            if (isAdminMessage(msg) && t !== 'theme-halloween') return 'theme-admin';
-            return t;
+            // 卓倫決定（10/17）：照留言當初選的主題顯示；只有主題本身是 theme-admin 的卡才是至尊外觀（管理員徽章、簽名照舊）
+            return THEME_CLASS[msg.theme] ? msg.theme : 'theme-classic';
         }
         function initialsOf(name) {
             const n = String(name || '').trim();
@@ -2202,7 +2209,7 @@
             else if (IS_MID_AUTUMN) { likeIcon = '<span aria-hidden="true">🥮</span>'; likeWord = '送月餅'; likeAction = '送月餅'; tooltipText = likeCount > 0 ? likers.join(', ') + ' 送了月餅' : '送顆月餅！'; }
             const likedClass = hasLiked ? ('liked on' + (IS_HALLOWEEN ? ' hw-liked' : IS_MID_AUTUMN ? ' ma-liked' : '')) : '';
             const heartHtml = `<button type="button" class="like card-likes ${likedClass}" title="${escapeHtml(tooltipText)}" aria-label="${likeAction}，目前 ${likeCount}" aria-pressed="${hasLiked ? 'true' : 'false'}">${likeIcon}${likeCount > 0 ? likeCount : likeWord}</button>`;
-            const sig = theme === 'theme-admin' ? '<em class="sig">系統管理員</em>' : '';
+            const sig = theme === 'theme-admin' ? '<em class="sig">系統管理員</em>' : ''; // 簽名特效只在至尊模板；其他主題的管理員卡只保留小徽章
 
             return `${fx}${badge}${receiverHtml}${attachedImgHtml}<p class="card-text">${escapeHtml(msg.text)}</p>`
                 + `<div class="card-foot"><span class="author">${avatarHtml}<span>${escapeHtml(authorName)}</span>${sig}</span>${heartHtml}</div>`
@@ -2275,7 +2282,7 @@
 
             if (currentFocusedCard === card) { closeFocus(); return; }
             if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
-            playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); currentFocusedCard = card;
+            playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); document.body.classList.add('card-open'); currentFocusedCard = card;
         }
 
         // 👉 點開萬聖卡就變身（牆面點卡、清單點列都會呼叫）
@@ -2556,7 +2563,7 @@
             currentRenderGen++;
             const myGen = currentRenderGen;
             stopWallTimers();
-            if (currentFocusedCard) { focusOverlay.classList.remove('active'); currentFocusedCard = null; }
+            if (currentFocusedCard) { focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; }
             activeDragCard = null;
             wall.innerHTML = '';
             wallState.rendered = false; wallState.dealing = false; wallState.queue = []; wallState.hidden = [];
@@ -2592,7 +2599,7 @@
             R.seed = Math.min(9, N);
             const coverCap = Math.min(SC_COVER_CAP, maxSetting);
             // 管理員一張、人氣王一張放進候選，其餘隨機
-            const admins = validMessages.filter(isAdminMessage);
+            const admins = validMessages.filter(m => displayThemeOf(m) === 'theme-admin'); // 只有至尊模板的卡固定上牆、用至尊景深；管理員的其他卡照一般規則
             const admin = admins.length ? admins[Math.floor(Math.random() * admins.length)] : null;
             const stars = maxLikes > 0 ? validMessages.filter(m => m !== admin && likeCountOf(m) === maxLikes) : [];
             const star = stars.length ? stars[Math.floor(Math.random() * stars.length)] : null;
@@ -2651,13 +2658,13 @@
                         wallState.hidden = wallState.hidden.filter(x => x !== m);
                         const it = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(it); items.push(it);
                     }
-                } else if (idle && !cellsFilled) {
+                } else if (!items.length && !plan.length && !wallState.queue.length && !cellsFilled) {
                     // 驗收 A2：最後檢查九宮格，還空著的格子（例如撰寫區上方那一小條）用輪播池裡最短的卡，在那一格裡找位置補上（每格最多試 2 張）
                     cellsFilled = true;
                     const cnt = new Array(9).fill(0); placed.forEach(p => cnt[scCell(p.cx, p.cy, R)]++);
                     const cw = R.w / 3, ch = R.h / 3, rr = Math.min(cw, ch) / 2 - 4;
                     for (let k = 0; k < 9; k++) {
-                        if (cnt[k] || R.cellFree[k] < .02 || !wallState.hidden.length) continue;
+                        if (cnt[k] || R.cellFree[k] < .02) continue;
                         const pool = wallState.hidden.slice(0, 40).sort((a, b) => [...String(a.text || '')].length - [...String(b.text || '')].length).slice(0, 2);
                         for (const m of pool) {
                             const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
@@ -2668,6 +2675,17 @@
                                 break;
                             }
                             c.el.remove();
+                        }
+                        if (placed.some(p => scCell(p.cx, p.cy, R) === k)) { cnt[k]++; continue; }
+                        // 輪播池沒有卡可補（例如總共只有十幾張大卡）：從最擠的格子挪一張較小的卡過來
+                        const movable = placed.filter(p => p.depth !== 'admin' && p.el !== currentFocusedCard && !p.el._dragged && cnt[scCell(p.cx, p.cy, R)] >= 2)
+                            .sort((a, b) => a.w * a.h - b.w * b.h).slice(0, 3);
+                        for (const p of movable) {
+                            const others = placed.filter(q => q !== p), from = scCell(p.cx, p.cy, R), old = [p.cx, p.cy];
+                            scRecomputeCover(others);
+                            const at = { x: R.x + (k % 3 + .5) * cw, y: R.y + (Math.floor(k / 3) + .5) * ch, r: rr };
+                            if (scFindSpot(p, others, R, 240, at) && scCell(p.cx, p.cy, R) === k) { scPlace(p); cnt[from]--; cnt[k]++; scRecomputeCover(placed); break; }
+                            [p.cx, p.cy] = old; p._qFull = null; p._qText = null; scRecomputeCover(placed);
                         }
                     }
                 }
@@ -2733,7 +2751,7 @@
         let scFont = null; // 只讀一次字型，避免每量一次字就強迫瀏覽器重新計算樣式
         function scTextW(str, px, weight) { if (!scFont) scFont = getComputedStyle(document.body).fontFamily; scMeas.font = `${weight} ${px}px ${scFont}`; return scMeas.measureText(String(str || '')).width; }
         function scDepthOf(m, maxLikes, isStar) {
-            if (isAdminMessage(m)) return 'admin';
+            if (displayThemeOf(m) === 'theme-admin') return 'admin'; // 至尊外觀的卡才用最大、最上層的景深
             if (isStar) return 'star';
             const t = displayThemeOf(m);
             if (t === 'theme-cosmic' || t === 'theme-ultimate') return 'near';
@@ -2829,7 +2847,7 @@
                 const crowd = inCell / Math.max(1, placed.length * (R.cellFree ? R.cellFree[cell] : 1 / 9));
                 const empty = placed.length && !inCell ? SC_EMPTY_BONUS : 0; // 還沒有卡的格子（例如撰寫區上方那一小塊）優先補上
                 const score = seeding
-                    ? Math.min(Math.max(0, dmin), 500) / 100 - crowd * SC_SEED_CROWD + empty * 2 + Math.random() * .15   // 撒開：離已放的卡越遠越好、優先空的格子
+                    ? Math.min(Math.max(0, dmin), 500) / 100 - crowd * SC_SEED_CROWD + empty * 10 + Math.random() * .15   // 撒開：先選還沒有卡的格子，再選離已放的卡越遠越好
                     : touch * 4 - (placed.length ? Math.max(0, dmin) : 0) / 400 - crowd * SC_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0);
                 if (score > bestScore) { bestScore = score; best = [c.cx, c.cy]; }
             }
