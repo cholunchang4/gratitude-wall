@@ -176,6 +176,9 @@
         .like { position: relative; flex: none; min-height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: var(--r-pill); background: var(--c-like-bg); color: var(--c-like-ink); font: 700 calc(12px * var(--s)) var(--font); cursor: pointer; }
         .like::after { content: ''; position: absolute; inset: -8px; }
         .like svg { width: 12px; height: 12px; }
+        .like .candy-ico { font-size: 18px; line-height: 1; display: inline-block; transform: rotate(-15deg); margin: -3px 0; }
+        #hwStoryTitle { padding: 0 40px; }
+        @media (max-width: 768px) { #hwStoryTitle { font-size: 20px !important; } }
         .like.on { background: var(--brand); color: #fff; }
         body.hw .like.on { background: #fdba74; color: #3b1d00; }
         .card-image { display: block; max-width: 100%; max-height: calc(150px * var(--s)); object-fit: contain; border-radius: 10px; margin: 6px 0 2px; background: #fff; pointer-events: none; }
@@ -897,31 +900,19 @@
     <div class="focus-overlay" id="hwOverlay">
         <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="hwStoryTitle" style="max-width: 550px; background: linear-gradient(135deg, #11091a 0%, #1a0b2e 100%); color: #fff; border: 1px solid rgba(253,186,116,.35); box-shadow: 0 20px 50px rgba(0,0,0,0.45);">
             <button class="close-btn" id="closeHwStory" style="color: #fdba74;" aria-label="關閉">✖</button>
-            <h2 id="hwStoryTitle" style="text-align: center; color: #fdba74; margin-top: 0; font-size: 24px;">🎃 萬聖感謝夜：全公司變身計畫 🦇</h2>
+            <h2 id="hwStoryTitle" style="text-align: center; color: #fdba74; margin-top: 0; font-size: 24px;">🦇 暮夜狂歡：吸血鬼傳染計畫 🎃</h2>
             <div style="font-size: 15px; color: #f4ecff; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
-                <p style="text-align: center; margin-top: 0;">10/18～10/31，感謝牆被一群愛道謝的吸血鬼占領了！</p>
-                <p class="hw-story-section">【10 秒看懂怎麼玩】</p>
-                <ol class="hw-steps">
-                    <li>1️⃣ 寫一張卡，標記你想謝謝的同事。</li>
-                    <li>2️⃣ 點開任何一張萬聖卡（徽章「🦇 暮夜吸血鬼」），或被萬聖卡標記，你就會變身成吸血鬼，解鎖萬聖模板。</li>
-                    <li>3️⃣ 用萬聖模板寫卡標記同事，他一上線也會跟著變身。</li>
-                </ol>
-                <p class="hw-story-section">🎯 全公司目標（進度看上方）</p>
-                <p style="margin: 0 0 6px;">活動結束後，變身過的同事可以繼續使用萬聖模板：</p>
-                <ul style="padding-left: 20px; margin: 0;">
-                    <li>100 人：延長 30 天</li>
-                    <li>150 人：延長 60 天</li>
-                    <li>200 人：傳說目標，永久保留</li>
-                </ul>
-                <p class="hw-story-section">─── 小規則 ───</p>
-                <ul style="padding-left: 20px; margin: 0; list-style: none;">
-                    <li style="margin-bottom: 6px;">🧛 <b>始祖吸血鬼</b>：活動前最常寫卡的 5 位同事，已經先變身。</li>
-                    <li style="margin-bottom: 6px;">🎁 <b>萬聖加碼 10 則</b>：每個人都有。先用一般額度（累積經驗值），用完會自動改用加碼額度（不計經驗值）。</li>
-                    <li style="margin-bottom: 6px;">🍬 <b>給糖</b>：活動期間「按讚」變成「給糖」。</li>
-                    <li style="margin-bottom: 6px;">🎭 <b>假面舞會</b>：人人都能匿名，系統隨機給你一個稱號，例如「🎃 搗蛋南瓜」「👻 搞怪幽靈」。<br>匿名只對同事隱藏，管理員仍看得到發文者，請繼續遵守暖心公約。</li>
-                    <li style="margin-bottom: 6px;">🙂 變身只會改變外觀和模板，不影響其他功能。</li>
-                </ul>
-                <p style="margin-bottom: 0;">💡 小提醒：標記之後，在 Teams 跟對方說一聲「我在感謝牆寫了張卡給你」，他上線才會變身喔！</p>
+                <p style="text-align: center; margin-top: 0; font-style: italic; color: #dda0dd;">「夜幕降臨，平靜的感謝牆已被一股神祕力量籠罩...」</p>
+                <p>據說，歷史發文最活躍的五位神隊友，在昨夜已經悄悄覺醒為<b>【🧛 始祖吸血鬼】</b>！他們正帶著萬聖節的搗蛋病毒，潛伏在辦公室的各個角落。這是一場關於「感謝」的狂歡派對，不給感謝就搗蛋！</p>
+                <p class="hw-story-section">🩸 【小心！感染就在一瞬間】</p>
+                <p>始祖吸血鬼擁有獨家的「🎃 萬聖專屬發文模板」。只要你「點開」這種橘黑色的專屬卡片，或是「收到」吸血鬼發給你的專屬感謝，你就會立刻被咬，正式變異為吸血鬼！感染後，你也會解鎖這個酷炫模板，擁有傳染其他人的能力！</p>
+                <p class="hw-story-section">🦇 【夜行配額 ＆ 假面舞會】</p>
+                <p>為了讓大家盡情搗蛋，活動期間所有人皆額外獲得 <b>10 則萬聖專屬配額</b>！不僅如此，系統已全面無條件開放「🎭 假面舞會（匿名功能）」。戴上面具，化身搗蛋南瓜或夜貓伯爵，大膽送出你平時不好意思說的感謝吧！<br><span style="font-size: 13px; color: #b9a8d6;">（註：一般配額用盡後，系統將自動扣除萬聖配額；面具只對同事隱藏，管理員仍看得到發文者）</span></p>
+                <p class="hw-story-section">🍬 【給糖取代按讚】</p>
+                <p>日常的「❤️ 按讚」已被女巫施法變成了「🍬 給糖」。快去給牆上的留言點擊給糖，觸發滿滿的萬聖節驚喜特效！</p>
+                <p class="hw-story-section">🎯 【全服共鬥：解除血月封印】</p>
+                <p>抬頭看看網頁上方的進度條！只要在 10/31 前，全公司被感染人數達到 <b>100 人</b>，所有被感染過的同事將解鎖這套超酷萬聖模板的「30 天使用權」；達到 <b>150 人 (75%)</b> 升級為「60 天使用權」；如果全軍覆沒達到 <b>200 人 (100%)</b>，將直接解鎖「永久使用權」！</p>
+                <p style="margin-bottom: 0;">還在等什麼？快去牆上尋找吸血鬼的蹤跡，或是戴上面具去搗蛋吧！</p>
             </div>
             <button type="button" class="hw-story-cta" id="hwStoryCta">我懂了，去寫卡</button>
         </div>
@@ -1199,7 +1190,7 @@
         let themeManuallySelected = false; let isFilterMeOnly = false; 
 
         // 👉 更新版號到 4.8（4.8：開頁分批渲染、按讚不再整面洗牌、XSS 跳脫、萬聖節邏輯修正）
-        const CURRENT_APP_VERSION = "4.8.1";
+        const CURRENT_APP_VERSION = "4.8.2";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -2141,7 +2132,7 @@
             + '<circle cx="5" cy="13" r="3" fill="#fffbe8"/><circle cx="55" cy="13" r="3" fill="#fffbe8"/><circle cx="30" cy="5" r="3.6" fill="#fffbe8"/>'
             + '<path d="M30 20 l4 5 -4 5 -4 -5z" fill="#bfe9ff"/><circle cx="17" cy="30" r="2.2" fill="#ffd1dc"/><circle cx="43" cy="30" r="2.2" fill="#ffd1dc"/><circle cx="30" cy="40.5" r="2" fill="#bfe9ff"/></svg>';
         const HEART_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 3 4.5 6.8 4.5c2.1 0 3.6 1.2 5.2 3 1.6-1.8 3.1-3 5.2-3 3.8 0 5.9 3.9 4.4 7.3C19.5 16.4 12 21 12 21z"/></svg>';
-        const CANDY_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M8 12a4 4 0 1 0 8 0a4 4 0 1 0-8 0zM8.5 12L3 8.5v7zM15.5 12L21 8.5v7z"/></svg>';
+        const CANDY_SVG = '<span class="candy-ico" aria-hidden="true">🍬</span>'; // 4.8.2：卓倫回報小 SVG 看起來像蝴蝶結，改用糖果圖示並放大
         const AVATAR_COLORS = ['#8b5cf6', '#0ea5e9', '#d97706', '#059669', '#dc2626', '#6366f1', '#db2777', '#0d9488'];
         function themeClassOf(t) { return THEME_CLASS[t] || 't-classic'; }
         // 畫面上用的主題：照留言本身的主題（中秋月光在活動外另有淺色顯示，見 themeClassOf）
