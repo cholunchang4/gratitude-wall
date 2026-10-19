@@ -85,6 +85,46 @@
         .hw-ghost { position: fixed; left: 0; top: 0; z-index: 2; width: 34px; height: 34px; opacity: .22; pointer-events: none; display: none; animation: drift linear infinite backwards; }
         body.hw-stage-2 .hw-ghost, body.hw-stage-3 .hw-ghost { display: block; }
         @keyframes drift { from { transform: translate(-8vw, 105vh); } to { transform: translate(108vw, -10vh); } }
+        /* 4.8.4（美術總監 v2）：可點的變異蝙蝠「毒光變異」
+           黑色剪影＋白熱核心＋螢光毒綠光暈＋血紅眼睛，偶爾閃一下十字精光。
+           配色刻意避開：至尊金卡（白金／香檳金）、萬聖卡（南瓜橘）、紫色夜空背景、酒紅卡與第三階段紅暈；
+           和第三階段的裝飾蝙蝠 .hw-ghost（34px、淡粉、22% 透明、不可點、沒有光）一眼分得出來。
+           只用 transform／scale／opacity 動畫；濾鏡是靜態的。位置（--x0..--y3，px）由程式在安全區內產生，避開上方工具列與下方撰寫區。
+           桌機 76px、手機 60px（點擊範圍 ≥ 44px）；滑鼠移過時停住並放大，方便點。 */
+        .hw-bats { position: fixed; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+        .hw-elite-bat { position: absolute; left: 0; top: 0; width: 76px; height: 76px; padding: 0; margin: 0; border: 0; background: none; cursor: pointer;
+                        pointer-events: auto; -webkit-tap-highlight-color: transparent; will-change: transform; border-radius: 50%;
+                        transform: translate(var(--x0), var(--y0)); animation: batWander var(--dur, 28s) ease-in-out var(--delay, 0s) infinite; }
+        /* 光暈：白熱核心 → 螢光毒綠 → 淡出；脈動只動 transform／opacity */
+        .hw-elite-bat::before { content: ''; position: absolute; inset: -22px; border-radius: 50%; pointer-events: none;
+                        background: radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(240,255,214,.97) 12%, rgba(198,255,61,.92) 22%, rgba(120,255,40,.6) 38%, rgba(57,255,20,.26) 54%, transparent 70%);
+                        animation: batGlow 1.5s ease-in-out infinite alternate; will-change: transform, opacity; transition: scale .22s ease; }
+        /* 偶爾閃一下的十字精光（每隻蝙蝠時間錯開） */
+        .hw-elite-bat::after { content: ''; position: absolute; left: 50%; top: 50%; width: 96px; height: 96px; margin: -48px 0 0 -48px; pointer-events: none; opacity: 0;
+                        background: radial-gradient(circle, #fff 0 5%, rgba(255,255,255,.75) 9%, transparent 24%),
+                                    linear-gradient(90deg, transparent 0%, rgba(220,255,170,.0) 8%, rgba(255,255,255,.95) 50%, rgba(220,255,170,0) 92%, transparent 100%) center / 100% 3px no-repeat,
+                                    linear-gradient(0deg, transparent 0%, rgba(220,255,170,0) 8%, rgba(255,255,255,.95) 50%, rgba(220,255,170,0) 92%, transparent 100%) center / 3px 100% no-repeat;
+                        transform: rotate(18deg) scale(.3); animation: batGlint 3.8s ease-out var(--delay, 0s) infinite; will-change: transform, opacity; }
+        .hw-elite-bat svg { position: absolute; left: 4px; top: 20px; width: 68px; height: 38px; overflow: visible; pointer-events: none;
+                        filter: drop-shadow(0 0 2px rgba(190,255,74,.95)) drop-shadow(0 1px 3px rgba(10,0,20,.55));
+                        transform-origin: 50% 40%; animation: batFlap .4s ease-in-out infinite alternate; transition: scale .22s ease; }
+        /* 滑鼠移過／鍵盤焦點：停住、放大、光暈變大（scale 和 transform 是獨立屬性，不會打斷拍翅與脈動） */
+        .hw-elite-bat:hover, .hw-elite-bat:focus-visible { animation-play-state: paused; z-index: 1; }
+        .hw-elite-bat:hover svg, .hw-elite-bat:focus-visible svg { scale: 1.28; }
+        .hw-elite-bat:hover::before, .hw-elite-bat:focus-visible::before { scale: 1.32; }
+        .hw-elite-bat:focus-visible { outline: 3px solid #d9ff4a; outline-offset: 4px; }
+        .hw-elite-bat.caught { pointer-events: none; animation: none; opacity: 0; transition: opacity .5s ease; }
+        @media (max-width: 768px) {
+          .hw-elite-bat { width: 60px; height: 60px; }
+          .hw-elite-bat::before { inset: -16px; }
+          .hw-elite-bat::after { width: 80px; height: 80px; margin: -40px 0 0 -40px; }
+          .hw-elite-bat svg { left: 3px; top: 15px; width: 54px; height: 30px; }
+        }
+        @keyframes batWander { 0%, 100% { transform: translate(var(--x0), var(--y0)); } 25% { transform: translate(var(--x1), var(--y1)); }
+                               50% { transform: translate(var(--x2), var(--y2)); } 75% { transform: translate(var(--x3), var(--y3)); } }
+        @keyframes batGlow { from { opacity: .7; transform: scale(.86); } to { opacity: 1; transform: scale(1.1); } }
+        @keyframes batGlint { 0%, 78% { opacity: 0; transform: rotate(18deg) scale(.3); } 84% { opacity: 1; transform: rotate(40deg) scale(1.15); } 100% { opacity: 0; transform: rotate(60deg) scale(.6); } }
+        @keyframes batFlap { from { transform: scaleY(1); } to { transform: scaleY(.6); } }
 
         /* 撰寫區 */
         .composer-wrap { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); width: min(880px, calc(100% - 48px)); z-index: 90001; }
@@ -664,7 +704,7 @@
         @media (max-width: 768px) { .lm-focus .card.focused { --s: 1.1; } .lm-focus-bar { flex-wrap: wrap; border-radius: var(--r-lg); } .lm-focus-bar time { width: 100%; } }
 
         /* 清單模式下：牆面與浮動卡隱藏 */
-        body.mode-list #wall, body.mode-list .hw-ghost { display: none; }
+        body.mode-list #wall, body.mode-list .hw-ghost, body.mode-list .hw-bats { display: none; }
 
         /* 手機 */
         .switch-bar { display: none; }
@@ -862,6 +902,10 @@
           .fx::before, .fx::after, .fx2::before, .fx2::after, .fx3::before, .fx3::after, .hw-ghost, .t-admin .crest { animation: none !important; }
           .t-r-gold .fx::before, .t-r-holo .fx::after, .t-r-ultimate .fx2::before, .t-admin .fx2::after, .fx3 { opacity: 0; }
           body.blood-flash::after, .hw-ghost { display: none !important; }
+          /* 4.8.4：減少動態時，變異蝙蝠停在原位、保留靜止的光暈 */
+          .hw-elite-bat, .hw-elite-bat::before, .hw-elite-bat::after, .hw-elite-bat svg { animation: none !important; }
+          .hw-elite-bat::before { opacity: .95; }
+          .hw-elite-bat::after { opacity: .7; transform: rotate(18deg) scale(.75); }
           .message-card.floating { animation: none !important; }
         }
 
@@ -904,6 +948,8 @@
             <div style="font-size: 15px; color: #f4ecff; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
                 <p style="text-align: center; margin-top: 0; font-style: italic; color: #dda0dd;">「夜幕降臨，平靜的感謝牆已被一股神祕力量籠罩...」</p>
                 <p>據說，歷史發文最活躍的五位神隊友，在昨夜已經悄悄覺醒為<b>【🧛 始祖吸血鬼】</b>！他們正帶著萬聖節的搗蛋病毒，潛伏在辦公室的各個角落。這是一場關於「感謝」的狂歡派對，不給感謝就搗蛋！</p>
+                <p class="hw-story-section">🦇 【始祖沉睡，變異蝙蝠出沒】</p>
+                <p>始祖吸血鬼們似乎還在沉睡……但夜空中已經出現了 15 隻發著精光的變異蝙蝠！搶先抓住牠的人，會被咬成<b>【精銳吸血鬼】</b>，直接解鎖萬聖模板。名額只有 15 個，抓完就沒了！</p>
                 <p class="hw-story-section">🩸 【小心！感染就在一瞬間】</p>
                 <p>始祖吸血鬼擁有獨家的「🎃 萬聖專屬發文模板」。只要你「點開」這種橘黑色的專屬卡片，或是「收到」吸血鬼發給你的專屬感謝，你就會立刻被咬，正式變異為吸血鬼！感染後，你也會解鎖這個酷炫模板，擁有傳染其他人的能力！</p>
                 <p class="hw-story-section">🦇 【夜行配額 ＆ 假面舞會】</p>
@@ -1026,6 +1072,7 @@
                 <h3>萬聖限定：全公司變身計畫 <small>10/18 – 10/31</small></h3>
                 <ul>
                     <li>點開任何一張萬聖卡（徽章「🦇 暮夜吸血鬼」），或被萬聖卡標記，你就會<b>變身成吸血鬼</b>，解鎖萬聖模板。</li>
+                    <li>畫面上發光的變異蝙蝠，點一下就能變身成<b>精銳吸血鬼</b>（限 15 人，抓完為止）。</li>
                     <li>全公司 <b>100 / 150 / 200 人</b>變身，活動後萬聖模板<b>延長 30 天／60 天／永久保留</b>。</li>
                     <li>活動期間人人都能勾選<b>假面舞會</b>匿名送卡（管理員仍看得到發文者）。</li>
                     <li>按讚變成<b>給糖</b>。標記同事後，記得在 Teams 跟對方說一聲。</li>
@@ -1189,8 +1236,8 @@
         let userLevel = 1; let userLifetimeMessageCount = 0; let dragWarned = false; 
         let themeManuallySelected = false; let isFilterMeOnly = false; 
 
-        // 👉 更新版號到 4.8（4.8：開頁分批渲染、按讚不再整面洗牌、XSS 跳脫、萬聖節邏輯修正）
-        const CURRENT_APP_VERSION = "4.8.3";
+        // 👉 更新版號到 4.8（4.8：開頁分批渲染、按讚不再整面洗牌、XSS 跳脫、萬聖節邏輯修正；4.8.4：變異蝙蝠／精銳吸血鬼、吸血鬼預設萬聖模板）
+        const CURRENT_APP_VERSION = "4.8.4";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1540,6 +1587,19 @@
             checkPassiveInfection();
         }, (err) => { console.warn('halloween/infected 讀取失敗', err); });
 
+        // 4.8.4：精銳吸血鬼名單（halloween/elite/{uid} = { name, ts }），決定畫面上還剩幾隻變異蝙蝠。只在活動期間讀取。
+        const HW_ELITE_SLOTS = 15;
+        let hwEliteUsers = {};
+        let hwEliteLoaded = false;
+        if (IS_HALLOWEEN) {
+            onValue(ref(db, 'halloween/elite'), (snapshot) => {
+                const v = snapshot.val();
+                hwEliteUsers = (v && typeof v === 'object') ? v : {};
+                hwEliteLoaded = true;
+                updateFestivalUI();
+            }, (err) => { console.warn('halloween/elite 讀取失敗', err); });
+        }
+
         function updateFestivalUI() {
             // 處理中秋節 UI 隱藏與顯示
             if (IS_MID_AUTUMN) {
@@ -1610,10 +1670,12 @@
                 if (currentUser) {
                     const currentName = myShortName();
                     isCurrentUserProgenitor = hwTop5Senders.includes(currentName) || hwTop5Senders.includes(currentUser.displayName);
-                    isCurrentUserVampire = !!hwInfectedUsers[currentUser.uid] || isCurrentUserProgenitor;
+                    isCurrentUserVampire = !!hwInfectedUsers[currentUser.uid] || isCurrentUserProgenitor || isCurrentUserElite();
                     
                     syncHwThemeButton(isCurrentUserVampire, '🎃 萬聖卡（用它寫卡，被標記的人會變身）');
+                    applyHwDefaultTheme();
                 }
+                renderEliteBats();
             } else {
                 document.getElementById('hwBtn').style.display = 'none';
                 document.getElementById('hwProgressBar').style.display = 'none';
@@ -1636,7 +1698,7 @@
         function createHwEntities(emoji) {
             // 4.8：第二階段幽靈、第三階段蝙蝠（SVG），在卡片下方斜向飄過
             const GHOST = '<svg viewBox="0 0 24 24"><path fill="#f4ecff" d="M12 2a8 8 0 0 0-8 8v12l3-2 2.5 2 2.5-2 2.5 2 2.5-2 3 2V10a8 8 0 0 0-8-8z"/><circle cx="9" cy="10" r="1.3" fill="#2c2560"/><circle cx="15" cy="10" r="1.3" fill="#2c2560"/></svg>';
-            const BAT = '<svg viewBox="0 0 64 36"><path fill="#fca5a5" d="M32 10c2-4 4-6 4-6l1 5c3-1 6 0 8 2 4-3 10-4 19-2-6 2-9 6-10 11-3-3-7-4-10-2 0 3-1 6-3 8-2-3-6-4-9-3-3-1-7 0-9 3-2-2-3-5-3-8-3-2-7-1-10 2-1-5-4-9-10-11 9-2 15-1 19 2 2-2 5-3 8-2l1-5s2 2 4 6z"/></svg>';
+            const BAT = `<svg viewBox="0 0 64 36"><path fill="#fca5a5" d="${HW_BAT_PATH}"/></svg>`;
             const svg = emoji === '🦇' ? BAT : GHOST;
             if (entitiesCreated) { document.querySelectorAll('.hw-ghost').forEach(el => el.innerHTML = svg); return; }
             entitiesCreated = true;
@@ -1654,6 +1716,8 @@
             const r = set(ref(db, `halloween/infected/${currentUser.uid}`), currentUser.displayName || '');
             if (r && r.catch) r.catch(err => console.warn('變身紀錄寫入失敗', err));
             isCurrentUserVampire = true;
+            renderEliteBats(); // 4.8.4：變身後不再顯示變異蝙蝠
+            applyHwDefaultTheme();
             
             document.body.classList.add('blood-flash');
             playSound('levelup');
@@ -1664,6 +1728,83 @@
                 showToast(`【萬聖夜通知】\n${message}`, 6000); // 4.8（設計 R10）：不再用 alert 擋住畫面
                 updateFestivalUI();
             }, 2500);
+        }
+
+        // ================= 4.8.4 萬聖：吸血鬼預設用萬聖卡 =================
+        // 活動期間，吸血鬼（始祖、精銳、一般）沒有自己選過樣式時，預設選中萬聖卡；活動結束後不強制。
+        function applyHwDefaultTheme() {
+            if (!IS_HALLOWEEN || !currentUser || !isCurrentUserVampire || themeManuallySelected) return false;
+            if (!document.querySelector('.theme-hw-btn')) return false;
+            if (currentTheme !== 'theme-halloween') { currentTheme = 'theme-halloween'; syncPickerState(); }
+            return true;
+        }
+
+        // ================= 4.8.4 變異蝙蝠 → 精銳吸血鬼 =================
+        // 總共 15 個名額；畫面上的蝙蝠數 = 15 − 精銳人數（手機同時最多顯示 5 隻）。
+        // 只有「已登入、還不是吸血鬼／始祖／精銳」的人看得到；未登入不顯示（登入後才知道是不是始祖，也避免點了沒反應）。
+        const HW_BAT_PATH = 'M32 10c2-4 4-6 4-6l1 5c3-1 6 0 8 2 4-3 10-4 19-2-6 2-9 6-10 11-3-3-7-4-10-2 0 3-1 6-3 8-2-3-6-4-9-3-3-1-7 0-9 3-2-2-3-5-3-8-3-2-7-1-10 2-1-5-4-9-10-11 9-2 15-1 19 2 2-2 5-3 8-2l1-5s2 2 4 6z';
+        const ELITE_BAT_SVG = `<svg viewBox="0 0 64 36" aria-hidden="true"><path fill="#14061f" stroke="#c6ff3d" stroke-width="1.3" stroke-linejoin="round" d="${HW_BAT_PATH}"/><circle cx="29.3" cy="13.2" r="2" fill="#ff1f4b"/><circle cx="34.7" cy="13.2" r="2" fill="#ff1f4b"/><circle cx="29.8" cy="12.6" r=".6" fill="#fff"/><circle cx="35.2" cy="12.6" r=".6" fill="#fff"/></svg>`;
+        const BAT_MOBILE_MAX = 5;
+        function isCurrentUserElite() { return !!(currentUser && hwEliteUsers[currentUser.uid]); }
+        function hwEliteLeft() { return Math.max(0, HW_ELITE_SLOTS - Object.keys(hwEliteUsers).length); }
+        function canSeeEliteBats() {
+            return IS_HALLOWEEN && !!currentUser && messagesLoaded && hwInfectedLoaded && hwEliteLoaded && !hwInfectionTriggered
+                && !isCurrentUserVampire && !isCurrentUserProgenitor && !isCurrentUserElite() && !hwInfectedUsers[currentUser.uid];
+        }
+        // 在牆面安全區內隨機產生 4 個盤旋點（避開上方標題／工具列與下方撰寫區）
+        function placeEliteBat(el) {
+            const W = window.innerWidth, H = window.innerHeight, mobile = W <= 768, SIZE = 60;
+            const side = mobile ? 6 : 40, top = mobile ? 196 : 170, bottom = mobile ? 340 : 240;
+            const maxX = Math.max(side, W - side - SIZE), maxY = Math.max(top, H - bottom - SIZE);
+            const rx = () => Math.round(side + Math.random() * (maxX - side)), ry = () => Math.round(top + Math.random() * (maxY - top));
+            for (let i = 0; i < 4; i++) { el.style.setProperty(`--x${i}`, rx() + 'px'); el.style.setProperty(`--y${i}`, ry() + 'px'); }
+            const dur = 24 + Math.random() * 14;
+            el.style.setProperty('--dur', dur.toFixed(1) + 's');
+            el.style.setProperty('--delay', (-Math.random() * dur).toFixed(1) + 's');
+        }
+        function makeEliteBat() {
+            const b = document.createElement('button');
+            b.type = 'button'; b.className = 'hw-elite-bat'; b.innerHTML = ELITE_BAT_SVG;
+            placeEliteBat(b);
+            b.addEventListener('click', (e) => { e.stopPropagation(); catchEliteBat(b); });
+            return b;
+        }
+        function renderEliteBats() {
+            if (!IS_HALLOWEEN) return;
+            const left = hwEliteLeft();
+            const want = canSeeEliteBats() ? Math.min(left, window.innerWidth <= 768 ? BAT_MOBILE_MAX : HW_ELITE_SLOTS) : 0;
+            let box = document.getElementById('hwBats');
+            if (!box) {
+                if (!want) return;
+                box = document.createElement('div'); box.id = 'hwBats'; box.className = 'hw-bats';
+                document.body.appendChild(box);
+            }
+            const live = Array.from(box.querySelectorAll('.hw-elite-bat:not(.caught)'));
+            for (let i = live.length; i < want; i++) box.appendChild(makeEliteBat());
+            for (let i = live.length - 1; i >= want; i--) live[i].remove();
+            const label = `變異蝙蝠：點我變異成精銳吸血鬼（剩 ${left} 個名額）`;
+            box.querySelectorAll('.hw-elite-bat:not(.caught)').forEach(b => { b.title = label; b.setAttribute('aria-label', label); });
+            box.dataset.left = String(left);
+        }
+        // 名額檢查用即時同步中的精銳名單（沒有用 transaction：極少數同時點擊可能多出 1～2 人）
+        function catchEliteBat(el) {
+            if (!currentUser) { showToast('請先登入，才能抓變異蝙蝠喔'); return; }
+            if (!canSeeEliteBats()) { renderEliteBats(); return; }
+            if (hwEliteLeft() <= 0) {
+                showToast('🦇 慢了一步……變異蝙蝠已經全部被抓走了！點開萬聖卡也能變身喔。');
+                renderEliteBats(); return;
+            }
+            el.classList.add('caught'); setTimeout(() => el.remove(), 600);
+            const r = set(ref(db, `halloween/elite/${currentUser.uid}`), { name: currentUser.displayName || '', ts: Date.now() });
+            if (r && r.catch) r.catch(err => console.warn('精銳吸血鬼紀錄寫入失敗', err));
+            triggerInfection("🦇 你抓住了一隻發著精光的變異蝙蝠……牠狠狠咬了你一口！\n\n你已變異為【精銳吸血鬼】，萬聖模板已解鎖。始祖們還在沉睡，現在輪到你把感染傳出去——用萬聖卡謝謝一位同事吧！");
+        }
+        if (IS_HALLOWEEN) {
+            let batResizeTimer = null;
+            window.addEventListener('resize', () => {
+                clearTimeout(batResizeTimer);
+                batResizeTimer = setTimeout(() => { document.querySelectorAll('.hw-elite-bat:not(.caught)').forEach(placeEliteBat); renderEliteBats(); }, 300);
+            });
         }
 
         function showHalloweenStory() {
@@ -1830,6 +1971,7 @@
                 if (IS_HALLOWEEN) {
                     let identityText = '🙂 人類（點開萬聖卡就能變身）';
                     if (isCurrentUserProgenitor) identityText = '🧛 始祖吸血鬼';
+                    else if (isCurrentUserElite()) identityText = '🦇 精銳吸血鬼'; // 4.8.4
                     else if (isCurrentUserVampire) identityText = '🦇 吸血鬼';
 
                     hintSpan.innerHTML = `<span class="quota-status" style="background:rgba(255,140,0,0.2); color:#ff8c00;">${identityText}｜一般 ${regLeft} 則｜萬聖加碼 ${evtLeft} 則</span>`;
@@ -2043,8 +2185,8 @@
                 if(document.getElementById('mooncakeCheck')) document.getElementById('mooncakeCheck').checked = false;
                 
                 if (IS_HALLOWEEN && isCurrentUserVampire) {
-                    const hwBtn = document.querySelector('.theme-hw-btn');
-                    if(hwBtn) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); hwBtn.classList.add('active'); currentTheme = 'theme-halloween'; themeManuallySelected = true; }
+                    // 4.8.4：送出後回到預設（萬聖卡），和開頁、中途變身用同一套規則
+                    themeManuallySelected = false; applyHwDefaultTheme();
                 } else if (IS_MID_AUTUMN) {
                     const maBtn = document.querySelector('.theme-moonlight-btn');
                     if(maBtn) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); maBtn.classList.add('active'); currentTheme = 'theme-moonlight'; themeManuallySelected = true; }
@@ -2561,6 +2703,7 @@
 
         function pickAutoTheme(validMessages) {
             if (themeManuallySelected || validMessages.length === 0 || isFilterMeOnly) return;
+            if (applyHwDefaultTheme()) return; // 4.8.4：活動期間吸血鬼預設萬聖卡
             const availableThemes = userLevel >= 4 || (currentUser && currentUser.email === ADMIN_EMAIL) ? themeList.slice(0, 10) : themeList.slice(0, 3);
             const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
             validMessages.forEach(msg => { if(availableThemes.includes(msg.theme)) themeCounts[msg.theme]++; });
