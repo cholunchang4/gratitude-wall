@@ -1190,7 +1190,7 @@
         let themeManuallySelected = false; let isFilterMeOnly = false; 
 
         // 👉 更新版號到 4.8（4.8：開頁分批渲染、按讚不再整面洗牌、XSS 跳脫、萬聖節邏輯修正）
-        const CURRENT_APP_VERSION = "4.8.2";
+        const CURRENT_APP_VERSION = "4.8.3";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -2468,6 +2468,95 @@
             return rawMessages.filter(msg => (now - (msg.timestamp || 0)) <= retentionMs);
         }
 
+        // ===== 4.8.3 牆面新舊比例與萬聖卡優先（卓倫需求）；要調整比例只改這一段 =====
+        const WALL_FRESH_RATIO = 0.6;  // 牆面上「新留言」的目標比例（卓倫：1/2～2/3）；不足時用另一類補滿
+        const WALL_FRESH_DAYS = 7;     // 新留言定義：萬聖活動期間＝HW_EVENT_START（10/18 00:00 +08:00）之後；非活動期間＝最近 7 天內
+        const WALL_HW_SHARE = 1 / 3;   // 活動期間萬聖卡最多佔整面牆約 1/3（一般新留言不夠時，由萬聖卡補足新留言份額）
+        const WALL_HW_MIN = 4;         // 牆上至少保留幾張萬聖卡（萬聖卡總數夠的話）
+        const WALL_HW_WEIGHT = 3;      // 輪播換卡時，萬聖卡被抽中的權重（一般卡＝1）
+        const WALL_COOLDOWN = 40;      // 換下來的卡至少隔幾次換卡才會再上牆（每 5 秒換 3 張，約 70 秒；候選不夠時放寬）
+        const WALL_ROTATE_MS = 5000;   // 輪播：每幾毫秒換一輪（卓倫 4.8.3：由 8 秒改 5 秒）
+        const WALL_ROTATE_COUNT = 3;   // 輪播：每輪換幾張（由 2 張改 3 張）
+        const WALL_ROTATE_GAP = 500;   // 輪播：同一輪裡每張之間隔幾毫秒
+        function wallIsHw(m) { return IS_HALLOWEEN && m.theme === 'theme-halloween'; }
+        function wallIsFresh(m) {
+            if (wallIsHw(m)) return true;
+            const t = m.timestamp || 0;
+            return IS_HALLOWEEN ? t >= HW_EVENT_START : Date.now() - t <= WALL_FRESH_DAYS * 86400000;
+        }
+        function wallShuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+        // 把留言分頁排好：每頁約 60% 新留言（萬聖卡先上，最多約 1/3、至少 WALL_HW_MIN 張）、其餘舊留言；各類內部隨機
+        function wallMixPages(list, pageSize, firstSize = pageSize) {
+            const hw = wallShuffle(list.filter(wallIsHw));
+            const fresh = wallShuffle(list.filter(m => !wallIsHw(m) && wallIsFresh(m)));
+            const old = wallShuffle(list.filter(m => !wallIsFresh(m)));
+            const pages = [];
+            while (hw.length + fresh.length + old.length) {
+                const n = Math.min(Math.max(1, pages.length ? pageSize : firstSize), hw.length + fresh.length + old.length);
+                const freshGoal = Math.min(hw.length + fresh.length, Math.max(n - old.length, Math.round(n * WALL_FRESH_RATIO)));
+                const hwFirst = Math.min(hw.length, freshGoal, Math.max(WALL_HW_MIN, Math.floor(n * WALL_HW_SHARE)));
+                const freshN = Math.min(fresh.length, freshGoal - hwFirst);
+                const hwN = Math.min(hw.length, freshGoal - freshN);
+                pages.push([...hw.splice(0, hwN), ...fresh.splice(0, freshN), ...old.splice(0, n - hwN - freshN)]);
+            }
+            return pages;
+        }
+        // 輪播換卡：挑下一張要上牆的卡，維持新舊比例、萬聖卡保底與加權，並避開剛換下來的卡。回傳 null＝這張先不換
+        function wallPickNext(pool, outgoing, onWall) {
+            if (!pool.length) return null;
+            if (isFilterMeOnly) return pool[Math.floor(Math.random() * pool.length)];
+            const tick = wallState.swapTick || 0, recent = wallState.recentOut || new Map();
+            const cool = pool.filter(m => !(recent.has(m.id) && tick - recent.get(m.id) < WALL_COOLDOWN));
+            const rest = onWall.filter(m => m.id !== outgoing.id);
+            const total = rest.length + 1;
+            const hwNow = rest.filter(wallIsHw).length;
+            // 冷卻中的卡先不挑；整類都在冷卻中時，只從「最早被換下」的三分之一裡挑，盡量拉長重複出現的間隔
+            const from = (f) => {
+                const a = cool.filter(f); if (a.length) return a;
+                const b = pool.filter(f).sort((x, y) => (recent.get(x.id) ?? -1) - (recent.get(y.id) ?? -1));
+                return b.slice(0, Math.max(1, Math.ceil(b.length / 3)));
+            };
+            const hwPool = from(wallIsHw);
+            // 萬聖卡保底：換下這張會低於保底，或牆上萬聖卡已經不足 → 只能換成萬聖卡（沒有就先不換這張萬聖卡）
+            if (IS_HALLOWEEN && hwNow < Math.min(WALL_HW_MIN, hwNow + (wallIsHw(outgoing) ? 1 : 0) + hwPool.length)) {
+                if (hwPool.length) return hwPool[Math.floor(Math.random() * hwPool.length)];
+                if (wallIsHw(outgoing)) return null;
+            }
+            const freshNow = rest.filter(wallIsFresh).length;
+            const wantFresh = freshNow < Math.round(total * WALL_FRESH_RATIO);
+            let group = from(m => wallIsFresh(m) === wantFresh);
+            if (!group.length) group = from(m => wallIsFresh(m) !== wantFresh);
+            if (!group.length) return null;
+            // 萬聖卡加權（已達約 1/3 上限、而且還有一般新留言可換時，這次不再加萬聖卡）
+            const hwFull = hwNow >= Math.max(WALL_HW_MIN, Math.floor(total * WALL_HW_SHARE)) && group.some(m => !wallIsHw(m));
+            const weights = group.map(m => wallIsHw(m) ? (hwFull ? 0 : WALL_HW_WEIGHT) : 1);
+            let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+            for (let i = 0; i < group.length; i++) { r -= weights[i]; if (r < 0 && weights[i] > 0) return group[i]; }
+            return group.find((m, i) => weights[i] > 0) || null;
+        }
+        // 首輪補位（覆蓋率不足時從輪播池拿短卡）：照新舊比例挑，各類裡先挑字數少的
+        function wallSupplementOrder(cands, wallMsgs) {
+            const len = m => [...String(m.text || '')].length;
+            const left = cands.slice().sort((a, b) => len(a) - len(b));
+            if (isFilterMeOnly) return left;
+            const out = [];
+            let fresh = wallMsgs.filter(wallIsFresh).length, total = wallMsgs.length;
+            while (left.length) {
+                const wantFresh = fresh < Math.round((total + 1) * WALL_FRESH_RATIO);
+                let i = left.findIndex(m => wallIsFresh(m) === wantFresh);
+                if (i < 0) i = 0;
+                const m = left.splice(i, 1)[0];
+                out.push(m); total++; if (wallIsFresh(m)) fresh++;
+            }
+            return out;
+        }
+        function wallNoteSwapOut(id) {
+            wallState.swapTick = (wallState.swapTick || 0) + 1;
+            const recent = wallState.recentOut || (wallState.recentOut = new Map());
+            recent.set(id, wallState.swapTick);
+            if (recent.size > 400) for (const [k, t] of recent) if (wallState.swapTick - t >= WALL_COOLDOWN) recent.delete(k);
+        }
+
         function computeMaxLikes(list) { let max = 0; list.forEach(m => { const c = likeCountOf(m); if (c > max) max = c; }); return max; }
 
         function pickAutoTheme(validMessages) {
@@ -2594,8 +2683,9 @@
             const admin = admins.length ? admins[Math.floor(Math.random() * admins.length)] : null;
             const stars = maxLikes > 0 ? validMessages.filter(m => m !== admin && likeCountOf(m) === maxLikes) : [];
             const star = stars.length ? stars[Math.floor(Math.random() * stars.length)] : null;
-            const others = validMessages.filter(m => m !== admin && m !== star);
-            for (let i = others.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [others[i], others[j]] = [others[j], others[i]]; }
+            let others = validMessages.filter(m => m !== admin && m !== star);
+            // 4.8.3：首輪約 60% 新留言、萬聖卡優先（wallMixPages）；「我的」篩選維持原本的全隨機
+            others = isFilterMeOnly ? wallShuffle(others) : wallMixPages(others, N, N - (admin ? 1 : 0) - (star ? 1 : 0)).flat();
             const ordered = [admin, star, ...others].filter(Boolean);
             const candidates = ordered.slice(0, N);
             wallState.hidden = ordered.slice(N);
@@ -2642,7 +2732,7 @@
                 const short = idle && placed.length < N && extraTries < 12;
                 const sparse = idle && !short && placed.length < coverCap && extraTries < 36 && scCoverage(placed, R) < SC_COVER_GOAL;
                 if (short || sparse) {
-                    const pool = wallState.hidden.slice(0, 40).sort((a, b) => [...String(a.text || '')].length - [...String(b.text || '')].length);
+                    const pool = wallSupplementOrder(wallState.hidden.slice(0, 40), [...placed, ...items].map(p => p.m)); // 4.8.3：補位也維持新舊比例
                     const take = short ? Math.min(4, 12 - extraTries) : Math.min(4, coverCap - placed.length, 36 - extraTries);
                     for (const m of pool.slice(0, take)) {
                         extraTries++;
@@ -2656,7 +2746,7 @@
                     const cw = R.w / 3, ch = R.h / 3, rr = Math.min(cw, ch) / 2 - 4;
                     for (let k = 0; k < 9; k++) {
                         if (cnt[k] || R.cellFree[k] < .02) continue;
-                        const pool = wallState.hidden.slice(0, 40).sort((a, b) => [...String(a.text || '')].length - [...String(b.text || '')].length).slice(0, 2);
+                        const pool = wallSupplementOrder(wallState.hidden.slice(0, 40), placed.map(p => p.m)).slice(0, 2);
                         for (const m of pool) {
                             const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
                             const at = { x: R.x + (k % 3 + .5) * cw, y: R.y + (Math.floor(k / 3) + .5) * ch, r: rr };
@@ -2696,8 +2786,14 @@
         const MOBILE_PAGE = 10;
         let mobileShown = MOBILE_PAGE;
         function renderMobileWall(validMessages, maxLikes) {
-            const first = validMessages.slice(0, mobileShown);
-            wallState.hidden = validMessages.slice(mobileShown);
+            // 4.8.3：每 10 張一頁，各頁約 60% 新留言、萬聖卡優先，頁內照時間新到舊；「我的」篩選維持時間排序
+            // 至尊模板的卡（最新一張）跟桌機一樣固定上牆，放在第 1 頁最上面
+            const admin = isFilterMeOnly ? null : validMessages.find(m => displayThemeOf(m) === 'theme-admin');
+            const ordered = isFilterMeOnly ? validMessages
+                : [admin, ...wallMixPages(validMessages.filter(m => m !== admin), MOBILE_PAGE, MOBILE_PAGE - (admin ? 1 : 0))
+                    .flatMap(p => p.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)))].filter(Boolean);
+            const first = ordered.slice(0, mobileShown);
+            wallState.hidden = ordered.slice(mobileShown);
             first.forEach((m, i) => wall.appendChild(mobileCard(m, maxLikes, i)));
             updateMoreButton();
             wallState.dealing = false; wallEntered = true;
@@ -2823,12 +2919,13 @@
         }
         // 驗收 A2：前 R.seed 張（由大到小）先平均撒開，之後才貼近已放的卡；兩個階段都避開擁擠的格子
         const SC_SEED_CROWD = .5, SC_CROWD = .35, SC_EMPTY_BONUS = .6, SC_COVER_GOAL = .7, SC_COVER_CAP = 42;
-        function scFindSpot(c, placed, R, tries, around) {
+        function scFindSpot(c, placed, R, tries, around, avoid) {
             let best = null, bestScore = -Infinity;
             const seeding = !around && placed.length < (R.seed || 0);
             for (let k = 0; k < tries; k++) {
                 c.cx = around ? around.x + scRange(-around.r, around.r) : R.x + scRange(c.w / 2, R.w - c.w / 2);
                 c.cy = around ? around.y + scRange(-around.r, around.r) : R.y + scRange(c.h / 2, R.h - c.h / 2);
+                if (avoid && Math.hypot(c.cx - avoid.x, c.cy - avoid.y) < avoid.r) continue; // 4.8.3 輪播：先不放回被換掉那張的位置
                 if (!scInside(c, R) || !scLegal(c, placed)) continue;
                 let dmin = Infinity, ov = 0, inCell = 0;
                 const cell = scCell(c.cx, c.cy, R);
@@ -2911,21 +3008,50 @@
             placed.forEach(a => placed.forEach(b => { if (a !== b && +a.el.style.zIndex > +b.el.style.zIndex && scSat(scQuad(a, a.full), scQuad(b, b.text))) v++; }));
             return v;
         }
+        window.__wallSwapLog = () => (wallState.swapLog || []).slice();
         window.__wallAudit = () => ({ violations: scAudit(), count: scLivePlaced().length, target: wallState.R ? wallState.R.N : 0, layoutMs: wallState.layoutMs || 0,
             coverage: wallState.R ? Math.round(scCoverage(scLivePlaced(), wallState.R) * 100) / 100 : 0,
             minTextPx: Math.min(...scLivePlaced().map(c => 15 * (parseFloat(c.el.style.getPropertyValue('--s')) || 1))) });
-        // 輪播換卡：新卡沿用舊卡景深，先在舊位置半徑 80px 內找 60 個候選，再全牆找 120 個；都不行這次不換
-        function scSwapCard(oldEl, newMsg) {
+        // 輪播換卡（4.8.3）：新卡的景深照新卡自己的規則（至尊、人氣王景深不用在輪播卡），先在整面牆找 120 個候選位置，
+        // 找不到合法位置才退回舊位置半徑 80px 內找 60 個；都不行這次不換
+        function scSwapCard(oldEl, newMsg, relocate) {
             const oldC = oldEl._c; if (!oldC) return false;
             const placed = scLivePlaced().filter(c => c !== oldC);
             scRecomputeCover(placed);
-            const depth = oldC.depth === 'admin' || oldC.depth === 'star' ? 'mid' : oldC.depth;
-            const sameZ = placed.filter(p => p.depth === depth).map(p => p.z);
-            const c = { m: newMsg, depth, z: Math.max(SC_Z[depth], ...sameZ) + .01, rot: scRange(-SC_ROT[depth], SC_ROT[depth]) };
-            if (Math.abs(c.rot) < 1.5) c.rot += c.rot < 0 ? -1.5 : 1.5;
+            const d0 = scDepthOf(newMsg, wallState.maxLikes, false);
+            const c = { m: newMsg };
             c.el = createCard(newMsg, wallState.maxLikes, 1, 1); c.el.style.visibility = 'hidden'; wall.appendChild(c.el);
-            scSizeCard(c.el, newMsg, SC_DEPTH[depth] * wallState.R.B); scMeasure(c);
-            if (!scFindSpot(c, placed, wallState.R, 60, { x: oldC.cx, y: oldC.cy, r: 80 }) && !scFindSpot(c, placed, wallState.R, 120)) { c.el.remove(); return false; }
+            const setDepth = (depth) => {
+                const sameZ = placed.filter(p => p.depth === depth).map(p => p.z);
+                c.depth = depth; c.z = Math.max(SC_Z[depth], ...sameZ) + .01; c.rot = scRange(-SC_ROT[depth], SC_ROT[depth]);
+                if (Math.abs(c.rot) < 1.5) c.rot += c.rot < 0 ? -1.5 : 1.5;
+                scSizeCard(c.el, newMsg, SC_DEPTH[depth] * wallState.R.B); scMeasure(c);
+            };
+            setDepth(d0 === 'admin' || d0 === 'star' ? 'mid' : d0);
+            const R = wallState.R, oldAt = { x: oldC.cx, y: oldC.cy, r: 80 };
+            // 1) 整面牆找空位（避開舊位置）
+            // 2) 牆面太滿找不到時：挑一張遠處的卡 B 搬進舊卡的位置，新卡放到 B 原本的位置附近（新卡就不會出現在舊卡的位置）
+            // 3) 都不行：用舊卡的景深在舊位置附近找；還是不行這次不換。每一步都照原本的合法規則（文字區、重疊上限、障礙物）
+            let ok = scFindSpot(c, placed, R, 160, null, { x: oldC.cx, y: oldC.cy, r: Math.max(120, (oldC.w + oldC.h) / 3) });
+            let moved = null;
+            if (!ok && relocate) { // 只有輪播換卡會搬動別張卡；新留言上牆時照舊只換掉一張
+                const far = wallShuffle(placed.filter(p => p.depth !== 'admin' && p.depth !== 'star' && p.el !== currentFocusedCard && p.el !== activeDragCard
+                    && !p.el._dragged && !p.el.matches(':hover') && Math.hypot(p.cx - oldC.cx, p.cy - oldC.cy) > 250)).slice(0, 3);
+                for (const b of far) {
+                    const from = { x: b.cx, y: b.cy, r: 80 }, others = placed.filter(q => q !== b);
+                    scRecomputeCover(others);
+                    if (scFindSpot(b, others, R, 60, oldAt)) {
+                        scRecomputeCover(placed);
+                        if (scFindSpot(c, placed, R, 80, from)) { moved = b; ok = true; break; }
+                    }
+                    [b.cx, b.cy] = [from.x, from.y]; b._qFull = null; b._qText = null; scRecomputeCover(placed);
+                }
+            }
+            if (!ok) { if (c.depth !== oldC.depth && oldC.depth !== 'admin' && oldC.depth !== 'star') setDepth(oldC.depth); ok = scFindSpot(c, placed, R, 60, oldAt); }
+            if (!ok) { c.el.remove(); return false; }
+            if (moved) scPlace(moved, 0);
+            (wallState.swapLog || (wallState.swapLog = [])).push(Math.round(Math.hypot(c.cx - oldC.cx, c.cy - oldC.cy))); // 驗收用：新舊位置距離
+            if (wallState.swapLog.length > 60) wallState.swapLog.shift();
             oldEl.classList.add('fading');
             setTimeout(() => oldEl.remove(), 300);
             scPlace(c, 0); scCommit(c, placed); scRestack(placed);
@@ -3028,29 +3154,53 @@
             }
         }
 
+        // 換掉牆上的一張卡（4.8.3：下一張由 wallPickNext 依新舊比例、萬聖卡優先挑選）
+        function rotateOne(c) {
+            const live = scLivePlaced();
+            const onWall = new Set(live.map(p => p.m.id));
+            const pool = wallState.hidden.filter(m => !onWall.has(m.id) && wallState.byId.has(m.id)).map(m => wallState.byId.get(m.id));
+            const wallMsgs = live.map(p => p.m);
+            const t0 = performance.now();
+            for (let tries = 0; tries < 3 && pool.length && (!tries || performance.now() - t0 < 35); tries++) {
+                const msg = wallPickNext(pool, c.m, wallMsgs);
+                if (!msg) return false;
+                pool.splice(pool.indexOf(msg), 1);
+                if (scSwapCard(c.el, msg, true)) {
+                    wallState.hidden = wallState.hidden.filter(m => m.id !== msg.id);
+                    wallState.hidden.push(c.m);
+                    wallNoteSwapOut(c.m.id);
+                    return true;
+                }
+            }
+            return false;
+        }
+        // 測試用：立刻換 n 張（照輪播的規則挑要換下的卡），回傳實際換了幾張
+        window.__wallRotate = (n = 2) => {
+            let done = 0;
+            for (let i = 0; i < n; i++) {
+                const eligible = wallShuffle(scLivePlaced().filter(c => c.depth !== 'admin' && c.depth !== 'star' && !c.el._dragged && c.el !== currentFocusedCard));
+                for (let tries = 0; tries < 3 && eligible.length; tries++) if (rotateOne(eligible.shift())) { done++; break; }
+            }
+            return done;
+        };
         function startRotation(myGen) {
-            // 每 8 秒換 2 張（間隔 600ms）；不換：滑鼠停留、拖曳、放大中的卡、管理員卡、人氣王
+            // 4.8.3：每 WALL_ROTATE_MS（5 秒）換 WALL_ROTATE_COUNT（3）張，間隔 WALL_ROTATE_GAP；不換：滑鼠停留、拖曳、放大中的卡、管理員卡、人氣王
             wallState.rotationTimer = setInterval(() => {
                 if (myGen !== currentRenderGen) return;
                 if (document.hidden || activeDragCard || currentFocusedCard || !themePicker.hidden) return;
                 const eligible = scLivePlaced().filter(c => c.depth !== 'admin' && c.depth !== 'star' && !c.el.matches(':hover') && !c.el._dragged);
                 for (let i = eligible.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [eligible[i], eligible[j]] = [eligible[j], eligible[i]]; }
-                eligible.slice(0, 2).forEach((c, k) => setTimeout(() => {
-                    if (myGen !== currentRenderGen || !c.el.isConnected || c.el === currentFocusedCard || c.el === activeDragCard) return;
-                    const onWall = new Set(scLivePlaced().map(p => p.m.id));
-                    const pool = wallState.hidden.filter(m => !onWall.has(m.id) && wallState.byId.has(m.id));
-                    for (let tries = 0; tries < 3 && pool.length; tries++) {
-                        const idx = Math.floor(Math.random() * pool.length);
-                        const msg = wallState.byId.get(pool[idx].id);
-                        pool.splice(idx, 1);
-                        if (scSwapCard(c.el, msg)) {
-                            wallState.hidden = wallState.hidden.filter(m => m.id !== msg.id);
-                            wallState.hidden.push(c.m);
-                            return;
-                        }
+                for (let k = 0; k < WALL_ROTATE_COUNT; k++) setTimeout(() => {
+                    if (myGen !== currentRenderGen || document.hidden || activeDragCard || currentFocusedCard || !themePicker.hidden) return;
+                    // 這張換不了（找不到位置、萬聖卡保底）就換下一張候選，每格最多試 3 張；超過 35ms 就留到下一輪，避免卡住畫面
+                    const t0 = performance.now();
+                    for (let tries = 0; tries < 3 && eligible.length && performance.now() - t0 < 35; tries++) {
+                        const c = eligible.shift();
+                        if (!c.el.isConnected || c.el.classList.contains('fading') || c.el.matches(':hover') || c.el._dragged) { tries--; continue; }
+                        if (rotateOne(c)) return;
                     }
-                }, k * 600));
-            }, 8000);
+                }, k * WALL_ROTATE_GAP);
+            }, WALL_ROTATE_MS);
             // 每 10 分鐘整面重排一次（使用者正在操作時延後）
             wallState.relayoutTimer = setInterval(() => {
                 if (myGen !== currentRenderGen) return;
