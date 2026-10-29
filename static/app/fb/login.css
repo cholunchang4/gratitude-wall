@@ -1,0 +1,31 @@
+/* 登入卡（Email 登入連結）：前台與後台共用。外觀沿用 5.5 前台「沒有權限」說明頁（.gate-box）的樣式。 */
+.fbl-overlay { position: fixed; inset: 0; z-index: 100001; display: flex; align-items: center; justify-content: center; padding: 24px;
+  background: linear-gradient(135deg, #fde2e7 0%, #f8eef6 50%, #e9f0fb 100%); overflow-y: auto; }
+.fbl-overlay[hidden] { display: none; }
+body.fbl-open { overflow: hidden; }
+.fbl-box { width: min(420px, 100%); box-sizing: border-box; padding: 32px 26px 26px; border-radius: 22px; background: #fff; color: #3a2f3d;
+  text-align: center; box-shadow: 0 24px 60px rgba(120, 40, 70, .18); font-family: system-ui, -apple-system, "Segoe UI", "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+.fbl-icon { font-size: 48px; line-height: 1; margin-bottom: 12px; }
+.fbl-box h2 { margin: 0 0 10px; font-size: 22px; color: #be123c; }
+.fbl-text { margin: 0 0 18px; font-size: 15px; line-height: 1.7; color: #5a4f5d; word-break: break-word; }
+.fbl-form { display: flex; flex-direction: column; gap: 10px; text-align: left; }
+.fbl-form[hidden] { display: none; }
+.fbl-label { font-size: 14px; font-weight: 600; color: #3a2f3d; }
+.fbl-input { width: 100%; box-sizing: border-box; min-height: 48px; padding: 10px 14px; border: 1.5px solid #e8a0ad; border-radius: 12px;
+  font-size: 16px; color: #2b2230; background: #fff; }
+.fbl-input:focus { outline: 3px solid rgba(214, 73, 102, .35); outline-offset: 1px; border-color: #d64966; }
+.fbl-btn { min-height: 48px; padding: 10px 18px; border: 0; border-radius: 999px; font-size: 16px; font-weight: 700; color: #fff; cursor: pointer;
+  background: linear-gradient(135deg, #e11d48, #be185d); box-shadow: 0 6px 16px rgba(190, 24, 93, .25); }
+.fbl-btn:disabled { opacity: .6; cursor: default; }
+.fbl-btn:focus-visible, .fbl-link:focus-visible { outline: 3px solid #7c3aed; outline-offset: 2px; }
+.fbl-btn-a { display: inline-flex; align-items: center; justify-content: center; text-decoration: none; min-width: 200px; box-sizing: border-box; }
+.fbl-msg { min-height: 1.4em; margin: 12px 0 0; font-size: 14px; line-height: 1.6; color: #5a4f5d; }
+.fbl-msg.err { color: #b91c1c; font-weight: 600; }
+.fbl-alt { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 10px; }
+.fbl-link { min-height: 44px; padding: 6px 10px; border: 0; background: none; color: #9f1239; font-size: 14px; font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+.fbl-link:disabled { color: #8a7f8d; text-decoration: none; cursor: default; }
+.fbl-fine { margin: 6px 0 0; font-size: 13px; color: #6b6170; }
+.fbl-tips { margin: 0 0 4px; padding-left: 20px; text-align: left; font-size: 14px; line-height: 1.7; color: #5a4f5d; }
+@media (max-width: 380px) { .fbl-box { padding: 26px 18px 20px; } .fbl-box h2 { font-size: 20px; } }
+@media (prefers-reduced-motion: reduce) { .fbl-btn { box-shadow: none; } }

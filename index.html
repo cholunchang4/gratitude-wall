@@ -1,170 +1,352 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW">
+<html lang="zh-TW">
 <head>
-<meta charset="utf-8">
-<script>
-  // ===== 切換前只要改這一行（或用 fill_url.py 一次換好全部三個地方）=====
-  const NEW_URL = 'https://rsconnect-pred.roche.com/thanks-wall/';
-  // =====================================================================
-  (function () {
-    var DELAY_MS = 1200;   // 讓人看一眼「搬新家了」再走；JS 停用時改由下面 noscript 裡的 meta refresh（2 秒）帶過去
-
-    function ready() { return NEW_URL.indexOf('REPLACE_ME') === -1 && /^https:\/\//.test(NEW_URL); }
-
-    // 舊網站的「強制更新」按鈕會加上 ?v=時間戳記；那個參數對新網站沒有意義，拿掉。其他查詢字串和 #hash 照原樣帶過去。
-    function target() {
-      try {
-        var to = new URL(NEW_URL);
-        var from = new URLSearchParams(window.location.search);
-        from.forEach(function (value, key) {
-          if (key === 'v' && /^\d+$/.test(value)) return;
-          to.searchParams.append(key, value);
-        });
-        to.hash = window.location.hash;
-        return to.toString();
-      } catch (e) {
-        return NEW_URL;
-      }
-    }
-
-    window.__thankwallTarget = target;
-    window.__thankwallReady = ready;
-    if (!ready()) return;
-    window.__thankwallTimer = setTimeout(function () { window.location.replace(target()); }, DELAY_MS);
-  })();
-</script>
-<!-- JS 停用時由 meta refresh 帶過去（放在 noscript 裡，JS 開著時就不會和上面的跳轉搶先，查詢字串和 #hash 才帶得過去） -->
-<noscript><meta http-equiv="refresh" content="2;url=https://rsconnect-pred.roche.com/thanks-wall/"></noscript>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
-<meta name="referrer" content="no-referrer">
-<meta name="robots" content="noindex">
-<meta name="theme-color" content="#fde2e4">
-<title>感謝牆搬新家了</title>
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 28s-11-7-11-15a6 6 0 0 1 11-3.3A6 6 0 0 1 27 13c0 8-11 15-11 15z' fill='%23d64966'/%3E%3C/svg%3E">
-<style>
-  :root {
-    --rose: #c2334f;
-    --rose-dark: #9f1239;
-    --ink: #3b2a30;
-    --muted: #6b5560;
-    --card: #fffdfb;
-    --line: #f3d6da;
-  }
-  * { box-sizing: border-box; }
-  html, body { height: 100%; }
-  body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", "Segoe UI", sans-serif;
-    color: var(--ink);
-    background:
-      radial-gradient(circle at 15% 20%, rgba(255, 214, 165, .55), transparent 45%),
-      radial-gradient(circle at 85% 80%, rgba(255, 179, 193, .55), transparent 50%),
-      linear-gradient(160deg, #fff4ec 0%, #fde2e4 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px 16px;
-    line-height: 1.6;
-  }
-  .card {
-    width: 100%;
-    max-width: 480px;
-    background: var(--card);
-    border: 1px solid var(--line);
-    border-radius: 24px;
-    box-shadow: 0 18px 50px rgba(159, 18, 57, .12), 0 2px 6px rgba(159, 18, 57, .06);
-    padding: 36px 32px 28px;
-    text-align: center;
-  }
-  .art { width: 112px; height: 112px; margin: 0 auto 12px; display: block; }
-  .art .heart { transform-origin: 56px 64px; animation: beat 1.6s ease-in-out infinite; }
-  @keyframes beat { 0%, 100% { transform: scale(1); } 12% { transform: scale(1.12); } 24% { transform: scale(1); } 36% { transform: scale(1.08); } }
-  h1 { font-size: 28px; line-height: 1.3; margin: 0 0 6px; color: var(--rose-dark); letter-spacing: .02em; }
-  .status { margin: 0 0 22px; font-size: 17px; color: var(--muted); min-height: 1.6em; }
-  .dots::after { content: "…"; display: inline-block; animation: dots 1.2s steps(4, end) infinite; overflow: hidden; vertical-align: bottom; width: 1.2em; text-align: left; }
-  @keyframes dots { 0% { width: 0; } 100% { width: 1.2em; } }
-  .go {
-    display: block;
-    width: 100%;
-    padding: 16px 20px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, var(--rose), var(--rose-dark));
-    color: #fff;
-    font-size: 20px;
-    font-weight: 700;
-    text-decoration: none;
-    box-shadow: 0 8px 20px rgba(194, 51, 79, .3);
-    transition: transform .15s ease, box-shadow .15s ease;
-  }
-  .go:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(194, 51, 79, .38); }
-  .go:focus-visible { outline: 3px solid #f5c84c; outline-offset: 3px; }
-  .tips { list-style: none; margin: 24px 0 0; padding: 0; text-align: left; display: grid; gap: 12px; }
-  .tips li { display: flex; gap: 12px; align-items: flex-start; font-size: 15.5px; }
-  .tips .ico { flex: 0 0 32px; height: 32px; border-radius: 10px; background: #fff0f2; display: flex; align-items: center; justify-content: center; }
-  .tips b { color: var(--ink); }
-  .url { display: block; margin-top: 2px; font-size: 13.5px; color: var(--muted); word-break: break-all; }
-  .foot { margin-top: 24px; padding-top: 16px; border-top: 1px dashed var(--line); font-size: 13px; color: var(--muted); }
-  .warn { display: none; margin: 0 0 18px; padding: 12px 14px; border-radius: 12px; background: #fff7e0; border: 1px solid #f3d27a; color: #6b4a00; font-size: 15px; text-align: left; }
-  body.not-ready .warn { display: block; }
-  body.not-ready .status { display: none; }
-  @media (max-width: 420px) {
-    .card { padding: 28px 20px 22px; border-radius: 20px; }
-    h1 { font-size: 24px; }
-    .art { width: 92px; height: 92px; }
-    .go { font-size: 18px; }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .art .heart, .dots::after { animation: none; }
-    .go { transition: none; }
-  }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+    <meta name="referrer" content="same-origin">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>RDTW感謝牆</title>
+    <!-- 預設愛心標籤，活動開始後會由 JS 動態替換 -->
+    <link id="dynamicFavicon" rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❤️</text></svg>">
+    <link rel="stylesheet" href="static/app/app.css">
+    <link rel="stylesheet" href="static/app/fb/login.css">
+    <!-- 特效函式庫放在同一個網站（CSP 只允許同網站的程式）；沒載入時不影響主要功能 -->
+    <script src="static/vendor/confetti.browser.js"></script>
 </head>
 <body>
-<main class="card" role="main">
-  <svg class="art" viewBox="0 0 112 112" aria-hidden="true">
-    <circle cx="56" cy="56" r="54" fill="#fff0f2"/>
-    <path d="M22 58 56 30l34 28" fill="none" stroke="#f0a8b4" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
-    <path d="M30 54v32a4 4 0 0 0 4 4h44a4 4 0 0 0 4-4V54" fill="#fffdfb" stroke="#f0a8b4" stroke-width="5" stroke-linejoin="round"/>
-    <g class="heart"><path d="M56 82s-16-9.5-16-21a8.5 8.5 0 0 1 16-4 8.5 8.5 0 0 1 16 4c0 11.5-16 21-16 21z" fill="#d64966"/></g>
-    <circle cx="88" cy="26" r="4" fill="#f5c84c"/><circle cx="22" cy="34" r="3" fill="#fdba74"/><circle cx="94" cy="78" r="2.5" fill="#fdba74"/>
-  </svg>
-  <h1>感謝牆搬新家了！</h1>
-  <p class="status" id="status" aria-live="polite"><span class="dots">正在帶你過去</span></p>
-  <p class="warn" id="warn" role="alert">新網址還沒設定好，暫時無法自動帶你過去。請稍後再試，或聯絡感謝牆管理員。</p>
-  <a class="go" id="go" href="https://rsconnect-pred.roche.com/thanks-wall/">前往新的感謝牆</a>
-  <ul class="tips">
-    <li><span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2" fill="#d64966"/><path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="#d64966" stroke-width="2"/></svg></span>
-      <span><b>請用公司帳號登入</b>，和平常登入公司系統一樣。</span></li>
-    <li><span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z" fill="#d64966"/></svg></span>
-      <span><b>書籤記得更新</b>成新網址：<span class="url" id="url">https://rsconnect-pred.roche.com/thanks-wall/</span></span></li>
-    <li><span class="ico" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24"><path d="M12 21s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 10c0 6-8 11-8 11z" fill="#d64966"/></svg></span>
-      <span>以前的感謝卡都一起搬過去了，<b>到新家一樣看得到</b>。</span></li>
-  </ul>
-  <p class="foot">RDTW 感謝牆｜每一個微小的感謝，都是照亮團隊的光</p>
-</main>
-<script>
-  (function () {
-    var go = document.getElementById('go');
-    var url = document.getElementById('url');
-    if (!window.__thankwallReady || !window.__thankwallReady()) {
-      document.body.classList.add('not-ready');
-      go.removeAttribute('href');
-      go.setAttribute('aria-disabled', 'true');
-      go.style.opacity = '.5';
-      go.style.pointerEvents = 'none';
-      url.textContent = '（還沒設定）';
-      return;
-    }
-    var to = window.__thankwallTarget();
-    go.href = to;
-    url.textContent = NEW_URL;
-    go.addEventListener('click', function (e) {
-      e.preventDefault();
-      clearTimeout(window.__thankwallTimer);
-      window.location.replace(to);
-    });
-  })();
-</script>
+    <!-- 共用的 SVG 漸層（至尊皇冠 cg／cg2／cg3）：只定義一次，所有卡片的皇冠都參照這裡。不能用 display:none（漸層會失效），所以用 0 大小＋絕對定位 -->
+    <svg id="sharedDefs" width="0" height="0" style="position:absolute; width:0; height:0; overflow:hidden" aria-hidden="true" focusable="false"><defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbe8"/><stop offset=".45" stop-color="#ffcf5a"/><stop offset=".75" stop-color="#b8861c"/><stop offset="1" stop-color="#fff0b8"/></linearGradient><linearGradient id="cg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b8861c"/><stop offset=".5" stop-color="#fff6d6"/><stop offset="1" stop-color="#b8861c"/></linearGradient><linearGradient id="cg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff9ad5"/><stop offset=".5" stop-color="#c4b5fd"/><stop offset="1" stop-color="#7dd3fc"/></linearGradient></defs></svg>
+    <div class="ambient" aria-hidden="true"></div>
+
+    <header class="topbar">
+        <div class="brand header-container">
+            <h1 id="mainTitle">RDTW 感謝牆</h1>
+            <p id="subTitle">每個人都可以在這裡抒發內心的感謝</p>
+            <!-- 👉 全服變身進度條（4.8：設計 R2 + 企劃階段名稱） -->
+        <div class="hw-progress-row" id="hwProgressRow">
+        <div class="hw-progress-wrapper" id="hwProgressBar" title="全公司變身人數｜100 人：萬聖模板延長 30 天｜150 人：延長 60 天｜200 人：永久保留（變身過的同事適用）" role="progressbar" aria-label="全公司變身進度" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0">
+            <div class="hw-progress-label"><span id="hwProgressText">全公司變身進度</span><span><b id="hwProgressCount">…</b><span class="hw-bump-anchor" id="hwBump" aria-hidden="true"></span> / 200 人已變身</span></div>
+            <div class="hw-progress-track"><div class="hw-progress-fill" id="hwProgressFill"></div></div>
+            <div class="hw-progress-ticks" aria-hidden="true"><span style="left:50%" data-n="100">100・30天</span><span class="tick-mid" style="left:75%" data-n="150">150・60天</span><span class="tick-end" style="left:100%" data-n="200">200・永久</span></div>
+        </div>
+        </div>
+            <!-- 萬聖謝幕（T060 O12，暫定文字）：只在伺服器回 events.hw2026_epilogue（活動結束後一週）時顯示；內容由 app.js renderHwEpilogue 填 -->
+            <div class="hw-epilogue" id="hwEpilogue" role="note" aria-label="萬聖夜謝幕" hidden><p id="hwEpilogueText"></p><button type="button" class="hw-epilogue-close" id="hwEpilogueClose" aria-label="關閉謝幕訊息">✕</button></div>
+        </div>
+        <nav class="tools top-btn-group" aria-label="工具">
+            <div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div>
+            <button id="hwBtn" class="tool event" type="button" title="萬聖夜怎麼玩？" aria-label="萬聖夜怎麼玩？" style="display: none;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-5 0-8 3-8 7s3 7 8 7 8-3 8-7-3-7-8-7z"/><path d="M12 6c0-2 1-3 3-3"/><path d="M9 12l1.5 1.5L12 12l1.5 1.5L15 12"/></svg></button>
+            <button id="guideBtn" class="tool" type="button" title="使用說明" aria-label="使用說明"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></button>
+            <button id="rulesBtn" class="tool" type="button" title="暖心公約" aria-label="暖心公約"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9-9c-1.4-3.2.6-7 4.2-7 2 0 3.4 1.1 4.8 2.8C13.4 6.1 14.8 5 16.8 5c3.6 0 5.6 3.8 4.2 7-2 4.6-9 9-9 9z"/></svg></button>
+            <button id="filterMeBtn" class="tool" type="button" title="我的回憶" aria-label="我的回憶" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h5"/></svg></button>
+            <button id="leaderboardBtn" class="tool" type="button" title="英雄榜" aria-label="英雄榜"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg></button>
+        </nav>
+    </header>
+    <div class="switch-bar"><div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div></div>
+
+    <div class="focus-overlay" id="focusOverlay"></div>
+
+
+    <!-- 👉 萬聖節故事彈窗（4.8：依企劃改成三步驟，用語改成「變身」） -->
+    <div class="focus-overlay" id="hwOverlay">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="hwStoryTitle" style="max-width: 550px; background: linear-gradient(135deg, #11091a 0%, #1a0b2e 100%); color: #fff; border: 1px solid rgba(253,186,116,.35); box-shadow: 0 20px 50px rgba(0,0,0,0.45);">
+            <button class="close-btn" id="closeHwStory" style="color: #fdba74;" aria-label="關閉">✖</button>
+            <h2 id="hwStoryTitle" style="text-align: center; color: #fdba74; margin-top: 0; font-size: 24px;">🦇 暮夜狂歡：吸血鬼傳染計畫 🎃</h2>
+            <div style="font-size: 15px; color: #f4ecff; line-height: 1.6; max-height: 60vh; overflow-y: auto; padding-right: 10px;">
+                <p style="text-align: center; margin-top: 0; font-style: italic; color: #dda0dd;">「夜幕降臨，平靜的感謝牆已被一股神祕力量籠罩...」</p>
+                <p>據說，歷史發文最活躍的五位神隊友，已經悄悄覺醒為<b>【🧛 始祖吸血鬼】</b>！他們正帶著萬聖節的搗蛋病毒，潛伏在辦公室的各個角落。這是一場關於「感謝」的狂歡派對，不給感謝就搗蛋！</p>
+                <p class="hw-story-section">🩸 【小心！感染就在一瞬間】</p>
+                <p>始祖吸血鬼擁有獨家的「🎃 萬聖專屬發文模板」。只要你「點開」這種橘黑色的專屬卡片，或是「收到」吸血鬼發給你的專屬感謝，你就會立刻被咬，正式變異為吸血鬼！感染後，你也會解鎖這個酷炫模板，擁有傳染其他人的能力！</p>
+                <p class="hw-story-section">🦇 【夜行配額 ＆ 假面舞會】</p>
+                <p>為了讓大家盡情搗蛋，活動期間所有人皆額外獲得 <b>10 則萬聖專屬配額</b>！不僅如此，系統已全面無條件開放「🎭 假面舞會（匿名功能）」。戴上面具，化身搗蛋南瓜或夜貓伯爵，大膽送出你平時不好意思說的感謝吧！<br><span style="font-size: 13px; color: #b9a8d6;">（註：一般配額用盡後，系統將自動扣除萬聖配額；面具只對同事隱藏，管理員仍看得到發文者）</span></p>
+                <p class="hw-story-section">🍬 【給糖取代按讚】</p>
+                <p>日常的「❤️ 按讚」已被女巫施法變成了「🍬 給糖」。快去給牆上的留言點擊給糖，觸發滿滿的萬聖節驚喜特效！</p>
+                <p class="hw-story-section">🎯 【全服共鬥：解除血月封印】</p>
+                <p>抬頭看看網頁上方的進度條！只要在 10/31 前，全公司變身（被咬）人數達到 <b>100 人</b>，所有被感染過的同事將解鎖這套超酷萬聖模板的「30 天使用權」；達到 <b>150 人（75%）</b>升級為「60 天使用權」；如果全軍覆沒達到 <b>200 人（100%）</b>，將直接解鎖「永久使用權」！</p>
+                <p class="hw-story-section">🔦 【夜巡名冊：一張卡，咬一群！】</p>
+                <p>變身之後，你會拿到一本只有吸血鬼看得見的名冊。挑一位想謝的人寫張萬聖卡，卡片送出那一刻，寫在卡上的每一位人類都會變身，不必等他們上線。名冊越翻越薄，整座城就越接近全員到齊。</p>
+                <p style="margin-bottom: 0;">還在等什麼？快去牆上尋找吸血鬼的蹤跡，或是戴上面具去搗蛋吧！</p>
+            </div>
+            <button type="button" class="hw-story-cta" id="hwStoryCta">我懂了，去寫卡</button>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="forceUpdateOverlay" style="z-index: 99999 !important; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px);">
+        <div class="modal-box" id="forceUpdateBox" style="text-align: center; padding: 40px 20px; background: transparent; box-shadow: none; border: none;">
+            <div style="font-size: 50px; margin-bottom: 15px;">🚀</div>
+            <h2 style="margin-top: 0;">有新版本囉</h2>
+            <p style="font-size: 16px; line-height: 1.6; margin-bottom: 25px;">更新一下，才能看到最新的牆面和活動。<br>你正在寫的文字會幫你保留（圖片和塗鴉除外）。</p>
+            <button id="forceUpdateBtn" class="action-btn primary" style="padding: 12px 30px; font-size: 16px; box-shadow: 0 4px 15px rgba(230,57,70,0.4);">立即更新</button>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="leaderboardOverlay">
+        <div class="modal-box">
+            <button class="close-btn" id="closeLeaderboard">✖</button>
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 26px;" id="leaderboardTitle">🏆 感謝英雄榜 🏆</h2>
+            <div class="board-container">
+                <div class="board-col">
+                    <h3 id="senderColTitle">💖 暖心天使 <br><span style="font-size:12px; color:#888;">(送出最多感謝)</span></h3>
+                    <ul id="topSendersList"></ul>
+                </div>
+                <div class="board-col">
+                    <h3 id="receiverColTitle">✨ 感謝收藏家 <br><span style="font-size:12px; color:#888;">(收到最多感謝)</span></h3>
+                    <ul id="topReceiversList"></ul>
+                </div>
+            </div>
+            <!-- 「不在感謝榜上顯示我」（和上月感謝榜浮層的開關是同一個偏好 lb_hidden；app.js setBoardOptout） -->
+            <p class="lb-note">榜單只是牆上的表揚，和考核沒有任何關係。</p>
+            <div class="mb-optout lb-optout"><label class="mb-switch"><input type="checkbox" role="switch" id="lbOptout" aria-describedby="lbOptout-hint"><span class="mb-switch-track" aria-hidden="true"></span><span class="mb-switch-text">不在感謝榜上顯示我</span></label>
+                <p class="mb-optout-hint" id="lbOptout-hint">開啟後，上月感謝榜和英雄榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span></p></div>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="editOverlay" style="z-index: 97000 !important;">
+        <div class="modal-box" style="text-align: center; max-width: 400px; padding: 25px;">
+            <h3 style="margin-top:0; color:#d64966;">✏️ 編輯留言</h3>
+            <textarea id="editMsgInput" style="width: 100%; height: 100px; padding: 10px; border-radius: 12px; border: 1px solid #e8a0ad; outline: none; font-size: 16px; resize: none; margin-bottom: 15px; box-sizing: border-box;" maxlength="1000"></textarea>
+            <div class="draw-actions" style="margin-top: 5px;">
+                <button id="saveEditBtn" class="action-btn primary">💾 儲存修改</button>
+                <button id="cancelEditBtn" class="action-btn">✖ 取消</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="guideOverlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <button class="close-btn" id="closeGuide">✖</button>
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">📖 使用說明</h2>
+            <div style="font-size: 15px; color: #555; line-height: 1.6;">
+                <p>歡迎來到 RDTW 感謝牆！這裡收藏的，是同事之間一句一句說出口的謝謝。</p>
+                <ul style="padding-left: 20px; margin-bottom: 15px;">
+                    <li style="margin-bottom: 8px;"><b>📌 每月換新</b>：牆面每月 1 號換新，只顯示當月的感謝；之前的感謝都留在「清單」，隨時翻得到。</li>
+                    <li style="margin-bottom: 8px;"><b>🏆 感謝榜</b>：上個月最常送出和收到感謝的同事，會出現在牆上的「上月感謝榜」；右上角的「英雄榜」可以看最近的排行。</li>
+                    <li style="margin-bottom: 8px;"><b>🤍 放心寫</b>：
+                        <ul class="guide-sub">
+                            <li>榜單只是牆上的表揚，<b>和考核沒有任何關係</b>。</li>
+                            <li>不想上榜，可以在感謝榜或英雄榜下方開啟「不在感謝榜上顯示我」，你的卡片照常顯示。</li>
+                            <li>匿名送出時，同事看不到你是誰，管理員仍看得到發文者。</li>
+                        </ul>
+                    </li>
+                    <li style="margin-bottom: 8px;"><b>⏳ 送卡額度</b>：每人每天最多 10 張，過去 30 天內最多 30 張。</li>
+                    <li style="margin-bottom: 8px;"><b>🎮 感謝等級</b>：每送出一張卡就會累積經驗、自動升級，一路解鎖按讚、更多顏色、手繪塗鴉，甚至上傳照片。還藏著什麼驚喜，等你自己發現。</li>
+                    <li style="margin-bottom: 8px;"><b>👀 我的回憶</b>：點右上角「我的回憶」，就能看到所有和你有關的卡片，不受月份限制。</li>
+                    <li style="margin-bottom: 8px;"><b>✏️ 編輯與刪除</b>：點開自己寫的卡片，下方有編輯和刪除按鈕。刪除後這張卡不再計入經驗值。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="rulesOverlay">
+        <div class="modal-box" style="max-width: 500px;">
+            <button class="close-btn" id="closeRules">✖</button>
+            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 24px;">🌟 暖心公約 🌟</h2>
+            <div style="font-size: 15px; color: #555; line-height: 1.6;">
+                <p>不知道寫什麼？只要符合這些時刻，就大方送出卡片吧！</p>
+                <ul style="padding-left: 20px;">
+                    <li><b>及時傳遞溫暖</b>：收到幫助當下就表達，別讓謝意過期。</li>
+                    <li><b>看見微小付出</b>：日常默默幫忙的小事，也值得一句謝謝。</li>
+                    <li><b>跨界神隊友</b>：打破部門界線，大方讚賞熱心支援的夥伴。</li>
+                    <li><b>肯定無私分享</b>：謝謝樂於分享的「踩坑大師」與勇敢試錯的隊友。</li>
+                </ul>
+                <hr style="border: 0; border-top: 1px dashed #e8a0ad; margin: 15px 0;">
+                <p style="font-weight: bold; color: #d64966; margin-bottom: 5px;">🤝 我們一起守護的約定：</p>
+                <ol style="padding-left: 20px;">
+                    <li><b>💖 鼓勵具名</b>：署名送出，讓對方知道是誰在為他打氣；想低調時，Lv.7 起也可以匿名。</li>
+                    <li><b>🚫 零負能量</b>：這裡只寫感謝，不指責、不謾罵；其他意見，請找對方當面聊。</li>
+                    <li><b>🛡️ 守護機密</b>：請勿張貼公司機密、薪資數字、客戶或病患資料，以及他人隱私。</li>
+                </ol>
+                <p id="hwRulesNote" style="display: none; font-weight: bold; color: #7a3b00; background: #fff4e5; padding: 8px 12px; border-radius: 12px;">🎭 萬聖節期間開放匿名，匿名也請遵守以上約定；違反約定的卡片會被移除。</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="onboardingOverlay">
+        <section class="modal-box onb" role="dialog" aria-modal="true" aria-labelledby="onbTitle">
+            <div class="onb-body">
+            <span class="eyebrow">第一次來？30 秒看懂</span>
+            <h2 id="onbTitle">送出你的第一張感謝卡</h2>
+            <p class="lead">把一句謝謝貼上牆，全公司都看得到。只要三步：</p>
+            <ol class="steps">
+                <li class="step"><span class="num">1</span><div><h3>寫給誰</h3><p>在<span class="chip">感謝誰？</span>輸入同事名字，從清單點選。不填就是寫給大家。</p></div></li>
+                <li class="step"><span class="num">2</span><div><h3>寫一句謝謝</h3><p>新手可寫 20 字。送出越多張，等級越高，會解鎖表情、顏色、塗鴉。</p></div></li>
+                <li class="step"><span class="num">3</span><div><h3>按「送出」</h3><p>卡片會飄上牆。點任何一張卡可以放大閱讀；送出第一張後，就能幫同事按讚。</p></div></li>
+            </ol>
+            <div class="event" id="onbEvent" hidden>
+                <h3>萬聖限定：全公司變身計畫 <small>10/18 – 10/31</small></h3>
+                <ul>
+                    <li>點開任何一張萬聖卡（徽章「🦇 暮夜吸血鬼」），或被萬聖卡標記，你就會<b>變身成吸血鬼</b>，解鎖萬聖模板。</li>
+                    <li>全公司 <b>100 / 150 / 200 人</b>變身，活動後萬聖模板<b>延長 30 天／60 天／永久保留</b>。</li>
+                    <li>活動期間人人都能勾選<b>假面舞會</b>匿名送卡（管理員仍看得到發文者）。</li>
+                    <li>按讚變成<b>給糖</b>。</li>
+                    <li>標記同事後，記得在 Teams 跟對方說一聲，他會想來看看是誰找到了他。</li>
+                </ul>
+            </div>
+            <div class="pact">
+                <h3>暖心公約</h3>
+                <ul>
+                    <li><b>鼓勵具名</b>：讓真心被看見；想低調也可以匿名。</li>
+                    <li><b>零負能量</b>：只寫感謝，不指責、不謾罵。</li>
+                    <li><b>守護機密</b>：不貼公司機密、薪資、客戶或病患資料，以及他人隱私。</li>
+                </ul>
+            </div>
+            </div>
+            <div class="actions">
+                <button type="button" class="action-btn ghost" id="skipOnboardingBtn">先逛逛</button>
+                <button type="button" class="action-btn primary" id="acceptOnboardingBtn" data-autofocus>開始寫第一張</button>
+            </div>
+        </section>
+    </div>
+
+    <div class="focus-overlay" id="levelUpOverlay">
+        <div class="modal-box levelUp-card" id="levelUpBox" role="dialog" aria-modal="true" aria-labelledby="levelUpHeading">
+            <div class="level-icon-wrapper" id="levelUpIcon" aria-hidden="true">🎉</div>
+            <h2 id="levelUpHeading">🎉 里程碑突破！</h2>
+            <p id="levelUpBadge">獲得稱號：🌷 Lv.3 溫暖園丁</p>
+            <div class="feature-unlock-box">
+                <h4 id="levelUpFeatureTitle">🔓 新功能解鎖</h4>
+                <p id="levelUpFeatureDesc">詳細介紹...</p>
+            </div>
+            <div class="lv-preview" id="levelUpPreview" hidden></div>
+            <button id="closeLevelUpBtn" class="action-btn primary" type="button">太棒了！</button>
+        </div>
+    </div>
+
+    <div class="focus-overlay" id="drawOverlay">
+        <div class="modal-box draw-modal" style="text-align: center;">
+            <h3 style="margin-top:0; color:#d64966;">🎨 手寫 / 塗鴉 / 上傳圖片</h3>
+            <div class="draw-toolbar">
+                <div class="tool-group">顏色：<input type="color" id="penColor" value="#d64966" title="選擇畫筆顏色"></div>
+                <div class="tool-group">粗細：<input type="range" id="penWidth" min="1" max="25" value="4" title="調整筆觸粗細"></div>
+                <button id="modePenBtn" class="tool-btn active">🖊️ 畫筆</button>
+                <button id="modeEraserBtn" class="tool-btn">🧽 橡皮擦</button>
+                <button id="clearDrawBtn" class="tool-btn" style="color:#d64966; border-color:#d64966;">🗑️ 全部清空</button>
+            </div>
+            <div class="canvas-container">
+                <canvas id="bgCanvas" width="800" height="500" class="layer-canvas"></canvas>
+                <canvas id="drawCanvas" width="800" height="500" class="layer-canvas"></canvas>
+            </div>
+            <div class="draw-actions" id="uploadActionWrapper">
+                <label class="action-btn" id="uploadImgLabel">📷 上傳照片 / 圖片<input type="file" id="uploadImgInput" accept="image/*" style="display:none;"></label>
+                <button id="saveDrawBtn" class="action-btn primary">✅ 完成繪圖</button>
+                <button id="cancelDrawBtn" class="action-btn">✖ 取消</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 上月排行榜（卓倫 2026-10-28；美術總監設計稿 design/月排行榜/）：#wall 的兄弟元素（不能放進 #wall），內容由 app.js 的 mbRender 畫。
+         桌機固定在左上角、手機在「牆面／清單」切換列和牆之間跟著捲動 -->
+    <aside class="mboard" id="mboard" aria-labelledby="mbTitle" hidden></aside>
+
+    <main id="wall" aria-label="感謝牆"></main>
+    <!-- 手機「再看 N 張」按鈕：放在 #wall 外面（T063 M1：WebKit 的多欄排版遇到 column-span 的按鈕會把卡片全擠到同一欄） -->
+    <div class="wall-more" id="wallMore"></div>
+
+    <!-- 4.8：清單模式（時間軸式逐條清單；資料與牆面共用 rawMessages） -->
+    <section class="list-view" id="listView" aria-label="感謝清單" hidden>
+        <div class="list-tools">
+            <div class="list-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg><input type="search" id="listSearch" placeholder="搜尋收件人、寄件人或內容" aria-label="搜尋收件人、寄件人或內容" autocomplete="off"><button type="button" class="list-clear" id="listClear" aria-label="清除搜尋" hidden>✕</button></div>
+            <div class="list-seg" role="group" aria-label="篩選"><button type="button" data-filter="all" aria-pressed="true">全部</button><button type="button" data-filter="tome" aria-pressed="false">送給我的</button><button type="button" data-filter="mine" aria-pressed="false">我送出的</button></div>
+            <select class="list-sort" id="listSort" aria-label="排序"><option value="new">最新</option><option value="likes" id="listSortLikes">最多讚</option></select>
+            <div class="list-meta" id="listMeta" aria-live="polite"></div>
+        </div>
+        <div class="list-scroll" id="listScroll">
+            <div id="listBody"></div>
+            <div class="list-end" id="listEnd"><span id="listEndText"></span><button type="button" class="list-more" id="listMore">載入更多</button></div>
+        </div>
+    </section>
+    <div class="lm-focus" id="lmFocus" hidden></div>
+    <div class="wall-loading" id="wallLoading" role="status" aria-live="polite">
+        <div class="skeleton-cards" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="wall-loading-text" id="wallLoadingText">正在收集大家的感謝…</p>
+        <button type="button" class="wall-loading-retry" id="wallLoadingRetry" hidden>重新整理</button>
+    </div>
+
+    <div class="composer-wrap" id="composerWrap">
+        <div id="inputPanel" style="display: none;">
+            <div class="status level-status-bar" id="levelStatusBar" style="display: none;">
+                <span id="levelTitle" class="lv level-title">🌱 Lv.1 新手幼苗</span>
+                <span id="levelHint" class="level-hint"></span>
+            </div>
+            <div class="composer input-container" id="composer">
+                <span id="userAvatar" class="avatar user-avatar" title="點擊登出" tabindex="0" role="button" aria-label="登出"></span>
+                <button id="styleBtn" class="style-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="themePicker"><span class="sw card t-classic" id="styleSwatch" aria-hidden="true"></span>樣式</button>
+                <div class="emoji-picker" id="emojiPicker"></div>
+                <button id="emojiBtn" class="emoji-btn" type="button" title="加入表情" aria-label="加入表情">😀</button>
+                <button id="openDrawBtn" class="emoji-btn" type="button" title="手繪/上傳" aria-label="手繪或上傳圖片">🎨<span id="imgCheck" class="image-indicator">✓</span></button>
+                <div class="receiver-wrapper">
+                    <input type="text" id="receiverInput" class="field to input-receiver" placeholder="感謝誰？" autocomplete="off" aria-label="感謝誰">
+                    <div id="autocompleteList" class="autocomplete-list" role="listbox"></div>
+                </div>
+                <textarea id="msgInput" class="field msg input-msg" placeholder="寫下感謝內容…（上限 20 字）" autocomplete="off" maxlength="20" rows="1" aria-label="感謝內容"></textarea>
+                <label class="anon anon-label" id="anonWrapper" title="匿名送出：同事看不到你的名字和照片，管理員仍看得到發文者。"><input type="checkbox" id="anonCheck">匿名</label>
+                <button id="sendBtn" class="send send-btn" type="button">送出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4.8：樣式選擇器（基本款／等級獎勵／限定；未解鎖的獎勵款不顯示） -->
+    <div class="picker-pop" id="themePicker" hidden>
+        <section class="picker" role="dialog" aria-label="選擇卡片樣式">
+            <div class="grab" aria-hidden="true"></div>
+            <p class="now">目前：<b id="pickerNow">純淨白</b></p>
+            <div id="themeSelector">
+                <h3>基本款 <small>10 種</small></h3>
+                <div class="grid" id="pickBasic" role="radiogroup" aria-label="基本款">
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-classic" data-theme="theme-classic" title="純淨白" role="radio" aria-checked="false" aria-label="純淨白"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="純淨白">純淨白</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-sage" data-theme="theme-sage" title="鼠尾草綠" role="radio" aria-checked="false" aria-label="鼠尾草綠"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="鼠尾草綠">鼠尾草綠</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-lemon" data-theme="theme-lemon" title="檸檬霜" role="radio" aria-checked="false" aria-label="檸檬霜"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="檸檬霜">檸檬霜</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-midnight" data-theme="theme-midnight" title="星空黑" role="radio" aria-checked="false" aria-label="星空黑"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="星空黑">星空黑</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-wine" data-theme="theme-wine" title="勃根地紅" role="radio" aria-checked="false" aria-label="勃根地紅"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="勃根地紅">勃根地紅</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-slate" data-theme="theme-slate" title="迷霧灰" role="radio" aria-checked="false" aria-label="迷霧灰"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="迷霧灰">迷霧灰</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-lavender" data-theme="theme-lavender" title="薰衣草紫" role="radio" aria-checked="false" aria-label="薰衣草紫"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="薰衣草紫">薰衣草紫</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-matcha" data-theme="theme-matcha" title="抹茶青" role="radio" aria-checked="false" aria-label="抹茶青"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="抹茶青">抹茶青</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-terracotta" data-theme="theme-terracotta" title="陶土橘" role="radio" aria-checked="false" aria-label="陶土橘"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="陶土橘">陶土橘</span></div>
+                    <div class="sw-cell swatch-item"><button type="button" class="theme-btn swatch card t-ice" data-theme="theme-ice" title="冰川藍" role="radio" aria-checked="false" aria-label="冰川藍"></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="冰川藍">冰川藍</span></div>
+                </div>
+                <div id="pickRewardGroup" hidden>
+                    <h3 class="secret">隱藏獎勵 <small>升上隱藏等級才會出現的專屬樣式</small></h3>
+                    <div class="grid" id="pickReward" role="radiogroup" aria-label="等級獎勵">
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-neon" data-theme="theme-neon" id="btnNeon" title="霓虹幻影" role="radio" aria-checked="false" aria-label="霓虹幻影"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="霓虹幻影"><b>霓虹幻影</b><br>Lv.9 ✓</span></div>
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-holo" data-theme="theme-holo" id="btnHolo" title="極光幻境" role="radio" aria-checked="false" aria-label="極光幻境"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="極光幻境"><b>極光幻境</b><br>Lv.10 ✓</span></div>
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-gold" data-theme="theme-gold" id="btnGold" title="璀璨鑽金" role="radio" aria-checked="false" aria-label="璀璨鑽金"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="璀璨鑽金"><b>璀璨鑽金</b><br>Lv.11 ✓</span></div>
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-cosmic" data-theme="theme-cosmic" id="btnCosmic" title="星際領航" role="radio" aria-checked="false" aria-label="星際領航"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="星際領航"><b>星際領航</b><br>Lv.12 ✓</span></div>
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-ultimate" data-theme="theme-ultimate" id="btnUltimate" title="傳說之神" role="radio" aria-checked="false" aria-label="傳說之神"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="傳說之神"><b>傳說之神</b><br>Lv.13 ✓</span></div>
+                    </div>
+                </div>
+                <div id="pickLimitedGroup" hidden>
+                    <h3>限定 <small>活動或身分專屬</small></h3>
+                    <div class="grid" id="pickLimited" role="radiogroup" aria-label="限定">
+                    <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-admin" data-theme="theme-admin" id="btnAdmin" title="金鑽星冕（管理員）" role="radio" aria-checked="false" aria-label="金鑽星冕（管理員）"><span class="fx" aria-hidden="true"></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="金鑽星冕（管理員）"><b>金鑽星冕</b><br>管理員</span></div>
+                    </div>
+                </div>
+            </div>
+            <p class="hint" id="pickerHint"></p>
+        </section>
+    </div>
+
+    <!-- T068：放大卡上的照片／塗鴉，點一下用全螢幕看（關閉鈕、點背景、Esc 都能關；手機可以雙指縮放） -->
+    <div class="img-viewer" id="imgViewer" role="dialog" aria-modal="true" aria-label="檢視圖片" hidden>
+        <img id="imgViewerImg" alt="卡片附圖（放大）" draggable="false">
+        <button type="button" class="img-viewer-close" id="imgViewerClose" aria-label="關閉大圖">✕</button>
+    </div>
+    <div class="wall-toast" id="wallToast" role="status" aria-live="polite"></div>
+    <div class="signature designer-signature">Designed &amp; Developed by Cholun Chang</div>
+    <div class="gate-overlay" id="gateOverlay" role="alertdialog" aria-modal="true" aria-labelledby="gateTitle" aria-describedby="gateText" hidden>
+        <div class="gate-box">
+            <div class="gate-icon" id="gateIcon" aria-hidden="true">🔒</div>
+            <h2 id="gateTitle"></h2>
+            <p id="gateText"></p>
+            <div class="gate-actions">
+                <a class="action-btn primary" id="gateContact" hidden>聯絡管理員</a>
+                <button type="button" class="action-btn primary" id="gateBtn">重新登入</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="static/app/app.js"></script>
 </body>
 </html>
