@@ -16,6 +16,12 @@ import { emailKey } from './logic.js';
 
 const EMAIL_LS = 'wall_signin_email';
 const SENT_LS = 'wall_signin_sent_at';
+// 登入信的寄件人（Firebase 預設寄件服務）。Roche 信箱會把它標成「[Sender Not Verified]」並常放進垃圾郵件匣，畫面上要先講清楚。
+const MAIL_FROM = `noreply@${FIREBASE_CONFIG.authDomain}`;
+let ADMIN_NAME = '卓倫';
+// 寄件地址：在 @ 後面允許換行，窄螢幕才不會從單字中間斷開
+const mailFrom = () => { const [a, d] = MAIL_FROM.split('@'); return el('span', { class: 'fbl-addr' }, `${a}@`, el('wbr'), d); };
+const adminLabel = () => `感謝牆管理員${ADMIN_NAME ? `（${ADMIN_NAME}）` : ''}`;
 const isLocal = ['localhost', '127.0.0.1'].includes(location.hostname);
 export const USE_EMULATOR = isLocal && (new URLSearchParams(location.search).get('emu') === '1');
 
@@ -50,8 +56,11 @@ function ensureUi() {
   if (ui.root) return ui;
   ui.root = el('div', { class: 'fbl-overlay', id: 'loginOverlay', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'fblTitle', hidden: true });
   ui.box = el('div', { class: 'fbl-box' });
+  ui.badge = el('p', { class: 'fbl-badge' });
+  ui.badge.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 9.4 8 11 4.6-1.6 8-6 8-11V5z" fill="#be123c"/><path d="m8.5 12 2.5 2.5 4.5-5" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  ui.badge.append('RDTW 同事專用・內部網站');
   ui.icon = el('div', { class: 'fbl-icon', 'aria-hidden': 'true', text: '💌' });
-  ui.title = el('h2', { id: 'fblTitle' });
+  ui.title = el('h2', { id: 'fblTitle', tabindex: '-1' });   // 換畫面時把焦點移到標題，螢幕報讀和鍵盤使用者才知道狀態變了
   ui.text = el('p', { class: 'fbl-text', id: 'fblText' });
   ui.form = el('form', { class: 'fbl-form', novalidate: true });
   ui.label = el('label', { class: 'fbl-label', for: 'fblEmail', text: '公司 Email' });
@@ -61,7 +70,7 @@ function ensureUi() {
   ui.msg = el('p', { class: 'fbl-msg', id: 'fblMsg', role: 'status', 'aria-live': 'polite' });
   ui.alt = el('div', { class: 'fbl-alt' });
   ui.form.append(ui.label, ui.input, ui.btn);
-  ui.box.append(ui.icon, ui.title, ui.text, ui.form, ui.msg, ui.alt);
+  ui.box.append(ui.badge, ui.icon, ui.title, ui.text, ui.form, ui.msg, ui.alt);
   ui.root.append(ui.box);
   document.body.append(ui.root);
   return ui;
@@ -71,12 +80,13 @@ function setAlt(...nodes) { ensureUi(); ui.alt.replaceChildren(...nodes.filter(B
 function linkBtn(text, onClick) { const b = el('button', { type: 'button', class: 'fbl-link', text }); b.addEventListener('click', onClick); return b; }
 function show({ icon, title, text, form = null, button = '', busy = false }) {
   ensureUi();
-  ui.icon.textContent = icon; ui.title.textContent = title; ui.text.textContent = text;
+  ui.icon.textContent = icon; ui.title.textContent = title;
+  if (Array.isArray(text)) ui.text.replaceChildren(...text); else ui.text.textContent = text;   // 陣列：可以放 <b> 等節點（不用 innerHTML，Email 不會被當成 HTML）
   ui.form.hidden = !form; ui.btn.textContent = button; ui.btn.disabled = busy; ui.input.disabled = busy;
   for (const n of document.body.children) if (n !== ui.root && n.tagName !== 'SCRIPT') n.inert = true;
   ui.root.hidden = false;
   document.body.classList.add('fbl-open');
-  if (form && !busy) setTimeout(() => ui.input.focus({ preventScroll: true }), 30);
+  setTimeout(() => (form && !busy ? ui.input : ui.title).focus({ preventScroll: true }), 30);
 }
 export function hideLogin() {
   if (!ui.root) return;
@@ -119,7 +129,10 @@ function showSendForm(note = '', kind = '') {
     text: '輸入公司 Email，我們會寄一封登入信給你。點信裡的連結就能登入，不用密碼。' });
   try { ui.input.value = localStorage.getItem(EMAIL_LS) || ''; } catch (e) { /* 無痕模式 */ }
   setMsg(note, kind);
-  setAlt(el('p', { class: 'fbl-fine', text: '只有通訊錄名單上的同事看得到感謝牆的內容。' }));
+  setAlt(el('div', { class: 'fbl-trust' },
+    el('p', { text: '只有通訊錄名單上的同事看得到感謝牆的內容。' }),
+    el('p', {}, '登入信的寄件人是 ', mailFrom(), '。我們不會問你的密碼。'),
+    el('p', { text: `有疑問請找${adminLabel()}。` })));
   ui.form.onsubmit = async (ev) => {
     ev.preventDefault();
     const r = checkEmail(ui.input.value);
@@ -136,7 +149,7 @@ function showSendForm(note = '', kind = '') {
 }
 let resendTimer = null;
 function showSent(email) {
-  show({ icon: '📬', title: '登入信寄出了', text: `請到 ${email} 的信箱，打開「Sign in to …」那封信，點裡面的連結。` });
+  show({ icon: '📬', title: '登入信寄出了', text: ['已寄到 ', el('b', { text: email }), '。打開信、點裡面的連結就能登入。'] });
   setMsg('');
   const resend = linkBtn('', () => { try { localStorage.removeItem(SENT_LS); } catch (e) { /* 忽略 */ } showSendForm(); ui.input.value = email; ui.form.requestSubmit(); });
   const tick = () => {
@@ -146,9 +159,15 @@ function showSent(email) {
   };
   clearInterval(resendTimer); resendTimer = setInterval(tick, 1000); tick();
   setAlt(
+    el('div', { class: 'fbl-note', role: 'note', 'aria-labelledby': 'fblNoteTitle' },
+      el('h3', { id: 'fblNoteTitle', text: '收件匣沒看到？請先找「垃圾郵件」匣' }),
+      el('dl', {},
+        el('dt', { text: '寄件人' }), el('dd', {}, mailFrom()),
+        el('dt', { text: '主旨' }), el('dd', {}, '「Sign in to …」，前面可能多了「[Sender Not Verified]」')),
+      el('p', { text: '這是公司信箱對外部寄件服務的自動標示，這封信確實是感謝牆寄的。找到後請按「不是垃圾郵件」把信移回收件匣，再點信裡的連結。' })),
     el('ul', { class: 'fbl-tips' },
       el('li', { text: '用手機的郵件 App 打開也可以；如果它要你再輸入一次 Email，輸入同一個就好。' }),
-      el('li', { text: '幾分鐘還沒收到，請看看垃圾郵件匣。連結只能用一次。' })),
+      el('li', { text: '連結只能用一次。要重新登入，再寄一封就好。' })),
     resend, linkBtn('換一個 Email', () => { try { localStorage.removeItem(SENT_LS); } catch (e) { /* 忽略 */ } showSendForm(); }));
 }
 function askEmailForLink(note = '') {
@@ -167,7 +186,7 @@ function askEmailForLink(note = '') {
 }
 export function showNotOnList(email, { adminName = '卓倫', contactUrl = '' } = {}) {
   show({ icon: '🔒', title: '你還不在感謝牆的名單上',
-    text: `${email} 目前不在通訊錄裡。這個網站只開放公司同事使用，請聯絡感謝牆管理員${adminName ? `（${adminName}）` : ''}確認通訊錄。` });
+    text: [el('b', { text: email }), ` 目前不在通訊錄裡。這個網站只開放 RDTW 同事使用，請聯絡感謝牆管理員${adminName ? `（${adminName}）` : ''}確認通訊錄。`] });
   setMsg('');
   const nodes = [];
   if (/^(mailto:|https:\/\/|msteams:)/i.test(contactUrl)) nodes.push(el('a', { class: 'fbl-btn fbl-btn-a', href: contactUrl, text: '聯絡管理員' }));
@@ -217,6 +236,7 @@ function firstAuthState(fb) {
  */
 export async function requireMember({ adminName, contactUrl, onSignedOut } = {}) {
   const fb = firebase();
+  if (typeof adminName === 'string') ADMIN_NAME = adminName.trim();
   // 回傳 null＝登入成功；字串＝失敗原因（空字串＝同事選擇重寄一封）
   const linkProblem = isSignInWithEmailLink(fb.auth, location.href) ? await completeLinkSignIn(fb) : null;
   let user = await firstAuthState(fb);
