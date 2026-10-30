@@ -147,6 +147,7 @@ export class WallBackend {
       if (p === 'api/bootstrap') return this.bootstrap();
       if (p === 'api/changes') return { version: 0, events: [] };
       if (p === 'api/directory') return s.directory(u.searchParams.get('q') || '');
+      if (p === 'api/receivers/check') return R.checkReceivers(R.cleanText(u.searchParams.get('q') || '', false), [...s.validNames()]);
       if (p === 'api/leaderboard') return s.leaderboard(now);
       if (p === 'api/leaderboard/monthly') return s.monthlyLeaderboard(now);
       if (p === 'api/hw/roster') { this.requireRoster(now); return s.roster(now); }

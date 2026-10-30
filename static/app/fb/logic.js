@@ -93,6 +93,59 @@ export function splitReceivers(text) {
   if (!text || text === '大家') return [];
   return String(text).split(',').map(s => s.trim()).filter(Boolean);
 }
+// 6.1 收件人確認：手打的名字要完全等於通訊錄 active 同事的姓名（英文不分大小寫）。對不到的列出來，名字很接近的附一個建議。
+// 只比對名字字串，不碰 Email；names 是 active 同事的姓名清單。
+const foldName = (s) => String(s).normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+function editDistance(a, b, max) {            // 編輯距離（相鄰兩字對調也算 1，例如 Btea／Beta）；以字碼為單位，中文一個字算 1；超過 max 就提早放棄
+  a = Array.from(a); b = Array.from(b);
+  if (Math.abs(a.length - b.length) > max) return max + 1;
+  let pp = null, prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    const cur = [i]; let best = i;
+    for (let j = 1; j <= b.length; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+      if (pp && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) cur[j] = Math.min(cur[j], pp[j - 2] + 1);
+      if (cur[j] < best) best = cur[j];
+    }
+    if (best > max) return max + 1;
+    pp = prev; prev = cur;
+  }
+  return prev[b.length];
+}
+/** 很接近的同事姓名（大小寫、空白、全形半形不同，或差 1 個字／兩字對調；6 個字以上可以差 2 個字）。最接近的不只一位就不建議。 */
+export function suggestName(input, names) {
+  const f = foldName(input);
+  if (Array.from(f).length < 2) return null;
+  const max = Array.from(f).length >= 6 ? 2 : 1;
+  let best = null, bestD = max + 1, tie = false;
+  for (const n of new Set(names)) {
+    const d = editDistance(f, foldName(n), max);
+    if (d < bestD) { best = n; bestD = d; tie = false; }
+    else if (d === bestD && d <= max && n !== best) tie = true;
+  }
+  return bestD <= max && !tie ? best : null;
+}
+/**
+ * 檢查收件人欄位。回傳 { receiver, unknown: [{ name, suggest }] }。
+ * receiver：大小寫不同但對得到的名字換成通訊錄的寫法（這樣才對得到人、收得到通知）；其他照原樣。
+ * 空白、「大家」不用確認。
+ */
+export function checkReceivers(text, names) {
+  const raw = String(text || '').trim();
+  if (!raw || raw === '大家') return { receiver: raw, unknown: [] };
+  const exact = new Set(names), lower = new Map();
+  for (const n of names) { const k = String(n).toLowerCase(); if (!lower.has(k)) lower.set(k, n); }
+  const parts = raw.split(',').map(x => x.trim()).filter(Boolean), out = [], unknown = [], seen = new Set();
+  let changed = false;
+  for (const t of parts) {
+    if (t === '大家' || exact.has(t)) { out.push(t); continue; }
+    const c = lower.get(t.toLowerCase());
+    if (c) { out.push(c); changed = true; continue; }
+    out.push(t);
+    if (!seen.has(t)) { seen.add(t); unknown.push({ name: t, suggest: suggestName(t, names) }); }
+  }
+  return { receiver: changed ? out.join(', ') : raw, unknown };
+}
 // 移除控制字元、改變文字方向的字元，統一換行並去掉頭尾空白（和 5.5 util.clean_text 相同）
 const BAD_CHARS = /[\x00-\x08\x0b-\x1f\x7f-\x9f\u202a-\u202e\u2066-\u2069\ufeff]/g;
 export function cleanText(s, keepNewlines = true) {

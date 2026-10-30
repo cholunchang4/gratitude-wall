@@ -110,6 +110,9 @@ export function buildCreateMessage(store, input, ctx) {
     }
   }
   up[`messages/${mid}`] = msg;
+  // Email 通知佇列：只放收件人和時間（通知程式讀不到 messages），不通知自己。沒有要通知的人就不寫。
+  const notify = ri.filter(u => u !== me);
+  if (notify.length) up[`nq/${mid}`] = { t: TS, ri: Object.fromEntries(notify.map(u => [u, true])) };
   up[`msgAuthor/${mid}`] = me;
   up[`mine/${me}/${mid}`] = mine;
   up[`rl/${me}`] = TS;
@@ -144,7 +147,7 @@ export function buildDeleteMessage(store, mid, raw) {
   if (!ID_RE.test(mid) || !m || !raw) throw new WallError(404, 'NOT_FOUND', '這張卡片已經不在了。');
   if (!store.isMine(m)) throw new WallError(403, 'NOT_OWNER', '只能修改或刪除自己寫的卡片。');
   const me = store.meId;
-  const up = { [`messages/${mid}`]: null, [`trash/${mid}`]: { ...raw, del: { by: 'author', at: TS } }, [`mine/${me}/${mid}`]: null };
+  const up = { [`messages/${mid}`]: null, [`trash/${mid}`]: { ...raw, del: { by: 'author', at: TS } }, [`mine/${me}/${mid}`]: null, [`nq/${mid}`]: null };
   if (raw.b === 'regular') { up[`stats/${me}/exp`] = Math.max(0, store.exp() - 1); up[`stats/${me}/lm`] = mid; }
   return up;
 }
@@ -189,7 +192,7 @@ export function buildAdminDelete(admin, mid, raw, reason, now) {
   if (reason.length > K.LIMITS.reason_max) throw new WallError(400, 'TOO_LONG', '刪除原因最多 200 字。');
   if (!raw) throw new WallError(404, 'NOT_FOUND', '這張卡片已經不在了。');
   const author = admin.msgAuthor[mid] || raw.a || '';
-  const up = { [`messages/${mid}`]: null, [`trash/${mid}`]: { ...raw, del: { by: 'admin', at: TS, reason, actor: admin.meId || 'admin' } } };
+  const up = { [`messages/${mid}`]: null, [`trash/${mid}`]: { ...raw, del: { by: 'admin', at: TS, reason, actor: admin.meId || 'admin' } }, [`nq/${mid}`]: null };
   if (author) {
     up[`mine/${author}/${mid}`] = null;
     if (raw.b === 'regular') up[`stats/${author}/exp`] = Math.max(0, (Number(admin.statsOf(author)) || 0) - 1);

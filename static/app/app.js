@@ -13,7 +13,7 @@ let SESSION = null, BACKEND = null;
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.0";
+        const CURRENT_APP_VERSION = "6.1";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -863,8 +863,41 @@ let SESSION = null, BACKEND = null;
 
         const anonCheck = document.getElementById('anonCheck');
 
+        // ---- 6.1 收件人確認：手打的名字不在通訊錄（active 同事的姓名，英文不分大小寫）就先不送，問一下 ----
+        const rcOverlay = document.getElementById('rcOverlay'), rcList = document.getElementById('rcList');
+        let rcApproved = null, rcChecking = false;          // rcApproved：按「照樣送出」時的 { raw（當時的收件人欄位）, receiver（要送出的）}
+        function rcClose(focusInput) {
+            rcOverlay.classList.remove('active');
+            if (focusInput) setTimeout(() => { receiverInput.focus(); const n = receiverInput.value.length; try { receiverInput.setSelectionRange(n, n); } catch (e) {} }, 0);   // 等關窗的焦點還原跑完
+        }
+        function rcTitleSync() { document.getElementById('rcTitle').textContent = rcList.children.length > 1 ? '這些名字不在通訊錄裡' : '這個名字不在通訊錄裡'; }
+        function rcOpen(unknown, receiver) {
+            rcOverlay.dataset.receiver = receiver;
+            rcList.innerHTML = unknown.map((u, i) => `<li data-i="${i}"><span class="rc-name">${escapeHtml(u.name)}</span>`
+                + (u.suggest ? `<span class="rc-suggest">你是不是要找：<button type="button" class="rc-fix" data-from="${escapeHtml(u.name)}" data-to="${escapeHtml(u.suggest)}" aria-label="把「${escapeHtml(u.name)}」改成「${escapeHtml(u.suggest)}」">改成 ${escapeHtml(u.suggest)}</button></span>` : '') + `</li>`).join('');
+            rcTitleSync();
+            try { if (confettiFn && typeof confettiFn.reset === 'function') confettiFn.reset(); } catch (e) {}   // 上一張卡的彩帶不要蓋在確認視窗上
+            rcOverlay.classList.add('active');
+        }
+        document.getElementById('rcBackBtn').addEventListener('click', () => { playSound('click'); rcClose(true); });
+        document.getElementById('rcSendBtn').addEventListener('click', () => {
+            playSound('click');
+            rcApproved = { raw: receiverInput.value.trim().replace(/,\s*$/, ''), receiver: rcOverlay.dataset.receiver || '' };
+            rcClose(false);
+            document.getElementById('sendBtn').click();
+        });
+        rcList.addEventListener('click', (e) => {
+            const b = e.target.closest('.rc-fix'); if (!b) return;
+            const from = b.dataset.from, to = b.dataset.to;
+            receiverInput.value = receiverInput.value.split(',').map(x => (x.trim() === from ? (x.match(/^\s*/)[0] + to) : x)).join(',');
+            b.closest('li').remove();
+            if (!rcList.children.length) { rcClose(true); showToast(`已改成「${to}」，確認後再按送出`); }
+            else { rcTitleSync(); const next = rcList.querySelector('.rc-fix') || document.getElementById('rcBackBtn'); next.focus(); }
+        });
+        rcOverlay.addEventListener('keydown', (e) => { if (e.key === 'Tab') trapFocus(rcOverlay.querySelector('.rc-box'), e); });
+
         document.getElementById('sendBtn').addEventListener('click', async function() {
-            if (this.disabled) return;
+            if (this.disabled || rcChecking) return;
             if (!currentUser || !ME) return showToast('資料還在載入，請稍候再試一次。');
 
             let receiver = receiverInput.value.trim().replace(/,\s*$/, '');
@@ -890,6 +923,20 @@ let SESSION = null, BACKEND = null;
             const text = msgInput.value.trim();
             if (text === '' && !attachedImageBase64) return;
             if (attachedImageBase64 && dataUrlBytes(attachedImageBase64) > MAX_IMAGE_BYTES) return showToast('🖼️ 這張圖片太大了（上限 1.5MB），請換一張小一點的，或在畫布裡縮小後再送出。', 6000);
+
+            // 收件人確認（按過「照樣送出」、而且收件人欄位沒再改過就不再問）
+            const approved = rcApproved; rcApproved = null;
+            if (approved && approved.raw === receiverInput.value.trim().replace(/,\s*$/, '')) { if (approved.receiver) receiver = approved.receiver; }
+            else {
+                let chk = null;
+                rcChecking = true;
+                try { chk = await api('GET', `api/receivers/check?q=${encodeURIComponent(receiver)}`); } catch (e) { chk = null; }   // 檢查失敗不擋送出（和以前一樣）
+                finally { rcChecking = false; }
+                if (chk && typeof chk.receiver === 'string' && chk.receiver) {
+                    if (Array.isArray(chk.unknown) && chk.unknown.length) { rcOpen(chk.unknown, chk.receiver); return; }
+                    receiver = chk.receiver;                 // 大小寫不同的名字換成通訊錄的寫法，才對得到人
+                }
+            }
 
             const btn = this; btn.disabled = true; btn.style.opacity = '0.6'; btn.innerHTML = '傳送中...';
 
@@ -2660,7 +2707,7 @@ let SESSION = null, BACKEND = null;
         // 4.8（設計 R9）：Esc 關閉放大的卡片和彈窗（新手引導與強制更新不受影響）
         const ESC_CLOSERS = [['editOverlay', 'cancelEditBtn'], ['drawOverlay', 'cancelDrawBtn'], ['levelUpOverlay', 'closeLevelUpBtn'],
             ['leaderboardOverlay', 'closeLeaderboard'], ['guideOverlay', 'closeGuide'], ['rulesOverlay', 'closeRules'],
-            ['hwOverlay', 'closeHwStory']];
+            ['hwOverlay', 'closeHwStory'], ['rcOverlay', 'rcBackBtn']];
         document.addEventListener('keydown', (e) => {
             if (e.key !== 'Escape') return;
             if (closeReveal(true)) { e.preventDefault(); return; }

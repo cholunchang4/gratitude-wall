@@ -1740,3 +1740,22 @@ body.img-viewing { overflow: hidden; }
   .message-card.focused .card-owner-actions { bottom: -56px; }
   .message-card.focused .card-owner-actions button { min-height: 44px; }
 }
+
+/* 6.1 收件人確認（沿用 .modal-box、.action-btn；數值依美術總監 T091 檢查） */
+#rcOverlay .rc-box { max-width: 420px; padding: 25px; }              /* .modal-box 本身 max-height 84dvh、可捲動 */
+#rcOverlay .rc-box { -webkit-overflow-scrolling: touch; overscroll-behavior: contain; }
+#rcOverlay .rc-title { margin: 0 0 12px; color: #9f1239; font-size: 20px; }
+#rcOverlay .rc-list { margin: 0 0 12px; padding-left: 20px; line-height: 1.6; color: #2b2b33; }
+#rcOverlay .rc-list li + li { margin-top: 10px; }
+#rcOverlay .rc-name { font-weight: 700; overflow-wrap: anywhere; }
+#rcOverlay .rc-suggest { display: block; font-size: 14px; color: #615f6b; }
+#rcOverlay .rc-fix { min-height: 36px; max-width: 100%; padding: 4px 12px; margin: 2px 0; border-radius: 16px; border: 1px solid #d98aa0; background: #fff1f4; color: #9f1239; font: 700 14px var(--font); text-align: left; cursor: pointer; overflow-wrap: anywhere; }
+#rcOverlay .rc-fix:hover { background: #ffe4ea; border-color: #c9184a; }
+#rcOverlay .rc-fix:active { transform: translateY(1px); }
+@media (pointer: coarse) { #rcOverlay .rc-fix { min-height: 44px; padding: 8px 14px; } }
+#rcOverlay .rc-hint { margin: 0; font-size: 14px; line-height: 1.6; color: #615f6b; }
+#rcOverlay .rc-actions { position: sticky; bottom: -25px; z-index: 1; margin: 18px -25px -25px; padding: 12px 25px 16px; background: #fff; border-top: 1px solid #f1e3e7; }   /* 錯的名字很多時，按鈕固定在視窗底部 */
+#rcOverlay button:focus-visible { outline: 3px solid #9f1239; outline-offset: 2px; }
+/* 萬聖主題的 --focus（#fdba74）放在白底只有 1.69:1：白底視窗改用深紅；深色底的視窗（萬聖故事、萬聖新手引導、隱藏等級）維持原色 */
+body.hw .modal-box :focus-visible, body.hw .modal-box .mb-switch input:focus-visible + .mb-switch-track { outline-color: #9f1239; }
+body.hw #hwOverlay .modal-box :focus-visible, body.hw #onboardingOverlay .modal-box :focus-visible, body.hw .levelUp-card.hidden-tier :focus-visible { outline-color: #fdba74; }

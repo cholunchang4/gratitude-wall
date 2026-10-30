@@ -115,6 +115,21 @@
         </div>
     </div>
 
+    <!-- 6.1 收件人確認：手打的名字不在通訊錄時，送出前先確認（app.js rcOpen） -->
+    <div class="focus-overlay" id="rcOverlay" style="z-index: 97000 !important;">
+        <div class="modal-box rc-box" role="dialog" aria-modal="true" aria-labelledby="rcTitle" aria-describedby="rcDesc">
+            <h3 class="rc-title" id="rcTitle" aria-live="polite">這些名字不在通訊錄裡</h3>
+            <div id="rcDesc">
+                <ul class="rc-list" id="rcList"></ul>
+                <p class="rc-hint">可能是打錯字了。不在通訊錄裡的人不會收到 Email 通知。</p>
+            </div>
+            <div class="draw-actions rc-actions">
+                <button type="button" id="rcBackBtn" class="action-btn primary" data-autofocus>回去修改</button>
+                <button type="button" id="rcSendBtn" class="action-btn">照樣送出</button>
+            </div>
+        </div>
+    </div>
+
     <div class="focus-overlay" id="guideOverlay">
         <div class="modal-box" style="max-width: 500px;">
             <button class="close-btn" id="closeGuide">✖</button>
