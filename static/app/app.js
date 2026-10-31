@@ -13,7 +13,7 @@ let SESSION = null, BACKEND = null;
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.1";
+        const CURRENT_APP_VERSION = "6.1.1";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -463,19 +463,22 @@ let SESSION = null, BACKEND = null;
         // ================= 萬聖謝幕（T060 O12）：活動結束後一週，進度條的位置換成一段收尾文字 =================
         // 要不要顯示只看伺服器（events.hw2026_epilogue），不看使用者電腦的時間；按 ✕ 關掉後這台裝置不再顯示。
         // 文字是暫定版（程式設計 2 依 T060 第 6 節「活動＝說書人音量」寫），定稿交文字美學官；人數、日期由伺服器帶入。
-        const HW_EPILOGUE_CLOSED_KEY = 'hw2026_epilogue_closed';
+        const HW_EPILOGUE_CLOSED_KEY = 'hw2026_epilogue_closed_v2';   // 11/01 文字補上獎勵說明：換 key，讓已經關掉的人再看到一次
         // 文字美學官定稿（T068，2026-10-29）。結尾依最後人數分四檔；M/D 是伺服器算好的獎勵到期日（reward_until，和後台 model.js rewardText 同算法：
         // 活動結束 10/31 23:59:59＋30／60 天，台灣時間 → 11/30、12/30）。「——」前後加 U+2060（不斷行）並包在 .ep-nw 裡，390 寬時才不會落在行首（white-space:nowrap 在 WebKit 遇到這個破折號會算錯寬度、字疊在一起）
         function hwEpilogueText(ep) {
             const n = Math.max(0, Number(ep.final_count) || 0);
             const until = ep.reward_until;
             const md = (typeof until === 'number' && until > 0) ? (() => { const d = new Date(until + TPE_OFFSET_MS); return `${d.getUTCMonth() + 1}/${d.getUTCDate()}`; })() : '';
+            // tail 是 HTML：固定文字一律 escapeHtml，只有獎勵期限包 .ep-hl（品牌紅加粗、不拆行）；n、md 都是數字
+            const hl = (s) => `<span class="ep-hl">${escapeHtml(s)}</span>`;
             let tail;
-            if (until === -1) tail = '🦇 全軍覆沒，血月封印完全解開！萬聖模板永久保留給每一位變身過的同事，這是最高榮譽。';
-            else if (md && n >= 150) tail = `🩸 第二道封印也破了！萬聖模板保留到 ${md}，變身過的同事都能繼續用。`;
-            else if (md) tail = `🎃 第一道封印破了！萬聖模板保留到 ${md}，變身過的同事都能繼續用。`;
-            else tail = '🕯️ 血月封印這次沒能解開，萬聖模板隨夜色收起；但每一張萬聖卡，都還留在「清單」裡。';
-            return `🌕 鐘聲敲過，萬聖之門緩緩闔上。最後共有 <b>${n}</b> 位同事一起<span class="ep-nw">變身\u2060——\u2060謝</span>謝每一位被咬、也去咬人的神隊友！<span class="nw-tail">${escapeHtml(tail)}</span>`;
+            if (until === -1) tail = escapeHtml('🦇 全軍覆沒，血月封印完全解開！萬聖模板永久保留給每一位變身過的同事，這是最高榮譽。');
+            // 卓倫 2026-11-01：獎勵要講清楚「誰、多久、到哪天、去哪裡選」
+            else if (md && n >= 150) tail = escapeHtml(`🩸 第二道封印也破了！變身過的這 ${n} 位同事，萬聖模板可以再用 `) + hl(`60 天（到 ${md}）`) + escapeHtml('，寫卡時在「樣式」裡就選得到。');
+            else if (md) tail = escapeHtml(`🎃 第一道封印破了！變身過的這 ${n} 位同事，萬聖模板可以再用 `) + hl(`30 天（到 ${md}）`) + escapeHtml('，寫卡時在「樣式」裡就選得到。');
+            else tail = escapeHtml('🕯️ 血月封印這次沒能解開，萬聖模板隨夜色收起；但每一張萬聖卡，都還留在「清單」裡。');
+            return `🌕 鐘聲敲過，萬聖之門緩緩闔上。最後共有 <b>${n}</b> 位同事一起<span class="ep-nw">變身\u2060——\u2060謝謝</span>每一位被咬、也去咬人的神隊友！<span class="nw-tail">${tail}</span>`;
         }
         function renderHwEpilogue() {
             const box = document.getElementById('hwEpilogue'); if (!box) return;
