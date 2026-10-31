@@ -56,7 +56,7 @@ export function maxLength(level, isAdmin) {
 }
 export function emojiTier(level, isAdmin) { return isAdmin || level >= 7 ? 'full' : level >= 4 ? 'mid' : level >= 2 ? 'basic' : 'none'; }
 export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort((a, b) => a[1] - b[1]).filter(([, need]) => exp >= need).map(([t]) => t); }
-const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_HW, K.THEME_MOON]);
+const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON]);
 export function themeDenied(theme, { level, exp, isAdmin, hwOk }) {
   if (!ALL_THEMES.has(theme)) return 'BAD_THEME';
   if (theme === K.THEME_MOON) return '這個主題已經結束囉，請換一個主題。';
@@ -64,7 +64,7 @@ export function themeDenied(theme, { level, exp, isAdmin, hwOk }) {
   if (K.THEMES_FREE.includes(theme)) return null;
   if (K.THEMES_LV4.includes(theme)) return level >= 4 ? null : '這個主題要升到 Lv.4 才能使用。';
   if (theme in K.THEMES_REWARD) return exp >= K.THEMES_REWARD[theme] ? null : '這個主題是高等級的隱藏獎勵，還沒解鎖喔。';
-  if (theme === K.THEME_ADMIN) return '這個主題只有管理員可以使用。';
+  if (theme === K.THEME_ADMIN || theme === K.THEME_ADMIN_NEON) return '這個主題只有管理員可以使用。';
   if (theme === K.THEME_HW) return hwOk ? null : '萬聖卡要先變身成吸血鬼才能使用（點開一張萬聖卡就會變身）。';
   return 'BAD_THEME';
 }

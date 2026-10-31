@@ -13,7 +13,7 @@ let SESSION = null, BACKEND = null;
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.1.1";
+        const CURRENT_APP_VERSION = "6.2";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -641,7 +641,7 @@ let SESSION = null, BACKEND = null;
         function closeFocus() { if (currentFocusedCard) { disarmImage(currentFocusedCard); currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
-        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin'];
+        const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon'];
         let currentTheme = themeList[0];
         
         document.querySelectorAll('.theme-btn').forEach((btn) => {
@@ -726,10 +726,10 @@ let SESSION = null, BACKEND = null;
 
             // 權限控制（全部看 me.unlocks；伺服器另外再檢查一次）
             if (isAdminUser) {
-                ['btnAdmin', 'btnNeon', 'btnHolo', 'btnGold', 'btnCosmic', 'btnUltimate'].forEach(id => showSwatch(id, true));
+                ['btnAdmin', 'btnAdminNeon', 'btnNeon', 'btnHolo', 'btnGold', 'btnCosmic', 'btnUltimate'].forEach(id => showSwatch(id, true));
                 document.getElementById('emojiBtn').classList.remove('locked'); document.querySelectorAll('.theme-btn').forEach(btn => btn.classList.remove('locked')); document.getElementById('openDrawBtn').classList.remove('locked'); document.getElementById('uploadImgLabel').classList.remove('locked');
             } else {
-                showSwatch('btnAdmin', false); document.getElementById('emojiBtn').classList.toggle('locked', emojiTier() === 'none');
+                showSwatch('btnAdmin', false); showSwatch('btnAdminNeon', false); document.getElementById('emojiBtn').classList.toggle('locked', emojiTier() === 'none');
                 document.querySelectorAll('.theme-btn').forEach((btn) => {
                     btn.classList.remove('locked'); const t = btn.getAttribute('data-theme');
                     if (!U.themes_basic && BASIC_LOCKED_THEMES.includes(t)) btn.classList.add('locked');
@@ -1023,13 +1023,15 @@ let SESSION = null, BACKEND = null;
         const THEME_CLASS = { 'theme-classic': 't-classic', 'theme-sage': 't-sage', 'theme-lemon': 't-lemon', 'theme-slate': 't-slate', 'theme-lavender': 't-lavender',
             'theme-matcha': 't-matcha', 'theme-ice': 't-ice', 'theme-midnight': 't-midnight', 'theme-wine': 't-wine', 'theme-terracotta': 't-terracotta',
             'theme-neon': 't-r-neon', 'theme-holo': 't-r-holo', 'theme-gold': 't-r-gold', 'theme-cosmic': 't-r-cosmic', 'theme-ultimate': 't-r-ultimate',
-            'theme-admin': 't-admin', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon' };
+            'theme-admin': 't-admin', 'theme-admin-neon': 't-admin-neon', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon' };
         const THEME_NAMES = { 'theme-classic': '純淨白', 'theme-sage': '鼠尾草綠', 'theme-lemon': '檸檬霜', 'theme-slate': '迷霧灰', 'theme-lavender': '薰衣草紫',
             'theme-matcha': '抹茶青', 'theme-ice': '冰川藍', 'theme-midnight': '星空黑', 'theme-wine': '勃根地紅', 'theme-terracotta': '陶土橘',
             'theme-neon': '霓虹幻影', 'theme-holo': '極光幻境', 'theme-gold': '璀璨鑽金', 'theme-cosmic': '星際領航', 'theme-ultimate': '傳說之神',
-            'theme-admin': '金鑽星冕', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光' };
+            'theme-admin': '金鑽星冕', 'theme-admin-neon': '霓虹流光', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光' };
         const THEME_PIPS = { 'theme-neon': 1, 'theme-holo': 2, 'theme-gold': 3, 'theme-cosmic': 4, 'theme-ultimate': 5 };
-        const FX_THEMES = new Set(['theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-halloween', 'theme-moonlight']);
+        const FX_THEMES = new Set(['theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon', 'theme-halloween', 'theme-moonlight']);
+        // 管理員模板兩款：至尊 v3「金鑽星冕」（theme-admin）、原版「霓虹流光」（theme-admin-neon，T097）。固定上牆、最上層景深兩款都適用
+        const ADMIN_THEMES = new Set(['theme-admin', 'theme-admin-neon']);
         const FX2_THEMES = new Set(['theme-ultimate', 'theme-admin']);
         const CREST_SVG = '<svg class="crest" viewBox="0 0 60 48" aria-hidden="true">'
             + '<path d="M8 36 L5 14 L18 24 L30 6 L42 24 L55 14 L52 36 Z" fill="url(#cg)" stroke="#fff6d6" stroke-width=".8"/><rect x="7" y="37" width="46" height="7" rx="2.5" fill="url(#cg2)"/>'
@@ -1074,7 +1076,7 @@ let SESSION = null, BACKEND = null;
             if (words.length === 1) return [...words[0]][0].toUpperCase();
             return ([...words[0]][0] + [...words[words.length - 1]][0]).toUpperCase();   // 第一字＋最後一字的首字母
         }
-        function safeThemeClass(t) { return (typeof t === 'string' && /^theme-[a-z]+$/.test(t)) ? t : 'theme-classic'; }
+        function safeThemeClass(t) { return (typeof t === 'string' && /^theme-[a-z]+(-[a-z]+)*$/.test(t)) ? t : 'theme-classic'; }
         // 管理員卡、匿名、是不是我的卡，都由伺服器在每筆留言裡標好（is_admin_card、author.anonymous、is_mine），前台不再比對姓名或 Email
         function isAdminMessage(msg) { return !!msg.isAdminCard; }
         function isMasterMessage(msg) { return msg.authorLevel >= 8 && !msg.anonymous; }
@@ -1095,7 +1097,8 @@ let SESSION = null, BACKEND = null;
 
             // 徽章（每張卡最多 1 枚）：至尊 > 人氣王 > 節慶（只在該節慶期間；中秋另在「我的回憶」顯示）> 等級（本人 Lv.9～13 看到自己的隱藏稱號，其他人看到感謝大師）
             let badge = '';
-            if (isAdminCard) badge = '<span class="badge supreme admin-badge">至尊</span>';
+            if (theme === 'theme-admin-neon') badge = '<span class="badge admin-neon admin-badge">🛡️ 系統管理員</span>';   // 原版管理員徽章（流動膠囊）
+            else if (isAdminCard) badge = '<span class="badge supreme admin-badge">至尊</span>';
             else if (isTopLiked) badge = `<span class="badge crown crown-badge">人氣王 ${likeCount}</span>`;
             else if (IS_HALLOWEEN && theme === 'theme-halloween') badge = '<span class="badge vamp vampire-badge">🦇 暮夜吸血鬼</span>';
             else if (checkIsMidAutumn(msg.timestamp || 0) && (IS_MID_AUTUMN || isFilterMeOnly)) badge = '<span class="badge fest festival-badge">團圓大使</span>';
@@ -1949,9 +1952,10 @@ let SESSION = null, BACKEND = null;
         function computeMaxLikes(list) { let max = 0; list.forEach(m => { const c = likeCountOf(m); if (c > max) max = c; }); return max; }
 
         function pickAutoTheme(validMessages) {
-            if (themeManuallySelected || validMessages.length === 0 || isFilterMeOnly) return;
+            if (themeManuallySelected || isFilterMeOnly) return;
             if (applyHwDefaultTheme()) return; // 4.8.4：活動期間吸血鬼預設萬聖卡
             const availableThemes = unlockOf('themes_basic') ? themeList.slice(0, 10) : themeList.slice(0, 3);
+            // 本月牆面還沒有卡（每月 1 號清空後）：全部款式都算 0 次，等於從可用款式隨機挑（卓倫 2026-11-01）
             const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
             validMessages.forEach(msg => { if(availableThemes.includes(msg.theme)) themeCounts[msg.theme]++; });
             const minCount = Math.min(...Object.values(themeCounts));
@@ -2076,7 +2080,7 @@ let SESSION = null, BACKEND = null;
             R.seed = Math.min(9, N);
             const coverCap = Math.min(R.wide ? N + SC_WIDE_EXTRA : SC_COVER_CAP, maxSetting);
             // 管理員一張、人氣王一張放進候選，其餘隨機
-            const admins = validMessages.filter(m => displayThemeOf(m) === 'theme-admin'); // 只有至尊模板的卡固定上牆、用至尊景深；管理員的其他卡照一般規則
+            const admins = validMessages.filter(m => ADMIN_THEMES.has(displayThemeOf(m))); // 只有管理員模板（兩款）的卡固定上牆、用至尊景深；管理員的其他卡照一般規則
             const admin = admins.length ? admins[Math.floor(Math.random() * admins.length)] : null;
             const stars = maxLikes > 0 ? validMessages.filter(m => m !== admin && likeCountOf(m) === maxLikes) : [];
             const star = stars.length ? stars[Math.floor(Math.random() * stars.length)] : null;
@@ -2189,7 +2193,7 @@ let SESSION = null, BACKEND = null;
         function renderMobileWall(validMessages, maxLikes) {
             // 4.8.3：每 10 張一頁，各頁約 60% 新留言、萬聖卡優先，頁內照時間新到舊；「我的」篩選維持時間排序
             // 至尊模板的卡（最新一張）跟桌機一樣固定上牆，放在第 1 頁最上面
-            const admin = isFilterMeOnly ? null : validMessages.find(m => displayThemeOf(m) === 'theme-admin');
+            const admin = isFilterMeOnly ? null : validMessages.find(m => ADMIN_THEMES.has(displayThemeOf(m)));
             const ordered = isFilterMeOnly ? validMessages
                 : [admin, ...wallMixPages(validMessages.filter(m => m !== admin), MOBILE_PAGE, MOBILE_PAGE - (admin ? 1 : 0))
                     .flatMap(p => p.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)))].filter(Boolean);
@@ -2255,7 +2259,7 @@ let SESSION = null, BACKEND = null;
         let scFont = null; // 只讀一次字型，避免每量一次字就強迫瀏覽器重新計算樣式
         function scTextW(str, px, weight) { if (!scFont) scFont = getComputedStyle(document.body).fontFamily; scMeas.font = `${weight} ${px}px ${scFont}`; return scMeas.measureText(String(str || '')).width; }
         function scDepthOf(m, maxLikes, isStar) {
-            if (displayThemeOf(m) === 'theme-admin') return 'admin'; // 至尊外觀的卡才用最大、最上層的景深
+            if (ADMIN_THEMES.has(displayThemeOf(m))) return 'admin'; // 管理員模板的卡才用最大、最上層的景深
             if (isStar) return 'star';
             const t = displayThemeOf(m);
             if (t === 'theme-cosmic' || t === 'theme-ultimate') return 'near';
@@ -2275,7 +2279,7 @@ let SESSION = null, BACKEND = null;
             const tw = scTextW(text, fs, 700) / lines * 1.12 + 4;
             const footW = scTextW(m.author || '匿名', 12 * s, 600) * 1.08 + 100 * s + (theme === 'theme-admin' ? scTextW('系統管理員', 11 * s, 600) + 10 : 0);
             const toW = m.receiver ? scTextW('To: ' + m.receiver, 12 * s, 700) * 1.1 + 6 + (THEME_PIPS[theme] ? 62 * s : 0) : 0;
-            const pad = (theme === 'theme-admin' ? 40 : 30) * s;
+            const pad = (ADMIN_THEMES.has(theme) ? 40 : 30) * s;
             return Math.min(Math.max(tw, footW, toW, 140 * s, m.image ? 200 * s : 0), 300 * s) + pad;
         }
         // 估計卡片面積只用字數（不量字、不碰版面），只拿來決定放置順序
@@ -2747,7 +2751,7 @@ let SESSION = null, BACKEND = null;
         const listState = { mode: 'wall', query: '', filter: 'all', sort: 'new', shown: LIST_PAGE, items: [], focusId: null, observer: null };
         const LIST_BAR_CLASS = { 'theme-classic': 'lt-classic', 'theme-sage': 'lt-sage', 'theme-lemon': 'lt-lemon', 'theme-slate': 'lt-slate', 'theme-lavender': 'lt-lavender',
             'theme-matcha': 'lt-matcha', 'theme-ice': 'lt-ice', 'theme-midnight': 'lt-midnight', 'theme-wine': 'lt-wine', 'theme-terracotta': 'lt-terracotta', 'theme-moonlight': 'lt-moon',
-            'theme-halloween': 'lt-halloween', 'theme-neon': 'lt-r-neon', 'theme-holo': 'lt-r-holo', 'theme-gold': 'lt-r-gold', 'theme-cosmic': 'lt-r-cosmic', 'theme-ultimate': 'lt-r-ultimate', 'theme-admin': 'lt-admin' };
+            'theme-halloween': 'lt-halloween', 'theme-neon': 'lt-r-neon', 'theme-holo': 'lt-r-holo', 'theme-gold': 'lt-r-gold', 'theme-cosmic': 'lt-r-cosmic', 'theme-ultimate': 'lt-r-ultimate', 'theme-admin': 'lt-admin', 'theme-admin-neon': 'lt-admin-neon' };
         function setViewMode(mode) {
             if (mode === listState.mode) return;
             listState.mode = mode;
@@ -2814,7 +2818,7 @@ let SESSION = null, BACKEND = null;
             const likeWord = IS_HALLOWEEN ? '給糖' : IS_MID_AUTUMN ? '送月餅' : '讚';
             const icon = IS_HALLOWEEN ? CANDY_SVG : IS_MID_AUTUMN ? '<span aria-hidden="true">🥮</span>' : HEART_SVG;
             const tier = THEME_PIPS[theme] ? `<span class="lr-tier" aria-hidden="true">${'<i></i>'.repeat(THEME_PIPS[theme])}</span>` : '';
-            const crown = theme === 'theme-admin' ? '<span class="lr-supreme"><svg class="crown-mini" viewBox="0 0 60 48" aria-hidden="true"><path d="M8 36 L5 14 L18 24 L30 6 L42 24 L55 14 L52 36 Z" fill="currentColor"/></svg>至尊</span>' : '';
+            const crown = theme === 'theme-admin-neon' ? '<span class="lr-admin-neon">🛡️ 系統管理員</span>' : theme === 'theme-admin' ? '<span class="lr-supreme"><svg class="crown-mini" viewBox="0 0 60 48" aria-hidden="true"><path d="M8 36 L5 14 L18 24 L30 6 L42 24 L55 14 L52 36 Z" fill="currentColor"/></svg>至尊</span>' : '';
             const img = safeImageUrl(m.image);
             const avColor = mask ? '' : `style="background:${avatarColorOf(m.authorKey, author, m.avatarColor)}"`;
             const avPhoto = mask ? '' : safeImageUrl(m.avatarUrl);

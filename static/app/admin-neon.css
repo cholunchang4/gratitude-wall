@@ -1,0 +1,72 @@
+/* ==========================================================================
+   管理員模板第二款「霓虹流光」（theme-admin-neon，T097）＝原版管理員卡（原始程式/index.html .theme-admin、.admin-badge）
+   原版的漸層放在 ::before（z-index:-1），因為牆上的卡有 transform 形成堆疊脈絡，實際上蓋滿整張卡、只在文字後面流動。
+   這裡不靠那個巧合：漸層明確畫在卡片內的 .fx 圖層（z0），文字在 z2、徽章在 z3（.card 本身 isolation: isolate）。
+   至尊 v3（theme-admin）不受影響。獨立成一個檔，避免和 app.css 的其他修改衝突。
+   ========================================================================== */
+.t-admin-neon {
+  --c-ink: #ffffff; --c-accent: #00d4ff; --c-muted: #00d4ff; --c-like-bg: rgba(10,16,40,.38); --c-like-ink: #ffffff;
+  --neon-flow: linear-gradient(45deg, #00d2ff, #3a7bd5, #ff007f, #00d2ff);
+  border: 0; border-radius: 18px; overflow: visible;
+  background: #3a7bd5;                                   /* .fx 還沒畫出來時的底色 */
+  padding-top: calc(24px * var(--s));                   /* 頂端留給「系統管理員」徽章 */
+  box-shadow: 0 0 0 1.5px rgba(255,255,255,.75), 0 0 28px rgba(0,212,255,.45), 0 18px 32px -16px rgba(20,8,40,.55);
+}
+/* 300%×300% 的大漸層在卡片後面來回移動（位置不超出 0～100%，不會出現原版重複拼接的接縫） */
+.t-admin-neon .fx { background: var(--neon-flow); background-size: 200% 200%;   /* 美術 T097：200% 讓一張卡同時看得到粉＋藍青（原版的感覺），300% 常常只剩一種顏色 */
+  animation: neonFlow 8s ease-in-out infinite; }
+.t-admin-neon .fx::after { inset: 0; background: linear-gradient(180deg, rgba(255,255,255,.14), rgba(255,255,255,0) 40%, rgba(0,0,0,.10)); }   /* 一點立體光澤 */
+@keyframes neonFlow { 0% { background-position: 0% 0%; } 50% { background-position: 100% 100%; } 100% { background-position: 0% 0%; } }
+
+/* 文字：白色粗體＋深色陰影；收件人、作者青色發光（另加深色描邊，漸層流到青色時也看得清楚） */
+.t-admin-neon .card-text { color: #fff; font-weight: 800; text-shadow: 0 2px 4px rgba(0,0,0,.8), 0 0 1px rgba(0,0,0,.6); }
+/* 美術 T097：青色字放在藍／青底時只有約 2:1，用四向 1px 深藍描邊＋外光補足輪廓（顏色維持 #00d4ff） */
+.t-admin-neon .card-to, .t-admin-neon .author span { color: #00d4ff; font-weight: 800;
+  text-shadow: 1px 0 0 #071433, -1px 0 0 #071433, 0 1px 0 #071433, 0 -1px 0 #071433, 0 1px 3px rgba(4,10,30,.9), 0 0 10px rgba(0,212,255,.65); }
+.t-admin-neon .author { color: #00d4ff; }
+.t-admin-neon .card-date { color: rgba(255,255,255,.85); text-shadow: 0 1px 2px rgba(0,0,0,.7); }
+.t-admin-neon .like { box-shadow: 0 0 0 1px rgba(255,255,255,.35); }
+.t-admin-neon .like.on { background: #ff007f; color: #fff; }
+.t-admin-neon.focused, .lm-focus .t-admin-neon.focused { box-shadow: 0 0 0 1.5px rgba(255,255,255,.8), 0 0 40px rgba(0,212,255,.55), 0 30px 80px -10px rgba(20,8,40,.75); }
+
+/* 「🛡️ 系統管理員」流動膠囊徽章（原版 .admin-badge） */
+.badge.admin-neon { left: 50%; top: calc(-14px * var(--s)); translate: -50% 0; height: auto; padding: 5px 18px; gap: 4px;
+  color: #fff; font-size: 13px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f) 0 0 / 300% 100%;
+  border: 1px solid rgba(255,255,255,.8); box-shadow: 0 4px 20px rgba(0,212,255,.8);
+  animation: neonBadge 4s linear infinite; }
+/* 美術 T097：放大檢視時右上有關閉鈕（約 57px 圓），窄卡上置中的徽章會被壓到 → 放大時徽章靠左、略收字距 */
+.t-admin-neon.focused .badge.admin-neon { left: calc(14px * var(--s)); translate: 0 0; padding: 5px 12px; letter-spacing: 1px; }
+@keyframes neonBadge { from { background-position: 0% 0%; } to { background-position: 300% 0%; } }
+
+/* 樣式選單的迷你樣本：只顯示流動漸層 */
+.swatch.card.t-admin-neon { box-shadow: inset 0 0 0 2px #fff, 0 0 10px rgba(0,212,255,.55); }
+
+/* 清單列：流動霓虹邊框＋色條；標籤同徽章 */
+.list-row.lt-admin-neon { border: 1.5px solid transparent;
+  background: linear-gradient(90deg, rgba(0,210,255,.12), rgba(255,0,127,.06) 35%, rgba(255,255,255,0) 60%) padding-box, linear-gradient(#fff, #fff) padding-box,
+              linear-gradient(110deg, #00d2ff, #3a7bd5 35%, #ff007f 65%, #00d2ff) border-box;
+  box-shadow: 0 8px 20px -10px rgba(0,150,255,.5), var(--sh-1); }
+body.hw .list-row.lt-admin-neon {
+  background: linear-gradient(90deg, rgba(0,210,255,.16), rgba(255,0,127,.08) 35%, rgba(255,255,255,0) 60%) padding-box, linear-gradient(#211940, #211940) padding-box,
+              linear-gradient(110deg, #00d2ff, #3a7bd5 35%, #ff007f 65%, #00d2ff) border-box; }
+.list-row.lt-admin-neon::before { width: 6px; left: -1.5px; background: linear-gradient(180deg, #00d2ff, #3a7bd5, #ff007f, #00d2ff, #3a7bd5, #ff007f, #00d2ff) 0 0 / 100% 300%;
+  box-shadow: 0 0 10px rgba(0,212,255,.8); animation: neonBar 4s linear infinite; }
+.list-row.lt-admin-neon::after { background: radial-gradient(circle at 35% 35%, #bff6ff, #00d2ff 55%, #ff007f); }
+@keyframes neonBar { to { background-position: 0 300%; } }
+.list-row .lr-admin-neon { display: inline-flex; align-items: center; gap: 3px; height: 18px; margin-left: 6px; padding: 0 8px; vertical-align: 1px;
+  border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: 1px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,.35);
+  background: linear-gradient(90deg, #ff007f, #00d4ff, #7928ca, #ff007f) 0 0 / 300% 100%;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.8), 0 0 8px rgba(0,212,255,.6); animation: neonBadge 4s linear infinite; }
+
+/* 手機雙欄：徽章縮小一點，免得超出窄卡 */
+@media (max-width: 768px) {
+  .t-admin-neon { padding-top: 28px; }
+  .badge.admin-neon { font-size: 12px; letter-spacing: 1px; padding: 4px 12px; }
+}
+
+/* 減少動態：停住在粉紫藍的一格（不流動），其他照舊 */
+@media (prefers-reduced-motion: reduce) {
+  .t-admin-neon .fx { animation: none !important; background-position: 60% 60%; }
+  .badge.admin-neon, .list-row.lt-admin-neon::before, .list-row .lr-admin-neon { animation: none !important; background-position: 55% 0; }
+}

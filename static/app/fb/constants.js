@@ -101,6 +101,7 @@ export const K = Object.freeze({
     "theme-ultimate": 100
   },
   "THEME_ADMIN": "theme-admin",
+  "THEME_ADMIN_NEON": "theme-admin-neon",
   "THEME_HW": "theme-halloween",
   "THEME_MOON": "theme-moonlight",
   "HW_MASKS": [
