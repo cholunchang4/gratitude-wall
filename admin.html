@@ -38,12 +38,11 @@
     <div id="googleBanner" class="gbanner"></div>
     <nav class="tabs" role="tablist" aria-label="後台分頁">
       <button class="tab" role="tab" id="tab-overview" aria-controls="panel-overview" data-tab="overview">總覽</button>
-      <button class="tab" role="tab" id="tab-hw" aria-controls="panel-hw" data-tab="hw">萬聖監控</button>
-      <button class="tab" role="tab" id="tab-patrol" aria-controls="panel-patrol" data-tab="patrol">匿名巡查 <span class="count" id="patrolBadge" hidden></span></button>
       <button class="tab" role="tab" id="tab-messages" aria-controls="panel-messages" data-tab="messages">留言管理</button>
       <button class="tab" role="tab" id="tab-contacts" aria-controls="panel-contacts" data-tab="contacts">通訊錄</button>
       <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" data-tab="settings">設定</button>
       <button class="tab" role="tab" id="tab-audit" aria-controls="panel-audit" data-tab="audit">操作紀錄</button>
+      <button class="tab" role="tab" id="tab-archive" aria-controls="panel-archive" data-tab="archive">已結束活動</button>
       <button class="tab" role="tab" id="tab-system" aria-controls="panel-system" data-tab="system">系統狀態 <span class="count" id="sysBadge" hidden></span></button>
     </nav>
   </header>
@@ -63,11 +62,6 @@
           <span class="kpi kpi-inline"><span class="k-label">此時段留言</span> <span class="k-num" id="rangeMsgCount">0</span></span>
         </div>
       </div>
-      <div class="card" id="mooncakeCard" hidden>
-        <h3>未開啟的中秋月餅盲盒</h3>
-        <p class="sub">目前牆上還有 <b id="mooncakeCountText">0</b> 顆盲盒等待收件人登入開箱。</p>
-        <div class="table-wrap"><table><thead><tr><th>時間</th><th>送出者</th><th>收件人</th></tr></thead><tbody id="mooncakeList"></tbody></table></div>
-      </div>
       <div class="card">
         <h3>等級與解鎖功能對照表</h3>
         <p class="sub">等級依「經驗值」計算：本人送出的卡片數（含匿名卡），不含節慶加碼額度送出的卡。和前台的判斷一致。</p>
@@ -78,65 +72,6 @@
           <input type="search" id="userSearch" class="search-sm" placeholder="搜尋姓名" aria-label="搜尋使用者姓名"></div>
         <div class="table-wrap"><table><thead><tr><th class="num">排名</th><th>使用者</th><th class="num">經驗值</th><th class="num">總留言數<br><span class="hint">含活動加碼</span></th><th>目前等級</th><th>通訊錄</th></tr></thead><tbody id="userStatsList"></tbody></table></div>
       </div>
-    </section>
-
-    <!-- 萬聖監控 -->
-    <section id="panel-hw" role="tabpanel" aria-labelledby="tab-hw" data-panel="hw" hidden>
-      <div class="panel-head"><div><h2>萬聖感謝夜監控</h2><p>活動期間：2026/10/18（日）00:00 ～ 10/31（六）23:59:59 台灣時間</p></div></div>
-      <div id="hwPhaseBanner"></div>
-      <div class="hw-hero" id="hwHero"></div>
-      <div class="grid grid-kpi" id="hwKpis"></div>
-      <div class="card">
-        <div class="card-head"><div><h3>每日趨勢</h3><p class="sub" id="trendSub">每天的數字，滑鼠移到長條上可看當天數值。</p></div></div>
-        <div class="charts" id="hwCharts"></div>
-        <details class="tableview"><summary>以表格檢視每日數字</summary><div class="table-wrap mt-12"><table id="trendTable"></table></div></details>
-      </div>
-      <div class="grid grid-2">
-        <div class="card">
-          <h3>始祖吸血鬼</h3>
-          <p class="sub">搬家時依前台規則凍結：10/18 以前具名發文最多的前 5 位（不含匿名），登入後會自動變身。</p>
-          <div id="progenitors"></div>
-        </div>
-        <div class="card">
-          <h3>獎勵與規則提醒</h3>
-          <ul class="tips">
-            <li>變身人數＝伺服器記錄的變身筆數，始祖要登入過才會算進去。</li>
-            <li>活動結束後：100 人以上，萬聖模板延長 30 天；150 人以上 60 天；200 人以上永久。對象是變身名單上的人與始祖。</li>
-            <li>對外公告請不要列出始祖或匿名卡作者的名字，除非本人同意。</li>
-            <li>建議每天到「匿名巡查」看一次新的面具卡。</li>
-          </ul>
-        </div>
-      </div>
-      <div class="card">
-        <div class="card-head"><div><h3>變身名單</h3><p class="sub" id="infSub"></p></div>
-          <div class="toolbar no-mb">
-            <select id="infFilter" aria-label="變身名單篩選"><option value="all">全部</option><option value="flag">只看可疑紀錄</option><option value="noPost">變身但活動期間沒發文</option></select>
-            <input type="search" id="infSearch" placeholder="搜尋姓名" aria-label="搜尋變身名單">
-          </div></div>
-        <div class="table-wrap"><table><thead><tr><th>姓名</th><th>在通訊錄內</th><th>活動期間發文</th><th>身分</th><th>注意事項</th><th>變身時間</th><th>變身方式</th></tr></thead><tbody id="infList"></tbody></table></div>
-        <div class="more" id="infMore"></div>
-      </div>
-      <div class="card">
-        <div class="card-head"><div><h3>還沒參與的同事</h3><p class="sub" id="lurkSub"></p></div>
-          <div class="toolbar no-mb">
-            <select id="lurkFilter" aria-label="還沒參與的同事篩選"><option value="none">從未發文、也還沒變身</option><option value="infectedOnly">已變身、但從未發文</option></select>
-            <button class="btn btn-sm" id="csvBtn">匯出 CSV</button>
-          </div></div>
-        <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>通訊錄備註</th></tr></thead><tbody id="lurkList"></tbody></table></div>
-        <div class="more" id="lurkMore"></div>
-      </div>
-    </section>
-
-    <!-- 匿名巡查 -->
-    <section id="panel-patrol" role="tabpanel" aria-labelledby="tab-patrol" data-panel="patrol" hidden>
-      <div class="panel-head"><div><h2>匿名卡巡查</h2><p>萬聖期間所有面具匿名卡。真實發文者只有管理員看得到，請勿外流。</p></div>
-        <button class="btn" id="markPatrolBtn">標記為已巡查</button></div>
-      <div id="patrolInfo"></div>
-      <div class="toolbar">
-        <select id="patrolFilter" aria-label="巡查範圍"><option value="new">上次巡查後新增</option><option value="today">今天（台灣時間）</option><option value="all">活動期間全部</option></select>
-        <input type="search" id="patrolSearch" placeholder="搜尋內容、收件人或真實發文者" aria-label="搜尋匿名卡">
-      </div>
-      <div class="patrol-list" id="patrolList"></div>
     </section>
 
     <!-- 留言管理 -->
@@ -171,14 +106,14 @@
           <select id="contactFilter" aria-label="通訊錄篩選"><option value="all">全部</option><option value="active">在名單</option><option value="removed">已移出或停權</option></select>
           <input type="search" id="contactSearch" placeholder="搜尋姓名或 Email" aria-label="搜尋通訊錄">
         </div>
-        <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>備註</th><th>名單狀態</th><th class="num">發文數</th><th>萬聖變身</th></tr></thead><tbody id="contactList"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>姓名</th><th>Email</th><th>備註</th><th>名單狀態</th><th class="num">發文數</th><th>資料卡／頭像</th></tr></thead><tbody id="contactList"></tbody></table></div>
         <div class="more" id="contactMore"></div>
       </div>
     </section>
 
     <!-- 設定 -->
     <section id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" data-panel="settings" hidden>
-      <div class="panel-head"><div><h2>牆面設定</h2><p>非活動期間前台會顯示這裡的標題；萬聖與中秋期間會改用活動標題。</p></div></div>
+      <div class="panel-head"><div><h2>牆面設定</h2><p>非活動期間前台會顯示這裡的標題；活動期間會改用活動標題。</p></div></div>
       <div class="card">
         <label class="field" for="mainTitleInput">主標題</label>
         <input type="text" id="mainTitleInput" maxlength="60" placeholder="例如：RDTW 感謝牆">
@@ -206,6 +141,12 @@
         <span class="hint" id="auditCount"></span>
       </div>
       <div class="table-wrap"><table><thead><tr><th>時間</th><th>操作者</th><th>動作</th><th>對象</th><th>內容</th></tr></thead><tbody id="auditList"></tbody></table></div>
+    </section>
+
+    <!-- 已結束活動（內容由 static/admin/archive.js 依 ENDED_EVENTS 產生；以後活動結束照那裡的說明加一筆） -->
+    <section id="panel-archive" role="tabpanel" aria-labelledby="tab-archive" data-panel="archive" hidden>
+      <div class="panel-head"><div><h2>已結束活動</h2><p>活動結束後的統計留在這裡備查。數字照樣即時從資料庫計算；最新結束的活動排在最上面。</p></div></div>
+      <div id="archiveList"></div>
     </section>
 
     <!-- 系統狀態 -->

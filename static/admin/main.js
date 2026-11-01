@@ -1,12 +1,13 @@
 // 後台入口：確認管理員身分 → 載入資料 → 即時更新（SSE，斷線時改輪詢）→ 分頁與事件
-import { $, h, toast } from './util.js';
-import { st, nowMs } from './state.js';
+import { $ } from './util.js';
+import { st } from './state.js';
 import { apiGet, ApiError, setBackend } from './api.js';
 import { requireMember } from '../app/fb/session.js';
 import { AdminBackend } from '../app/fb/admin-backend.js';
 let BACKEND = null;
 import { adaptBootstrap } from './model.js';
-import { renderAll, resetPage, calculateRangeCount, patrolMark, fillSettings } from './views.js';
+import { renderAll, resetPage, calculateRangeCount, fillSettings } from './views.js';
+import { resetArchive } from './archive.js';
 import { actions } from './actions-registry.js';
 import './actions.js';
 
@@ -18,7 +19,8 @@ function showGate(text, msg, { retry = false, back = false } = {}) {
   $('retryBtn').hidden = !retry; $('backLink').hidden = !back;
 }
 function teardown() {
-  ['ovKpis', 'mooncakeList', 'levelTable', 'userStatsList', 'hwPhaseBanner', 'hwHero', 'hwKpis', 'hwCharts', 'trendTable', 'progenitors', 'infList', 'lurkList', 'patrolInfo', 'patrolList', 'messageList', 'contactList', 'auditList', 'sysCards'].forEach(id => $(id).replaceChildren());
+  ['ovKpis', 'levelTable', 'userStatsList', 'archiveList', 'messageList', 'contactList', 'auditList', 'sysCards'].forEach(id => $(id).replaceChildren());
+  resetArchive();
 }
 
 // ---------- 資料載入 ----------
@@ -72,7 +74,9 @@ let sseOpen = true;
 function startStream() { BACKEND.onChange(scheduleRefresh); }
 
 // ---------- 分頁 ----------
+const OLD_TABS = { hw: 'archive', patrol: 'archive' };   // 舊書籤（萬聖監控、匿名巡查）帶到「已結束活動」
 function selectTab(name, push = true) {
+  name = OLD_TABS[name] || name;
   const tabs = [...document.querySelectorAll('.tab')];
   if (!tabs.some(t => t.dataset.tab === name)) name = 'overview';
   tabs.forEach(t => { const on = t.dataset.tab === name; t.setAttribute('aria-selected', on); t.tabIndex = on ? 0 : -1; });
@@ -95,13 +99,6 @@ document.querySelectorAll('.tab').forEach(t => {
 $('startDate').addEventListener('change', calculateRangeCount);
 $('endDate').addEventListener('change', calculateRangeCount);
 $('userSearch').addEventListener('input', scheduleRender);
-$('infFilter').addEventListener('change', () => { resetPage('inf'); scheduleRender(); });
-$('infSearch').addEventListener('input', () => { resetPage('inf'); scheduleRender(); });
-$('lurkFilter').addEventListener('change', () => { resetPage('lurk'); scheduleRender(); });
-$('csvBtn').addEventListener('click', () => actions.downloadLurkers());
-$('patrolFilter').addEventListener('change', scheduleRender);
-$('patrolSearch').addEventListener('input', scheduleRender);
-$('markPatrolBtn').addEventListener('click', () => { patrolMark(nowMs()); toast('已標記為巡查完成'); scheduleRender(); });
 $('msgFilter').addEventListener('change', () => { resetPage('msg'); scheduleRender(); });
 $('msgSearch').addEventListener('input', () => { resetPage('msg'); scheduleRender(); });
 $('contactSearch').addEventListener('input', () => { resetPage('contact'); scheduleRender(); });
@@ -144,7 +141,7 @@ async function start() {
   started = true;
   loadHealth();
   startStream();
-  setInterval(() => { if (st.data) renderAll(); }, 60000);          // 跨過活動開始／結束時間時自動更新
+  setInterval(() => { if (st.data) renderAll(); }, 60000);          // 讓「幾分鐘前」等時間文字自動更新
   setInterval(loadHealth, 30000);                                    // Google 登入狀態
   setInterval(() => { if (!sseOpen) refresh(); }, 60000);            // 即時連線斷了就改輪詢
 }

@@ -160,5 +160,27 @@ export const K = Object.freeze({
     "data:image/jpeg;base64,",
     "data:image/png;base64,",
     "data:image/gif;base64,"
-  ]
+  ],
+  "PROFILE": {
+    "fields": [
+      "care",
+      "proud",
+      "motiv",
+      "power",
+      "contrib",
+      "learn",
+      "stress"
+    ],
+    "work_fields": [
+      "ok",
+      "no"
+    ],
+    "field_max": 50,
+    "work_max": 40,
+    "avatar_prefix": "data:image/jpeg;base64,",
+    "avatar_small_px": 64,
+    "avatar_large_px": 192,
+    "avatar_small_max": 16000,
+    "avatar_large_max": 60000
+  }
 });

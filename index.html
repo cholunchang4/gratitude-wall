@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="static/app/app.css">
     <link rel="stylesheet" href="static/app/fb/login.css">
     <link rel="stylesheet" href="static/app/admin-neon.css">
+    <link rel="stylesheet" href="static/app/profile-card.css">
     <!-- 特效函式庫放在同一個網站（CSP 只允許同網站的程式）；沒載入時不影響主要功能 -->
     <script src="static/vendor/confetti.browser.js"></script>
 </head>
@@ -288,7 +289,7 @@
                 <span id="levelHint" class="level-hint"></span>
             </div>
             <div class="composer input-container" id="composer">
-                <span id="userAvatar" class="avatar user-avatar" title="點擊登出" tabindex="0" role="button" aria-label="登出"></span>
+                <span id="userAvatar" class="avatar user-avatar" title="我的帳號" tabindex="0" role="button" aria-label="我的帳號" aria-haspopup="menu" aria-expanded="false"></span>
                 <button id="styleBtn" class="style-btn" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="themePicker"><span class="sw card t-classic" id="styleSwatch" aria-hidden="true"></span>樣式</button>
                 <div class="emoji-picker" id="emojiPicker"></div>
                 <button id="emojiBtn" class="emoji-btn" type="button" title="加入表情" aria-label="加入表情">😀</button>

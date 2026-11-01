@@ -36,7 +36,7 @@
   border: 1px solid rgba(255,255,255,.8); box-shadow: 0 4px 20px rgba(0,212,255,.8);
   animation: neonBadge 4s linear infinite; }
 /* 美術 T097：放大檢視時右上有關閉鈕（約 57px 圓），窄卡上置中的徽章會被壓到 → 放大時徽章靠左、略收字距 */
-.t-admin-neon.focused .badge.admin-neon { left: calc(14px * var(--s)); translate: 0 0; padding: 5px 12px; letter-spacing: 1px; }
+.t-admin-neon.focused .badge.admin-neon { left: calc(14px * var(--s)); translate: 0 0; padding: calc(3px * var(--s)) calc(9px * var(--s)); letter-spacing: 1px; font-size: max(13px, calc(9px * var(--s))); }   /* T097b：放大卡變大，徽章跟著 --s 放大 */
 @keyframes neonBadge { from { background-position: 0% 0%; } to { background-position: 300% 0%; } }
 
 /* 樣式選單的迷你樣本：只顯示流動漸層 */

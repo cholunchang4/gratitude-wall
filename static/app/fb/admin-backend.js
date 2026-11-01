@@ -5,6 +5,7 @@ import { WallStore, normalizeMessage, PHOTO_PLACEHOLDER } from './store.js';
 import * as W from './writes.js';
 import * as R from './logic.js';
 import { K } from './constants.js';
+import { buildAdminClear } from './profile-logic.js';
 
 const PREVIEW_TTL_MS = 30 * 60000;
 const LARGE_REMOVAL_MIN = 20, LARGE_REMOVAL_SHARE = 0.5;
@@ -14,7 +15,7 @@ export class AdminBackend {
     this.db = session.db; this.session = session;
     this.meId = session.meId; this.email = session.email;
     this.offset = 0; this.connected = false; this.lastChangeAt = null;
-    this.d = { people: {}, users: {}, allow: {}, admins: {}, messages: {}, trash: {}, msgAuthor: {}, hw: {}, settings: {}, stats: {}, audit: {}, lbh: {} };
+    this.d = { people: {}, users: {}, allow: {}, admins: {}, messages: {}, trash: {}, msgAuthor: {}, hw: {}, settings: {}, stats: {}, audit: {}, lbh: {}, pc: {}, avv: {} };   // pc＝使用說明書、avv＝頭像版本（只用來判斷有沒有頭像，不載入圖片）
     this.photos = new Map(); this.photoWanted = new Set();
     this.listeners = new Set(); this.previews = new Map(); this.ready = null;
   }
@@ -82,7 +83,8 @@ export class AdminBackend {
     const now = this.now(), st = this.store();
     const msgs = [...Object.entries(this.d.messages).map(([id, v]) => this.adminMessage(id, v, false)),
       ...Object.entries(this.d.trash).map(([id, v]) => this.adminMessage(id, v, true))].sort((a, b) => b.created_at - a.created_at);
-    const users = this.usersList().map(u => ({ ...u, connect_bound: false, connect_username: '', is_admin: this.isAdminEmail(u.email) }));
+    const users = this.usersList().map(u => ({ ...u, connect_bound: false, connect_username: '', is_admin: this.isAdminEmail(u.email),
+      has_profile: !!this.d.pc[u.user_id], has_avatar: this.d.avv[u.user_id] !== undefined && this.d.avv[u.user_id] !== null }));
     const inf = this.d.hw.inf || {}, elite = this.d.hw.elite || {};
     const prog = st.progenitorIds();
     const progRows = this.d.hw.prog || {};
@@ -94,6 +96,7 @@ export class AdminBackend {
         elite: Object.entries(elite).map(([uid, r]) => ({ user_id: uid, at: Number(r.t) || 0 })),
         progenitors: prog.map((uid, i) => ({ rank: i + 1, user_id: uid, pre_event_count: (progRows[uid] || {}).n || 0 })),
         progenitors_frozen: Object.keys(progRows).length > 0,
+        reward_until: typeof this.d.hw.rewardUntil === 'number' ? this.d.hw.rewardUntil : null,   // 「已結束活動」用來對照獎勵期限
       },
     };
   }
@@ -134,6 +137,7 @@ export class AdminBackend {
       await this.write(W.buildAdminRestore(this, mid, this.d.trash[mid], now));
       return { id: mid, restored: true };
     }
+    if ((m = /^api\/admin\/users\/([A-Za-z0-9_-]{1,64})\/(profile|avatar)\/clear$/.exec(p))) return this.clearProfile(m[1], m[2], body.reason, now);
     if (p === 'api/admin/contacts/preview') return this.contactsPreview(body.raw);
     if (p === 'api/admin/contacts/apply') return this.contactsApply(body.preview_id);
     if (p === 'api/admin/settings') {
@@ -143,6 +147,18 @@ export class AdminBackend {
     }
     if (/^api\/admin\/contacts\/[^/]+\/bind$/.test(p)) throw new W.WallError(404, 'NOT_FOUND', 'Firebase 版用 Email 登入，不需要綁定帳號。');
     throw new W.WallError(404, 'NOT_FOUND', '找不到這個功能。');
+  }
+  // 管理員清除某人的使用說明書或頭像（不當內容處理用）；寫入內容由 profile-logic.js 的 buildAdminClear 產生，原因記進操作紀錄
+  async clearProfile(uid, what, reason, now) {
+    reason = R.cleanText(reason, false);
+    if (!reason) throw new W.WallError(400, 'REASON_REQUIRED', '請填寫原因。');
+    if (reason.length > K.LIMITS.reason_max) throw new W.WallError(400, 'TOO_LONG', `原因最多 ${K.LIMITS.reason_max} 字。`);
+    const has = what === 'avatar' ? this.d.avv[uid] !== undefined && this.d.avv[uid] !== null : !!this.d.pc[uid];
+    if (!has) throw new W.WallError(404, 'NOT_FOUND', what === 'avatar' ? '這位同事已經沒有頭像了。' : '這位同事已經沒有資料卡了。');
+    const up = buildAdminClear(this.meId, uid, what === 'avatar' ? 'avatar' : 'profile', now);
+    for (const k of Object.keys(up)) if (k.startsWith('audit/')) up[k] = { ...up[k], detail: JSON.stringify({ reason }) };
+    await this.write(up);
+    return { user_id: uid, cleared: what };
   }
   contactsPreview(raw) {
     if (typeof raw !== 'string' || !raw.trim()) throw new W.WallError(400, 'NO_CONTACTS', '請先貼上名單資料。');

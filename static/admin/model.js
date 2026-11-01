@@ -51,13 +51,13 @@ export function safeImg(src) { return typeof src === 'string' && /^data:image\/(
 export function receiversOf(m) { return m.receiver ? String(m.receiver).split(',').map(r => r.trim()).filter(r => r && r !== '大家') : []; }
 export function phase(now) { return now < HW_EVENT_START ? 'before' : now <= HW_EVENT_END ? 'during' : 'after'; }
 
-export const CAUSE_LABEL = { progenitor: '始祖', opened_card: '點開萬聖卡', tagged: '被標記', migrated: '搬家前就已變身', admin: '管理員設定' };
+export const CAUSE_LABEL = { progenitor: '始祖', opened_card: '點開萬聖卡', tagged: '被標記', migrated: '搬家前就已變身', admin: '管理員設定', elite: '精銳吸血鬼' };
 
 // ---------- API 資料 → 4.8 的形狀 ----------
 export function adaptBootstrap(b) {
   const users = (b.users || []).map(u => ({
     id: String(u.user_id || ''), name: String(u.name ?? ''), email: String(u.email || '').toLowerCase(), info: String(u.info || ''),
-    status: u.status || 'active', bound: !!u.connect_bound, isAdmin: !!u.is_admin,
+    status: u.status || 'active', bound: !!u.connect_bound, isAdmin: !!u.is_admin, hasProfile: !!u.has_profile, hasAvatar: !!u.has_avatar,
   }));
   const usersById = new Map(users.map(u => [u.id, u]));
   const contacts = users.filter(u => u.status === 'active');
@@ -72,10 +72,12 @@ export function adaptBootstrap(b) {
   const hw = b.hw2026 || {};
   const infections = (hw.infections || []).map(i => ({ uid: String(i.user_id), cause: i.cause || '', at: Number(i.at) || 0, sourceId: i.source_message_id || null }));
   const progenitors = [...(hw.progenitors || [])].sort((a, z) => (a.rank || 0) - (z.rank || 0)).map(p => ({ rank: p.rank, uid: String(p.user_id), n: Number(p.pre_event_count) || 0 }));
+  const elite = (hw.elite || []).map(e => ({ uid: String(e.user_id), at: Number(e.at) || 0 }));
+  const hwRewardUntil = Number.isFinite(hw.reward_until) ? hw.reward_until : null;   // 資料庫 hw/rewardUntil（-1＝永久）
   return {
     me: b.me || {}, server: b.server || {}, settings: b.settings || {},
     users, usersById, contacts, allMessages, messages: allMessages.filter(m => !m.deleted),
-    infections, infected: Object.fromEntries(infections.map(i => [i.uid, usersById.get(i.uid)?.name ?? ''])), progenitors,
+    infections, infected: Object.fromEntries(infections.map(i => [i.uid, usersById.get(i.uid)?.name ?? ''])), progenitors, elite, hwRewardUntil,
   };
 }
 

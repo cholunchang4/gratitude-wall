@@ -308,3 +308,32 @@ details.tableview summary { cursor: pointer; font-weight: 700; color: var(--bran
   #panel-messages .row-deleted td:last-child { background: #f5f2f2; }
   #panel-messages th:last-child { background: #fbf5f3; z-index: 2; }
 }
+
+/* ---------- 已結束活動（archive.js） ---------- */
+.ae-index { display: flex; gap: var(--sp-2); flex-wrap: wrap; margin-bottom: var(--sp-4); }
+.ae-index .btn { text-decoration: none; color: var(--brand-ink); }
+details.archive-event { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-xl); box-shadow: var(--sh-1); margin-bottom: var(--sp-5); scroll-margin-top: 120px; }
+details.archive-event > summary { list-style: none; cursor: pointer; padding: var(--sp-4) var(--sp-5) var(--sp-4) calc(var(--sp-5) + 22px); position: relative; display: grid; gap: 2px; border-radius: var(--r-xl); }
+details.archive-event > summary::-webkit-details-marker { display: none; }
+details.archive-event > summary::before { content: ''; position: absolute; left: var(--sp-5); top: 26px; width: 8px; height: 8px; border-right: 2.5px solid var(--brand-ink); border-bottom: 2.5px solid var(--brand-ink); transform: rotate(-45deg); transition: transform var(--dur-1) var(--ease-out); }
+details.archive-event[open] > summary::before { transform: rotate(45deg); top: 22px; }
+details.archive-event > summary:hover { background: rgba(255,255,255,.5); }
+details.archive-event[open] > summary { border-bottom: 1px solid var(--line); border-radius: var(--r-xl) var(--r-xl) 0 0; }
+.ae-title { display: flex; align-items: center; gap: var(--sp-2); flex-wrap: wrap; }
+.ae-title h3 { margin: 0; font-size: var(--fs-lg); }
+.ae-period { color: var(--muted); font-size: var(--fs-xs); }
+.ae-headline { font-weight: 700; color: var(--brand-ink); }
+.ae-body { padding: var(--sp-5); }
+.ae-body > :last-child, .ae-body > div > .card:last-child { margin-bottom: 0; }
+.ae-body .hw-hero { margin-bottom: var(--sp-5); }
+details.archive-sub > summary { list-style: none; cursor: pointer; }
+details.archive-sub > summary::-webkit-details-marker { display: none; }
+details.archive-sub > summary h3::after { content: '（點開查看）'; font-size: var(--fs-xs); font-weight: 600; color: var(--brand-ink); margin-left: var(--sp-2); }
+details.archive-sub[open] > summary h3::after { content: '（點一下收合）'; }
+details.archive-sub > summary .sub { margin-bottom: 0; }
+@media (max-width: 768px) {
+  details.archive-event > summary { padding: var(--sp-3) var(--sp-4) var(--sp-3) calc(var(--sp-4) + 20px); }
+  details.archive-event > summary::before { left: var(--sp-4); top: 20px; }
+  details.archive-event[open] > summary::before { top: 16px; }
+  .ae-body { padding: var(--sp-3); }
+}

@@ -46,6 +46,24 @@ actions.askRestore = async function askRestore(m) {
   localMarkDeleted(m.id, false);
 };
 
+// ---------- 通訊錄：清除某人的資料卡（使用說明書）或頭像（不當內容處理用；要填原因、記操作紀錄） ----------
+actions.askClearProfile = async function askClearProfile(u, what) {
+  if (!isSafeKey(u.id)) return toast('這位同事的編號格式不正確，無法處理。', true);
+  const avatar = what === 'avatar';
+  const res = await actionModal({
+    title: avatar ? `確定要移除 ${u.name || '這位同事'} 的頭像嗎？` : `確定要清除 ${u.name || '這位同事'} 的資料卡嗎？`,
+    confirmText: avatar ? '移除頭像' : '清除資料卡',
+    body: [h('div', { class: 'hint' }, avatar
+      ? '頭像（大小兩張）會一起刪除，留言板上改回姓名縮寫。刪除後無法復原，本人可以再上傳。原因會記入操作紀錄。'
+      : '「我的使用說明書」九格內容會全部清空，頭像不受影響。刪除後無法復原，本人可以再填。原因會記入操作紀錄。')],
+    input: { label: '原因（必填）', hint: '會記入操作紀錄，不會顯示給同事', placeholder: '例如：內容不適當、本人請求刪除', maxlength: 200, minLength: 2 },
+    run: (reason) => apiPost(`api/admin/users/${encodeURIComponent(u.id)}/${avatar ? 'avatar' : 'profile'}/clear`, { reason }).catch(e => { throw new Error(errText(e)); }),
+  });
+  if (!res.ok) return;
+  toast(avatar ? '已移除頭像' : '已清除資料卡');
+  st.audit.stale = true; st.refresh();
+};
+
 // ---------- 通訊錄：預覽 → 套用 ----------
 actions.isRiskyRemove = (r) => r.remove > 0 && (r.remove >= 10 || r.remove / Math.max(1, r.remove + r.update + r.unchanged) >= 0.2);
 

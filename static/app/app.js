@@ -2,9 +2,12 @@
 import { WALL_CONFIG } from './config.js';
 import { requireMember, USE_EMULATOR } from './fb/session.js';
 import { WallBackend } from './fb/backend.js';
+import { ProfileService } from './fb/profile.js';      // T098 個人資料卡＋頭像（Firebase 讀寫）
+import { createProfileUI } from './profile-ui.js';     // T098 個人資料卡畫面（檢視、編輯、裁切、自己的頭像選單）
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
+let PROFILE = null, PUI = null;     // T098：startApp 裡建立
 
         let currentUser = null;   // { uid, displayName }：由 me 轉出，維持 4.8 程式碼原本用的形狀
         let ME = null;            // 伺服器回傳的「我的狀態」（等級、經驗、配額、解鎖、偏好、萬聖狀態）
@@ -13,7 +16,7 @@ let SESSION = null, BACKEND = null;
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.2";
+        const CURRENT_APP_VERSION = "6.3";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -554,7 +557,22 @@ let SESSION = null, BACKEND = null;
         const userAvatar = document.getElementById('userAvatar');
         const inputPanel = document.getElementById('inputPanel');
         // 登入由 fb/session.js 負責（Email 登入連結）；點頭像可以登出
-        userAvatar.addEventListener('click', async () => { if (confirm('確定要登出嗎？')) { try { if (SESSION) await SESSION.signOut(); } finally { window.location.reload(); } } });
+        // T098：點頭像打開「我的帳號」選單（我的使用說明書／上傳或更換頭像／登出），選單由 profile-ui.js 處理；登出沿用原本的確認
+        async function doLogout() { if (confirm('確定要登出嗎？')) { try { if (SESSION) await SESSION.signOut(); } finally { window.location.reload(); } } }
+        // T098 小工具：作者還在通訊錄嗎、用名字找 uid（感謝榜只有名字）、某人的小頭像（沒有就回傳 ''）
+        function isActiveUid(uid) { const p = BACKEND && uid ? BACKEND.s.people[uid] : null; return !!(p && p.s === 'active'); }
+        function uidByName(name) { const ids = BACKEND ? BACKEND.s.nameIndex().get(String(name || '')) : null; return (ids && ids[0]) || ''; }
+        function avatarPhotoOf(uid) { return PROFILE && uid && isActiveUid(uid) ? safeImageUrl(PROFILE.smallOf(uid)) : ''; }
+        // 卡片作者的照片：匿名／假面卡一律沒有（不能透過頭像認出作者）
+        function cardAvatarOf(msg) { return (!msg.author || msg.anonymous) ? '' : (safeImageUrl(msg.avatarUrl) || avatarPhotoOf(msg.authorKey)); }
+        function pcUidAttr(msg) { return (!msg.author || msg.anonymous || !isActiveUid(msg.authorKey)) ? '' : ` data-pc-uid="${escapeHtml(msg.authorKey)}"`; }
+        // 資料卡上的「寫感謝卡給 ○○」：關掉放大卡，收件人帶入通訊錄姓名，游標到內容欄
+        function writeThanksTo(name) {
+            closeFocus(); closeListFocus();
+            const r = document.getElementById('receiverInput'), m = document.getElementById('msgInput');
+            document.getElementById('composer').classList.add('expanded');
+            if (r) r.value = name; if (m) m.focus();
+        }
 
         // 重新整理前先把還沒送出的文字存起來，重新載入後放回輸入框（圖片和塗鴉不保留）
         function saveDraft() { try { const m = msgInput.value, r = receiverInput.value; if (m.trim() || r.trim()) sessionStorage.setItem('wall_draft', JSON.stringify({ m, r })); } catch (e) {} }
@@ -685,7 +703,7 @@ let SESSION = null, BACKEND = null;
             const title = LEVEL_TITLES[userLevel] || `Lv.${userLevel}`;
             const maxLength = Number(U.max_length) || (isAdminUser ? 2000 : 20);
 
-            msgInput.maxLength = maxLength; msgInput.placeholder = isAdminUser ? `🛡️ 系統管理員模式 (上限 ${maxLength} 字)` : `寫下感謝內容... (上限 ${maxLength} 字)`;
+            msgInput.maxLength = maxLength; setMsgPlaceholder(isAdminUser ? `🛡️ 系統管理員模式 (上限 ${maxLength} 字)` : `寫下感謝內容... (上限 ${maxLength} 字)`, isAdminUser ? '🛡️ 系統管理員模式' : '寫下感謝內容…');
             const statusBar = document.getElementById('levelStatusBar'); statusBar.style.display = 'flex';
             // 卓倫決定（10/17）：不強調滿級，讓大家自己探索；Lv.8 以上只顯示稱號，不顯示下一級（隱藏等級不預告）
             const NEXT_AT = [1, 5, 10, 15, 20, 30, 50];
@@ -1118,7 +1136,7 @@ let SESSION = null, BACKEND = null;
             const receiverHtml = msg.receiver ? `<div class="card-to">To: ${escapeHtml(msg.receiver)}</div>` : '';
             const authorName = msg.author || '匿名';
             // 大頭貼：一律是「姓名縮寫色塊」（卓倫決定，舊留言也是）。預留：有上傳照片的人（author.avatar_url 有值）才顯示照片
-            const avatarImgSrc = isAnonAuthor ? '' : safeImageUrl(msg.avatarUrl);
+            const avatarImgSrc = isAnonAuthor ? '' : cardAvatarOf(msg);   // T098：有上傳頭像就放照片（匿名卡不放）
             const avatarHtml = avatarImgSrc ? `<img class="av" src="${escapeHtml(avatarImgSrc)}" alt="" decoding="async">`
                 : `<i class="av" style="background:${isAnonAuthor ? '#5b5470' : avatarColorOf(msg.authorKey, authorName, msg.avatarColor)}" aria-hidden="true">${escapeHtml(isAnonAuthor ? '?' : (msg.initials || initialsOf(authorName)))}</i>`;
             const attachedImgUrl = safeImageUrl(msg.image);
@@ -1133,7 +1151,7 @@ let SESSION = null, BACKEND = null;
             const sig = theme === 'theme-admin' ? '<em class="sig">系統管理員</em>' : ''; // 簽名特效只在至尊模板；其他主題的管理員卡只保留小徽章
 
             return `${fx}${badge}${receiverHtml}${attachedImgHtml}<p class="card-text">${escapeHtml(msg.text)}</p>`
-                + `<div class="card-foot"><span class="author">${avatarHtml}<span>${escapeHtml(authorName)}</span>${sig}</span>${heartHtml}</div>`
+                + `<div class="card-foot"><span class="author"${pcUidAttr(msg)}>${avatarHtml}<span>${escapeHtml(authorName)}</span>${sig}</span>${heartHtml}</div>`
                 + `<div class="card-date">${dateStr}</div>${actionsHtml}<button type="button" class="card-close-btn" aria-label="關閉放大的卡片">✕</button>`;
         }
 
@@ -1141,7 +1159,7 @@ let SESSION = null, BACKEND = null;
         function cardSignature(msg, maxLikes) {
             const lc = likeCountOf(msg);
             const img = msg.image ? String(msg.image) : '';
-            return [msg.text, msg.receiver, msg.author, msg.anonymous, msg.avatarUrl, msg.theme, msg.authorLevel, msg.isAdminCard, msg.isMine,
+            return [msg.text, msg.receiver, msg.author, msg.anonymous, cardAvatarOf(msg), pcUidAttr(msg), msg.theme, msg.authorLevel, msg.isAdminCard, msg.isMine,
                     msg.timestamp, img, lc, (msg.likers || []).join('\u0002'), msg.likedByMe,
                     (lc === maxLikes && maxLikes > 0), currentUser ? currentUser.uid : '', ownHiddenLevelFor(msg), IS_HALLOWEEN, IS_MID_AUTUMN].join('\u0001');
         }
@@ -1159,6 +1177,7 @@ let SESSION = null, BACKEND = null;
             const text = String(msg.text || '');
             card.setAttribute('aria-label', `給 ${msg.receiver || '大家'} 的感謝卡，來自 ${msg.author || '匿名'}：${text}`);
             card.style.setProperty('--lines', [...text].length > 50 ? 4 : 99); // 50 字以內完整顯示
+            card.dataset.len = [...text].length <= 24 ? 's' : [...text].length <= 90 ? 'm' : 'l';   // T097b：放大檢視依字數決定卡寬與字級（CSS [data-len]）
             card.innerHTML = generateCardHTML(msg, maxLikes);
             card._sig = cardSignature(msg, maxLikes);
             bindCardEvents(card, msg);
@@ -1196,10 +1215,17 @@ let SESSION = null, BACKEND = null;
         // ================= T068（卓倫 2026-10-28）：放大卡的照片／塗鴉跟著放大；點圖再開全螢幕檢視 =================
         // 牆面、清單上的縮圖大小不變（CSS 只改 .focused 裡的 .card-image）。圖片本身是送出時存的 800×500 webp（塗鴉是白底）。
         function armFocusedImage(card) {
+            armFocusedAuthor(card);
             const img = card && card.querySelector('.card-image'); if (!img) return;
             img.tabIndex = 0; img.setAttribute('role', 'button'); img.setAttribute('aria-label', '看大圖');
         }
+        function armFocusedAuthor(card) {   // T098：放大卡的作者（頭像＋名字）變成按鈕，開資料卡
+            const a = card && card.querySelector('.author[data-pc-uid]'); if (!a) return;
+            a.tabIndex = 0; a.setAttribute('role', 'button'); a.setAttribute('aria-label', `看 ${card._msg ? card._msg.author : ''} 的使用說明書`);
+        }
+        function disarmAuthor(card) { const a = card && card.querySelector('.author[data-pc-uid]'); if (a) { a.removeAttribute('tabindex'); a.removeAttribute('role'); a.removeAttribute('aria-label'); } }
         function disarmImage(card) {
+            disarmAuthor(card);
             const img = card && card.querySelector('.card-image'); if (!img) return;
             img.removeAttribute('tabindex'); img.removeAttribute('role'); img.removeAttribute('aria-label');
         }
@@ -1403,7 +1429,14 @@ let SESSION = null, BACKEND = null;
 
         // ---- 我的狀態 ----
         let meStamp = 0, meDay = 0;
+        // T098：寬度 <400（小手機）時提示字不帶「(上限 N 字)」，避免斷兩行被切掉；轉向或縮放視窗時跟著換
+        function setMsgPlaceholder(full, short) {
+            msgInput.dataset.phFull = full; msgInput.dataset.phShort = short;
+            msgInput.placeholder = window.innerWidth < 400 ? short : full;
+        }
+        window.addEventListener('resize', () => { if (msgInput.dataset.phFull && msgInput.placeholder === (window.innerWidth < 400 ? msgInput.dataset.phFull : msgInput.dataset.phShort)) msgInput.placeholder = window.innerWidth < 400 ? msgInput.dataset.phShort : msgInput.dataset.phFull; });
         function renderMyAvatar() {
+            if (PUI) return PUI.paintMyAvatar();   // T098：有頭像放照片＋選單小紅點
             const name = ME.name || '';
             userAvatar.textContent = ME.initials || initialsOf(name);
             userAvatar.style.background = avatarColorOf(ME.user_id, name, ME.avatar_color);
@@ -1459,6 +1492,14 @@ let SESSION = null, BACKEND = null;
             SESSION = await requireMember({ adminName: WALL_CONFIG.adminName, contactUrl: WALL_CONFIG.adminContactUrl });
             BACKEND = new WallBackend(SESSION);
             if (USE_EMULATOR) window.__wallBackend = BACKEND;      // 只有本機模擬器測試用
+            PROFILE = new ProfileService({ db: SESSION.db, meId: SESSION.meId, isAdmin: SESSION.isAdmin, isActive: isActiveUid,
+                write: (up) => BACKEND.write(up), now: () => BACKEND.now() });
+            PUI = createProfileUI({ profile: PROFILE, meId: SESSION.meId, isAdmin: !!SESSION.isAdmin,
+                meName: () => (ME && ME.name) || BACKEND.s.nameOf(SESSION.meId), nameOf: (u) => BACKEND.s.nameOf(u), isActive: isActiveUid, uidByName,
+                avatarColor: (u, n) => avatarColorOf(u, n), initials: initialsOf, writeTo: writeThanksTo, logout: doLogout, avatarBtn: userAvatar });
+            PROFILE.on(() => { scheduleRefresh(); mbRender(); if (ME) renderMyAvatar(); });   // 頭像下載好、有人換頭像：只重畫有變的卡（卡片指紋含頭像）
+            PROFILE.start();
+            if (USE_EMULATOR) { window.__profile = PROFILE; window.__pui = PUI; }
             for (let attempt = 1; ; attempt++) {
                 try { await BACKEND.start(); applyBootstrap(await api('GET', 'api/bootstrap')); startStream(); return; }
                 catch (e) {
@@ -1577,7 +1618,8 @@ let SESSION = null, BACKEND = null;
                     const isTop = (item[1] === maxCount && maxCount > 1); // 4.8（設計 R12）：大家都只有 1 次時不顯示皇冠
                     const li = document.createElement('li');
                     if(isTop) li.className = 'top-rank';
-                    li.innerHTML = `<span>${isTop ? '👑 ' : ''}${escapeHtml(item[0])}</span> <span class="count">${Number(item[1]) || 0} 張</span>`;
+                    const nm = uidByName(item[0]) ? `<button type="button" class="pc-link" data-pc-name="${escapeHtml(item[0])}">${escapeHtml(item[0])}</button>` : escapeHtml(item[0]);   // T098
+                    li.innerHTML = `<span>${isTop ? '👑 ' : ''}${nm}</span> <span class="count">${Number(item[1]) || 0} 張</span>`;
                     ul.appendChild(li);
                 });
             };
@@ -1623,7 +1665,11 @@ let SESSION = null, BACKEND = null;
         function mbHasRows(key) { const d = MB.data || {}; return mbRows(d[key]).length > 0 || !!(d[key + '_more'] && Number(d[key + '_more'].people) > 0); }
         // ===== 上月感謝榜 v2（美術總監設計稿 design/月排行榜/v2/）：平常是小條（兩榜各自的第 1 名），點開看前 5 名浮層 =====
         // 浮層蓋在牆上（桌機 position:absolute），不改變面板外框，所以牆面卡片不會被推動
-        function mbAv(r) { return `<span class="mb-av" style="background:${avatarColorOf(r.name, r.name, r.color)}" aria-hidden="true">${escapeHtml(initialsOf(r.name))}</span>`; }
+        function mbAv(r) {
+            const photo = avatarPhotoOf(uidByName(r.name));   // T098：有頭像放照片
+            if (photo) return `<img class="mb-av" src="${escapeHtml(photo)}" alt="" aria-hidden="true" decoding="async">`;
+            return `<span class="mb-av" style="background:${avatarColorOf(r.name, r.name, r.color)}" aria-hidden="true">${escapeHtml(initialsOf(r.name))}</span>`;
+        }
         // 小條的一列：第 1 名（並列最多疊 3 個頭像；2 位寫兩個名字、3 位以上寫「等 N 位」）
         function mbStarHtml(tab) {
             const d = MB.data || {}, firsts = mbRows(d[tab.key]).filter(r => r.rank === 1), more = d[tab.key + '_more'];
@@ -1643,7 +1689,7 @@ let SESSION = null, BACKEND = null;
             if (!rows.length && !moreOk) return `<section class="mb-col" aria-labelledby="mbColT-${tab.key}">${head}<p class="mb-empty">${tab.empty}</p></section>`;
             const tied = (k) => rows.filter(x => x.rank === k).length > 1;
             return `<section class="mb-col" aria-labelledby="mbColT-${tab.key}">${head}<ol class="mb-list">${rows.map(r => `<li class="mb-row" data-rank="${r.rank}" aria-label="${tied(r.rank) ? '並列' : ''}第 ${r.rank} 名，${escapeHtml(r.name)}">`
-                + `<span class="mb-rank" aria-hidden="true">${r.rank}</span>${mbAv(r)}<span class="mb-name" title="${escapeHtml(r.name)}" aria-hidden="true">${escapeHtml(mbDisplayName(r.name))}</span></li>`).join('')}</ol>`
+                + `<span class="mb-rank" aria-hidden="true">${r.rank}</span>${mbAv(r)}${uidByName(r.name) ? `<button type="button" class="mb-name pc-link" data-pc-name="${escapeHtml(r.name)}" title="${escapeHtml(r.name)}" aria-label="看 ${escapeHtml(r.name)} 的使用說明書">${escapeHtml(mbDisplayName(r.name))}</button>` : `<span class="mb-name" title="${escapeHtml(r.name)}" aria-hidden="true">${escapeHtml(mbDisplayName(r.name))}</span>`}</li>`).join('')}</ol>`
                 + (moreOk ? `<p class="mb-more">${rows.length ? '還有 ' : ''}${Number(more.people)} 位同事並列第 ${Number(more.rank) || 1} 名</p>` : '') + `</section>`;
         }
         const MB_OPTOUT_HINT = { on: '已開啟：上月感謝榜和英雄榜都不會出現你的名字。<span class="nw">你的卡片照常顯示。</span>', off: '開啟後，上月感謝榜和英雄榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span>' };   // 固定字串（不含使用者資料）
@@ -2821,10 +2867,11 @@ let SESSION = null, BACKEND = null;
             const crown = theme === 'theme-admin-neon' ? '<span class="lr-admin-neon">🛡️ 系統管理員</span>' : theme === 'theme-admin' ? '<span class="lr-supreme"><svg class="crown-mini" viewBox="0 0 60 48" aria-hidden="true"><path d="M8 36 L5 14 L18 24 L30 6 L42 24 L55 14 L52 36 Z" fill="currentColor"/></svg>至尊</span>' : '';
             const img = safeImageUrl(m.image);
             const avColor = mask ? '' : `style="background:${avatarColorOf(m.authorKey, author, m.avatarColor)}"`;
-            const avPhoto = mask ? '' : safeImageUrl(m.avatarUrl);
-            return (avPhoto ? `<img class="lr-av" src="${escapeHtml(avPhoto)}" alt="" aria-hidden="true" decoding="async">`
-                    : `<div class="lr-av${mask ? ' is-mask' : ''}" ${avColor} aria-hidden="true">${escapeHtml(mask ? '?' : (m.initials || initialsOf(author)))}</div>`)
-                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 <b>${markFirst(author, q)}</b>${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${tier}${crown}</div>`
+            const avPhoto = mask ? '' : cardAvatarOf(m);
+            const pcAttr = pcUidAttr(m);
+            return (avPhoto ? `<img class="lr-av" src="${escapeHtml(avPhoto)}" alt="" aria-hidden="true" decoding="async"${pcAttr}>`
+                    : `<div class="lr-av${mask ? ' is-mask' : ''}" ${avColor} aria-hidden="true"${pcAttr}>${escapeHtml(mask ? '?' : (m.initials || initialsOf(author)))}</div>`)
+                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 ${pcAttr ? `<button type="button" class="pc-link"${pcAttr} aria-label="看 ${escapeHtml(author)} 的使用說明書"><b>${markFirst(author, q)}</b></button>` : `<b>${markFirst(author, q)}</b>`}${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${tier}${crown}</div>`
                 + `<p class="lr-text">${markFirst(m.text || '', q)}</p>${img ? `<img class="lr-thumb" src="${escapeHtml(img)}" alt="附圖" loading="lazy">` : ''}</div>`
                 + `<div class="lr-side"><time>${time}</time><button type="button" class="like card-likes${hasLiked ? ' on liked' : ''}" aria-label="${likeWord}，目前 ${likes}" aria-pressed="${hasLiked ? 'true' : 'false'}">${icon}${likes || likeWord}</button></div>`;
         }

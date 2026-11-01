@@ -1,11 +1,11 @@
 // 所有分頁的畫面（只負責畫，不呼叫 API；按鈕的動作由 actions.js 處理）
 import { $, h, s, agoText } from './util.js';
 import { st, nowMs } from './state.js';
-import { barChart } from './charts.js';
 import * as M from './model.js';
 import { actions } from './actions-registry.js';
+import { renderArchive } from './archive.js';
 
-const { norm, fmtDT, levelOf, safeImg, pct, phase, inEvent, LEVELS, HW_STAGES, HW_TOTAL, HW_REWARD_TIERS, HW_EVENT_START, HW_EVENT_END, DAY, HW_THEME, dayKey } = M;
+const { norm, fmtDT, levelOf, safeImg, inEvent, LEVELS, HW_THEME, tp } = M;
 const PAGE = 100;
 
 export function kpi(label, num, foot, opts = {}) {
@@ -16,7 +16,7 @@ export function kpi(label, num, foot, opts = {}) {
 }
 
 export function resetPage(k) { st.pages[k] = 1; }
-function pagedRows(key, rows, tbody, moreEl, cols, rowFn, emptyText) {
+export function pagedRows(key, rows, tbody, moreEl, cols, rowFn, emptyText) {
   const page = st.pages[key] || 1, shown = rows.slice(0, page * PAGE);
   tbody.replaceChildren(...(shown.length ? shown.map(rowFn) : [h('tr', null, h('td', { colspan: cols, class: 'empty' }, emptyText))]));
   moreEl.replaceChildren(rows.length > shown.length ? h('button', { class: 'btn btn-sm', onclick: () => { st.pages[key] = page + 1; st.render(); } }, `顯示更多（還有 ${rows.length - shown.length} 筆）`) : '');
@@ -105,25 +105,20 @@ function renderGoogleBanner(now) {
   if (lvl === 'ok') st.badgeSeen = false;
 }
 
-function renderPhase(ph, now) {
-  const pill = $('phasePill');
-  pill.className = 'pill pill-' + ph;
-  pill.textContent = ph === 'before' ? `萬聖活動 10/18 開始（還有 ${Math.ceil((HW_EVENT_START - now) / DAY)} 天）` : ph === 'during' ? `萬聖活動進行中・第 ${Math.floor((now - HW_EVENT_START) / DAY) + 1} 天／共 14 天` : '萬聖活動已結束';
-}
+// 頂端的活動標籤：目前沒有進行中的活動就不顯示（結束的活動統計在「已結束活動」分頁）
+function renderPhase() { $('phasePill').hidden = true; }
 
 export function renderAll() {
   if (!st.data) return;
   const now = nowMs();
-  const ph = phase(now);
-  renderPhase(ph, now);
+  renderPhase();
   renderGoogleBanner(now);
   const le = $('loadError');
   le.hidden = !st.errors.bootstrap;
   le.textContent = st.errors.bootstrap ? '重新整理資料失敗（網路中斷或伺服器忙碌），目前畫面可能不是最新的。系統會自動重試，也可以手動重新整理頁面。' : '';
   const Mo = M.computeModel(st.data, now);
-  renderOverview(Mo);
-  renderHalloween(Mo, now, ph);
-  renderPatrol(Mo, now);
+  renderOverview(Mo, now);
+  renderArchive(Mo);
   renderMessages(Mo);
   renderContacts(Mo);
   renderSettingsInfo();
@@ -132,19 +127,15 @@ export function renderAll() {
 }
 
 // ================= 總覽 =================
-function renderOverview(Mo) {
+function renderOverview(Mo, now) {
   const S = st.data, msgs = S.messages;
   const people = [...Mo.people.values()];
   $('ovKpis').replaceChildren(
     kpi('歷史累積留言', msgs.length, `其中附圖 ${msgs.filter(m => m.image).length} 則`, { id: 'kpiTotal' }),
     kpi('曾經發文的人數', people.filter(p => p.msgs.length).length, '匿名卡算回真實發文者'),
     kpi('通訊錄人數', S.contacts.length, `從未發文 ${S.contacts.length - Mo.postedContactIdx.size} 人`),
-    kpi('萬聖變身人數', Mo.infCount, `目標 ${HW_TOTAL} 人`));
+    kpi('本月留言', msgs.filter(m => { const a = tp(m.timestamp), b = tp(now); return a.y === b.y && a.mo === b.mo; }).length, '台灣時間本月 1 號起（就是牆面上顯示的範圍）', { id: 'kpiMonth' }));
   calculateRangeCount();
-  const mc = msgs.filter(m => m.isMooncake && !m.isOpened).sort((a, b) => b.timestamp - a.timestamp);
-  $('mooncakeCard').hidden = !mc.length;
-  $('mooncakeCountText').textContent = mc.length;
-  $('mooncakeList').replaceChildren(...mc.map(m => h('tr', null, h('td', { class: 'nowrap' }, fmtDT(m.timestamp)), h('td', null, m.author || '未知'), h('td', null, m.receiver || '大家'))));
   $('levelTable').replaceChildren(...LEVELS.map(L => h('tr', { class: L.hidden ? 'hidden-row' : '' },
     h('td', null, `${L.min} 則`), h('td', null, `${L.icon} Lv.${L.lv} ${L.name}`, L.hidden ? h('span', { class: 'tag tag-muted ml-6' }, '隱藏等級') : null), h('td', null, L.unlock))),
     h('tr', { class: 'admin-row' }, h('td', null, '管理員'), h('td', null, '🛡️ 系統管理員'), h('td', null, '無視所有限制、2000 字上限、全套外觀與專屬徽章')));
@@ -165,113 +156,6 @@ export function calculateRangeCount() {
   const t0 = a ? new Date(a + 'T00:00:00+08:00').getTime() : -Infinity;
   const t1 = b ? new Date(b + 'T23:59:59.999+08:00').getTime() : Infinity;
   $('rangeMsgCount').textContent = st.data.messages.filter(m => m.timestamp >= t0 && m.timestamp <= t1).length;
-}
-
-// ================= 萬聖監控 =================
-function renderHalloween(Mo, now, ph) {
-  const S = st.data, count = Mo.infCount;
-  const stage = HW_STAGES.find(x => count >= x.min);
-  const next = [...HW_STAGES].reverse().find(x => x.min > count);
-  const banner = ph === 'before'
-    ? h('div', { class: 'banner banner-info', id: 'hwPhaseText' }, `活動尚未開始：10/18（日）00:00 開始，還有 ${Math.ceil((HW_EVENT_START - now) / DAY)} 天。下方數字目前都是 0；始祖名單與「還沒參與的同事」已可先準備。`)
-    : ph === 'during'
-      ? h('div', { class: 'banner banner-info', id: 'hwPhaseText' }, `活動進行中：第 ${Math.floor((now - HW_EVENT_START) / DAY) + 1} 天／共 14 天，到 10/31（六）23:59 結束。`)
-      : h('div', { class: 'banner banner-warn', id: 'hwPhaseText' }, `活動已在 10/31（六）23:59 結束，以下為最終結果。` + M.rewardText(count));
-  $('hwPhaseBanner').replaceChildren(banner);
-  const ticks = [0, 50, 100, 150, 200];
-  const fill = h('div', { class: 'hw-fill' }); fill.style.width = `${Math.min(100, count / HW_TOTAL * 100)}%`;
-  $('hwHero').replaceChildren(
-    h('div', { class: 'row' },
-      h('div', null, h('div', { class: 'hw-muted' }, '全公司變身進度'), h('div', { class: 'hw-big', id: 'hwCount' }, count, h('small', null, ` / ${HW_TOTAL} 人`))),
-      h('div', null, h('div', { class: 'hw-muted' }, '目前階段'), h('div', { class: 'hw-stage', id: 'hwStage' }, stage.name),
-        h('div', { class: 'hw-muted', id: 'hwNextStage' }, next ? `再 ${next.min - count} 人進入「${next.name}」` : '已是最高階段'))),
-    h('div', { class: 'hw-bar', role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': HW_TOTAL, 'aria-valuenow': count, 'aria-valuetext': `${stage.name}，${count} / ${HW_TOTAL} 人已變身` }, fill),
-    h('div', { class: 'hw-ticks', 'aria-hidden': 'true' }, ticks.map(t => { const sp = h('span', { class: count >= t ? 'on' : '' }, t === 0 ? '幽暗之夜' : t === 50 ? '50 亡靈甦醒' : t === 150 ? '150 血月降臨' : String(t)); sp.style.left = `${t / HW_TOTAL * 100}%`; return sp; })),
-    h('div', { class: 'milestones', id: 'milestones' }, HW_REWARD_TIERS.map(t => h('div', { class: 'ms' + (count >= t.min ? ' done' : ''), 'data-min': t.min },
-      h('b', null, `${t.min} 人・${t.label}`), h('span', { class: 'st' }, count >= t.min ? '已達成' : `還差 ${t.min - count} 人`)))));
-  const ft = Mo.firstTimers.length, ftOut = Mo.firstTimers.filter(p => p.contactIdx < 0).length;
-  const reply = pct(Mo.replied, Mo.thanked), replyInf = pct(Mo.repliedInf, Mo.thankedInf);
-  const cardsVs = Mo.baseline > 0 && Mo.daysElapsed > 0 ? Math.round(((Mo.evCards / Mo.daysElapsed) / (Mo.baseline / 14) - 1) * 100) : null;
-  $('hwKpis').replaceChildren(
-    kpi('活動期間第一次發文', ft, `活動前從未發文的通訊錄同事 ${Mo.lurkersBefore} 人${ftOut ? `；其中 ${ftOut} 人不在通訊錄` : ''}；企劃參考目標 30 人（估計值）`, { key: true, id: 'kpiFirst', unit: '人' }),
-    kpi('活躍發文人數', Mo.active, '活動期間至少發過 1 張卡（含匿名）', { id: 'kpiActive', unit: '人' }),
-    kpi('變身人數', count, `企劃參考目標 150 人（估計值）`, { id: 'kpiInfected', unit: '人' }),
-    kpi('活動期間卡片數', Mo.evCards, cardsVs === null ? `前兩週共 ${Mo.baseline} 張` : `每日平均比前兩週${cardsVs >= 0 ? '多' : '少'} ${Math.abs(cardsVs)}%（前兩週共 ${Mo.baseline} 張）`, { id: 'kpiCards', unit: '張', est: cardsVs === null ? null : '用已過天數的日平均比較' }),
-    kpi('回卡率', reply === null ? '—' : reply + '%', Mo.thanked ? `被點名感謝 ${Mo.thanked} 人，之後回寫 ${Mo.replied} 人；其中已變身者 ${replyInf === null ? '—' : replyInf + '%'}（${Mo.repliedInf}/${Mo.thankedInf}）` : '活動期間還沒有人被點名感謝', { id: 'kpiReply', value: reply ?? '', est: '收件人是用姓名文字比對發文者，同名或拼法不同會有誤差' }),
-    kpi('萬聖卡／匿名卡', `${Mo.hwCards}／${Mo.anonCount}`, '匿名卡請到「匿名巡查」查看', { id: 'kpiHwAnon' }));
-  renderCharts(Mo);
-  $('progenitors').replaceChildren(Mo.top5.length ? h('div', { class: 'table-wrap' }, h('table', null,
-    h('thead', null, h('tr', null, h('th', { class: 'num' }, '#'), h('th', null, '姓名'), h('th', { class: 'num' }, '活動前具名卡'), h('th', null, '狀態'))),
-    h('tbody', { id: 'progList' }, Mo.top5.map((x, i) => h('tr', null, h('td', { class: 'num' }, i + 1), h('td', null, x.name), h('td', { class: 'num' }, x.n),
-      h('td', null, x.changed ? h('span', { class: 'tag tag-ok' }, '已登入變身') : h('span', { class: 'tag tag-muted' }, '還沒登入'))))))) : h('div', { class: 'empty' }, '活動前沒有具名留言，所以沒有始祖。'));
-  const flagged = Mo.infRows.filter(r => r.flags.length).length;
-  $('infSub').textContent = `共 ${Mo.infRows.length} 筆，可疑 ${flagged} 筆。「活動期間發文」是看本人活動期間是否發過卡；變身時間是伺服器記錄的時間。`;
-  const f = $('infFilter').value, q = norm($('infSearch').value);
-  const infRows = Mo.infRows.filter(r => (f === 'all' || (f === 'flag' && r.flags.length) || (f === 'noPost' && !r.postedEvent)) && (!q || norm(r.name).includes(q)));
-  pagedRows('inf', infRows, $('infList'), $('infMore'), 7, (r) => h('tr', { class: r.flags.length ? 'row-flag' : '' },
-    h('td', null, r.name || h('span', { class: 'hint' }, '（空白）')),
-    h('td', null, r.inContacts ? h('span', { class: 'tag tag-ok' }, '是') : h('span', { class: 'tag tag-bad' }, '否')),
-    h('td', null, r.postedEvent ? h('span', { class: 'tag tag-ok' }, '有') : h('span', { class: 'tag tag-muted' }, '還沒有')),
-    h('td', null, r.isProg ? h('span', { class: 'tag tag-hw' }, '🧛 始祖') : '一般'),
-    h('td', null, r.flags.length ? r.flags.map(x => h('span', { class: 'tag tag-bad mr-4' }, '⚠ ' + x)) : h('span', { class: 'hint' }, '—')),
-    h('td', { class: 'nowrap' }, r.cause === 'migrated' ? h('span', { class: 'tag tag-muted', title: '資料搬家時才補記，時間是搬家時間，不是實際變身時間' }, '搬家前') : fmtDT(r.at)),
-    h('td', null, M.CAUSE_LABEL[r.cause] || r.cause || '—')),
-    Mo.infRows.length ? '沒有符合條件的紀錄' : '還沒有人變身');
-  const lf = $('lurkFilter').value;
-  const lurk = S.contacts.map((c, i) => ({ c, i })).filter(({ i }) => !Mo.postedContactIdx.has(i) && (lf === 'none' ? !Mo.infectedContactIdx.has(i) : Mo.infectedContactIdx.has(i)));
-  st.lurk = lurk.map(x => x.c);
-  $('lurkSub').textContent = lf === 'none' ? `通訊錄 ${S.contacts.length} 人中，從未發文、也還沒變身的有 ${lurk.length} 人。可以匯出給主管邀請（匯出會記入操作紀錄）。名單只用來輕鬆邀請，請不要拿來點名、比較，或當成考核的依據。` : `已變身但從未發過卡的有 ${lurk.length} 人，適合請主管鼓勵寫第一張卡。名單只用來輕鬆邀請，請不要拿來點名、比較，或當成考核的依據。`;
-  $('lurkSub').dataset.count = lurk.length;
-  pagedRows('lurk', lurk, $('lurkList'), $('lurkMore'), 3, ({ c }) => h('tr', null, h('td', null, c.name || ''), h('td', null, c.email || ''), h('td', null, c.info || '')), '沒有符合的同事');
-}
-
-function renderCharts(Mo) {
-  const series = [
-    { k: 'first', title: '第一次發文人數', unit: '人', key: true },
-    { k: 'cards', title: '卡片數', unit: '張' },
-    { k: 'infected', title: '新增變身人數', unit: '人', note: Mo.migrated ? `其中 ${Mo.migrated} 人是搬家前就已變身，時間記為搬家當天（${M.fmtMD(Mo.migratedAt)}）` : null, noteLabel: '含搬家前' },
-    { k: 'hw', title: '萬聖卡數', unit: '張' },
-    { k: 'anon', title: '匿名卡數', unit: '張' },
-  ];
-  if (!Mo.days.length) {
-    $('hwCharts').replaceChildren(h('div', { class: 'empty span-all' }, '活動開始後（10/18 起）這裡會每天更新。'));
-    $('trendTable').replaceChildren();
-    $('trendSub').textContent = '活動尚未開始。';
-    return;
-  }
-  $('trendSub').textContent = '10/18 起每天的數字（台灣時間）。滑鼠移到長條上可看當天數值。變身人數是伺服器記錄的準確時間。' + (Mo.migrated ? `有 ${Mo.migrated} 人是搬家前就已變身，統計在搬家當天（${M.fmtMD(Mo.migratedAt)}）。` : '');
-  $('hwCharts').replaceChildren(...series.map(sr => barChart(sr, Mo.days)));
-  $('trendTable').replaceChildren(
-    h('thead', null, h('tr', null, h('th', null, '日期'), series.map(sr => h('th', { class: 'num' }, sr.title)))),
-    h('tbody', null, Mo.days.map(d => h('tr', null, h('td', { class: 'nowrap' }, `${d.label}（${d.wd}）`), series.map(sr => h('td', { class: 'num' }, d[sr.k]))))));
-}
-
-// ================= 匿名巡查 =================
-const LS_PATROL = 'admin_patrol_at_v1'; // 上次標記巡查完成的時間（只存在這台電腦的瀏覽器，沒有個資）
-export function patrolLast() { try { return Number(JSON.parse(localStorage.getItem(LS_PATROL))) || 0; } catch (e) { return 0; } }
-export function patrolMark(t) { try { localStorage.setItem(LS_PATROL, JSON.stringify(t)); } catch (e) { /* 無痕模式等：忽略 */ } }
-
-function renderPatrol(Mo, now) {
-  const last = patrolLast();
-  const today = dayKey(now);
-  const newCount = Mo.patrol.filter(x => x.m.timestamp > last).length;
-  $('patrolBadge').hidden = !newCount; $('patrolBadge').textContent = newCount;
-  $('patrolBadge').setAttribute('aria-label', `${newCount} 張未巡查`);
-  $('patrolInfo').replaceChildren(h('div', { class: 'banner ' + (newCount ? 'banner-warn' : 'banner-info'), id: 'patrolSummary' },
-    `活動期間匿名卡共 ${Mo.patrol.length} 張；上次巡查（${last ? fmtDT(last) : '尚未巡查過'}）後新增 ${newCount} 張。`, phase(now) === 'before' ? ' 活動尚未開始。' : ''));
-  const f = $('patrolFilter').value, q = norm($('patrolSearch').value);
-  const list = Mo.patrol.filter(x => (f === 'all' || (f === 'today' && dayKey(x.m.timestamp) === today) || (f === 'new' && x.m.timestamp > last))
-    && (!q || [x.m.text, x.m.receiver, x.realName, x.email].some(v => norm(v).includes(q))));
-  $('patrolList').replaceChildren(...(list.length ? list.map(x => {
-    const m = x.m, img = safeImg(m.image);
-    return h('article', { class: 'pcard' + (m.timestamp > last ? ' new' : ''), 'data-id': m.id },
-      h('div', { class: 'p-head' }, h('span', { class: 'mask' }, m.author), m.timestamp > last ? h('span', { class: 'tag tag-hw' }, '新') : null),
-      h('div', { class: 'real' }, '真實發文者：', h('b', null, x.realName), x.email ? h('div', null, x.email) : null),
-      h('div', { class: 'p-meta' }, `給 ${m.receiver || '大家'}・${fmtDT(m.timestamp)}・${m.likeCount} 顆糖`),
-      h('div', { class: 'p-text' }, String(m.text ?? '')),
-      img ? h('img', { class: 'thumb', src: img, alt: '卡片附圖' }) : null,
-      h('div', { class: 'p-actions' }, h('button', { class: 'btn btn-sm btn-ghost-danger del-btn', 'data-id': m.id, onclick: () => actions.askDelete(m, x.realName) }, '刪除這張卡')));
-  }) : [h('div', { class: 'empty span-all' }, Mo.patrol.length ? (f === 'new' ? '上次巡查後沒有新的匿名卡。' : '沒有符合的匿名卡。') : '活動期間還沒有匿名卡。')]));
 }
 
 // ================= 留言管理 =================
@@ -318,13 +202,15 @@ function renderContacts(Mo) {
   const cf = $('contactFilter').value, q = norm($('contactSearch').value);
   const rows = S.users.filter(u => (cf === 'all' || (cf === 'active' && u.status === 'active') || (cf === 'removed' && u.status !== 'active'))
     && (!q || norm(u.name).includes(q) || norm(u.email).includes(q)));
-  const infIds = new Set(S.infections.map(i => i.uid));
-  pagedRows('contact', rows, $('contactList'), $('contactMore'), 8, (u) => h('tr', { class: u.status !== 'active' ? 'row-deleted' : '', 'data-user': u.id },
+  pagedRows('contact', rows, $('contactList'), $('contactMore'), 6, (u) => h('tr', { class: u.status !== 'active' ? 'row-deleted' : '', 'data-user': u.id },
     h('td', null, u.name || '', u.isAdmin ? h('span', { class: 'tag tag-key ml-6' }, '管理員') : null),
     h('td', null, u.email || ''), h('td', null, u.info || ''),
     h('td', null, u.status === 'active' ? h('span', { class: 'tag tag-ok' }, '在名單') : h('span', { class: 'tag tag-muted' }, u.status === 'blocked' ? '停權' : '已移出')),
     h('td', { class: 'num' }, posts.get(u.id) || 0),
-    h('td', null, infIds.has(u.id) ? h('span', { class: 'tag tag-hw' }, '已變身') : h('span', { class: 'hint' }, '—'))),
+    h('td', { class: 'nowrap' }, u.hasProfile || u.hasAvatar ? [
+      u.hasProfile ? h('button', { class: 'btn btn-sm btn-ghost-danger pc-clear-btn mr-4', 'data-user': u.id, onclick: () => actions.askClearProfile(u, 'profile') }, '清除資料卡') : null,
+      u.hasAvatar ? h('button', { class: 'btn btn-sm btn-ghost-danger av-clear-btn', 'data-user': u.id, onclick: () => actions.askClearProfile(u, 'avatar') }, '移除頭像') : null,
+    ] : h('span', { class: 'hint' }, '—'))),
     S.users.length ? '沒有符合的人' : '通訊錄是空的');
   renderPreview();
 }
@@ -384,7 +270,7 @@ function renderSettingsInfo() {
 const ACTION_LABEL = {
   'admin.message.delete': '刪除留言', 'admin.message.restore': '復原留言', 'admin.contacts.preview': '預覽通訊錄', 'admin.contacts.apply': '更新通訊錄',
   'admin.contacts.bind': '綁定 Posit 帳號', 'admin.settings': '修改設定', 'admin.settings.update': '修改設定', 'admin.admins': '管理員變更', 'admin.export': '匯出名單',
-  'admin.hw.settle': '結算萬聖獎勵', 'message.create': '發文', 'message.edit': '編輯留言', 'message.delete': '刪除自己的留言',
+  'admin.hw.settle': '結算萬聖獎勵', 'admin.profile.clear': '清除資料卡', 'admin.avatar.clear': '移除頭像', 'message.create': '發文', 'message.edit': '編輯留言', 'message.delete': '刪除自己的留言',
 };
 const TARGET_LABEL = { message: '留言', contacts: '通訊錄', user: '同事', settings: '設定', export: '匯出', admins: '管理員', event: '活動', photo: '照片' };
 const DETAIL_KEY = { add: '新增', update: '更新', remove: '移出', reason: '原因', appVersion: '版號', mainTitle: '主標題', subTitle: '副標題', mode: '名單', count: '人數', user_id: '對象', role: '身分', action: '動作' };
@@ -394,11 +280,13 @@ export function normAudit(e, usersById) {
   if (typeof detail === 'string') { try { detail = JSON.parse(detail); } catch (x) { /* 當成純文字 */ } }
   const uid = e.actor_user_id;
   return { at: Number(e.at ?? e.at_ms) || 0, who: e.actor_name || (uid && usersById.get(uid)?.name) || uid || '系統', role: e.actor_role || '',
-    action: String(e.action || ''), targetType: e.target_type || '', targetId: e.target_id || '', detail };
+    action: String(e.action || ''), targetType: e.target_type || '', targetId: e.target_id || '', detail,
+    targetName: e.target_type === 'user' && e.target_id ? usersById.get(e.target_id)?.name || '' : '' };
 }
 export function targetText(r) {
   const t = TARGET_LABEL[r.targetType] || r.targetType;
   if (!t && !r.targetId) return '—';
+  if (r.targetName) return `${t}（${r.targetName}）`;   // 對象是同事時顯示姓名，比編號好認
   return r.targetId && r.targetType !== 'export' && r.targetType !== 'contacts' && r.targetType !== 'settings' ? `${t || '項目'}（${r.targetId}）` : (t || r.targetId);
 }
 export function detailText(d) {
