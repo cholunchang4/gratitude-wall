@@ -11,6 +11,8 @@ const ls = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 無痕等不能存：這次照樣關掉 */ } },
 };
+const SPARSE_CARDS = 16;                                   // 牆上看得到的卡少於這個數：不足的光點從地平線升起，並加字幕
+const SKY_CAPTION = '從第一張卡起，每一道光都在';          // 暫定（6.4.1），待文字美學官定稿
 const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // 自繪線條圖示（design/千光/mockup.html 的 symbol k-*）
@@ -119,7 +121,13 @@ export function createK1000(deps) {
       .map(r => [r.left + r.width / 2, r.top + r.height / 2]);
     for (let i = starts.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [starts[i], starts[j]] = [starts[j], starts[i]]; }
     starts.length = Math.min(starts.length, max);
-    while (starts.length < Math.min(max, 12)) starts.push([Math.random() * vw, vh * (0.55 + Math.random() * 0.4)]);   // 卡片太少時從下方補
+    // 6.4.1：牆面每月 1 號清空，11/03 牆上可能只有個位數的卡。光點總數固定（桌機 40、手機 16）：
+    // 有卡的從卡片起飛；不夠的從畫面下緣（地平線）和左右兩側升起，畫面看起來仍是很多道光匯聚
+    const fromCards = starts.length;
+    for (let i = fromCards; i < max; i++) {
+      if (Math.random() < 0.7) starts.push([vw * (0.04 + Math.random() * 0.92), vh * (0.9 + Math.random() * 0.12)]);       // 地平線
+      else { const left = Math.random() < 0.5; starts.push([left ? -6 + Math.random() * 30 : vw + 6 - Math.random() * 30, vh * (0.42 + Math.random() * 0.5)]); }   // 兩側
+    }
     const fontPx = Math.max(72, Math.min(156, vw * 0.13));
     const cx = vw / 2, cy = vh * (vw <= 768 ? 0.34 : 0.30) - fontPx * 0.12;
     const targets = sampleText('1,000', fontPx, starts.length).map(([x, y]) => [cx + x, cy + y]);
@@ -129,9 +137,11 @@ export function createK1000(deps) {
       const [x1, y1] = targets[i];
       const a = Math.atan2(y1 - cy, x1 - cx) + (Math.random() - 0.5) * 0.8, dist = 60 + Math.random() * 90;
       const x2 = x1 + Math.cos(a) * dist, y2 = y1 + Math.sin(a) * dist - 20;
-      html += `<i class="k1000-dot" style="--x0:${x0 | 0}px;--y0:${y0 | 0}px;--x1:${x1 | 0}px;--y1:${y1 | 0}px;--x2:${x2 | 0}px;--y2:${y2 | 0}px;--d:${Math.round(Math.random() * 200)}ms"></i>`;
+      html += `<i class="k1000-dot" data-from="${i < fromCards ? 'card' : 'sky'}" style="--x0:${x0 | 0}px;--y0:${y0 | 0}px;--x1:${x1 | 0}px;--y1:${y1 | 0}px;--x2:${x2 | 0}px;--y2:${y2 | 0}px;--d:${Math.round(Math.random() * 200)}ms"></i>`;
     });
-    sky.innerHTML = html + '<div class="k1000-num"><b>1,000</b><span>一千道光</span></div>';
+    // 牆上的卡不多時（月初）加一句輕字幕，說明光不只來自這面牆上看得到的卡（暫定文字，待文字美學官定稿）
+    const caption = fromCards < SPARSE_CARDS ? `<em class="k1000-caption">${SKY_CAPTION}</em>` : '';
+    sky.innerHTML = html + `<div class="k1000-num"><b>1,000</b><span>一千道光</span>${caption}</div>`;
     const skip = document.createElement('button'); skip.type = 'button'; skip.className = 'k1000-skip'; skip.textContent = '略過';
     skip.setAttribute('aria-label', '略過一千道光慶祝動畫');
     document.body.append(sky, skip);

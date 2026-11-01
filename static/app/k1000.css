@@ -210,3 +210,8 @@
    ========================================================================== */
 .k1000-note .k1000-ico-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 body.hw .k1000-note { color: var(--k1000-ink); }      /* 萬聖深色模式也維持夜藍公告 */
+
+/* 6.4.1：月初牆上的卡很少時，「1,000」下方加一行輕字幕（跟著數字一起淡入淡出） */
+.k1000-num .k1000-caption { display: block; margin-top: 8px; font: 600 clamp(13px, 1.3vw, 16px)/1.5 var(--font); font-style: normal; letter-spacing: .18em; text-indent: .18em;
+  color: var(--k1000-light-2); opacity: .88; text-shadow: 0 0 10px rgba(19,27,54,.9), 0 0 14px rgba(255,190,90,.35); white-space: nowrap; }
+@media (max-width: 380px) { .k1000-num .k1000-caption { letter-spacing: .08em; text-indent: .08em; } }
