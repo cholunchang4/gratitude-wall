@@ -16,6 +16,14 @@ export const K = Object.freeze({
     "hw2026_epilogue": {
       "start": 1793462399001,
       "end": 1794067199999
+    },
+    "k1000": {
+      "start": 1793635200000,
+      "end": 1794239999999
+    },
+    "k1000_theme": {
+      "start": 1793635200000,
+      "end": 1796054399999
     }
   },
   "LEVEL_STEPS": [
@@ -104,6 +112,7 @@ export const K = Object.freeze({
   "THEME_ADMIN_NEON": "theme-admin-neon",
   "THEME_HW": "theme-halloween",
   "THEME_MOON": "theme-moonlight",
+  "THEME_K1000": "theme-k1000",
   "HW_MASKS": [
     "🎃 搗蛋南瓜",
     "🦇 迷路蝙蝠",

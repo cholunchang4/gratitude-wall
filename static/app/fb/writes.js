@@ -38,7 +38,7 @@ export function validateNewMessage(store, { text, receiver, theme, anonymous, ha
   if (anonymous && !admin && level < 7 && !hwOn) throw locked('匿名發佈要升到 Lv.7 才能使用。');
   if (hasImage && !admin && level < 6) throw locked('附圖要升到 Lv.6 才能使用。');
   const hwOk = (hwOn && !!store.hw.inf[uid]) || store.hwRewardFor(uid, now) !== null;
-  const denied = R.themeDenied(theme, { level, exp, isAdmin: admin, hwOk });
+  const denied = R.themeDenied(theme, { level, exp, isAdmin: admin, hwOk, k1000Ok: R.k1000ThemeActive(now) });
   if (denied === 'BAD_THEME') throw new WallError(400, 'BAD_THEME', '不認得這個卡片主題，請重新選擇。');
   if (denied) throw locked(denied);
   let bucket = 'regular';

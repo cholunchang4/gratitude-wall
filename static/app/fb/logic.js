@@ -22,6 +22,10 @@ export function tpeDateKey(ms) { const p = tpeParts(ms); return `${p.y}${String(
 export const HW = { ...K.EVENTS.hw2026 };
 export const MIDAUTUMN = { ...K.EVENTS.midautumn2026 };
 export const HW_EPILOGUE = { ...K.EVENTS.hw2026_epilogue };
+// T100「一千道光」：公告與動畫期間（k1000）、千光模板可用期間（k1000_theme）。不是「活動」：不給加碼額度、不算 activeEvent
+export const K1000 = { ...K.EVENTS.k1000 };
+export const K1000_THEME = { ...K.EVENTS.k1000_theme };
+export function overrideK1000Window(notice, theme) { if (notice) Object.assign(K1000, notice); if (theme) Object.assign(K1000_THEME, theme); }   // 測試用
 export function overrideHwWindow(start, end) { HW.start = start; HW.end = end; HW_EPILOGUE.start = end + 1; HW_EPILOGUE.end = end + 7 * DAY_MS; }
 const within = (e, t) => e.start <= t && t <= e.end;
 export function activeEvent(now) {
@@ -31,6 +35,8 @@ export function activeEvent(now) {
 }
 export const eventContains = (id, t) => (id === 'hw2026' ? within(HW, t) : id === 'midautumn2026' ? within(MIDAUTUMN, t) : false);
 export const hwActive = (now) => within(HW, now);
+export const k1000Active = (now) => within(K1000, now);
+export const k1000ThemeActive = (now) => within(K1000_THEME, now);
 export const hwEpilogueActive = (now) => within(HW_EPILOGUE, now);
 export function hwStage(count) { return count >= 150 ? 'hw-stage-3' : count >= 50 ? 'hw-stage-2' : 'hw-stage-1'; }
 export function hwRewardExpiry(count, eventEnd = HW.end) {
@@ -56,8 +62,8 @@ export function maxLength(level, isAdmin) {
 }
 export function emojiTier(level, isAdmin) { return isAdmin || level >= 7 ? 'full' : level >= 4 ? 'mid' : level >= 2 ? 'basic' : 'none'; }
 export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort((a, b) => a[1] - b[1]).filter(([, need]) => exp >= need).map(([t]) => t); }
-const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON]);
-export function themeDenied(theme, { level, exp, isAdmin, hwOk }) {
+const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000]);
+export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false }) {
   if (!ALL_THEMES.has(theme)) return 'BAD_THEME';
   if (theme === K.THEME_MOON) return '這個主題已經結束囉，請換一個主題。';
   if (isAdmin) return null;
@@ -66,6 +72,7 @@ export function themeDenied(theme, { level, exp, isAdmin, hwOk }) {
   if (theme in K.THEMES_REWARD) return exp >= K.THEMES_REWARD[theme] ? null : '這個主題是高等級的隱藏獎勵，還沒解鎖喔。';
   if (theme === K.THEME_ADMIN || theme === K.THEME_ADMIN_NEON) return '這個主題只有管理員可以使用。';
   if (theme === K.THEME_HW) return hwOk ? null : '萬聖卡要先變身成吸血鬼才能使用（點開一張萬聖卡就會變身）。';
+  if (theme === K.THEME_K1000) return k1000Ok ? null : '千光模板只在 11/3～11/30 可以使用，請換一個樣式。';
   return 'BAD_THEME';
 }
 

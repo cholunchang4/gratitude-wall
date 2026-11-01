@@ -4,10 +4,11 @@ import { requireMember, USE_EMULATOR } from './fb/session.js';
 import { WallBackend } from './fb/backend.js';
 import { ProfileService } from './fb/profile.js';      // T098 個人資料卡＋頭像（Firebase 讀寫）
 import { createProfileUI } from './profile-ui.js';     // T098 個人資料卡畫面（檢視、編輯、裁切、自己的頭像選單）
+import { createK1000 } from './k1000.js';             // T100「一千道光」：千光模板、慶祝動畫、公告
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
-let PROFILE = null, PUI = null;     // T098：startApp 裡建立
+let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
 
         let currentUser = null;   // { uid, displayName }：由 me 轉出，維持 4.8 程式碼原本用的形狀
         let ME = null;            // 伺服器回傳的「我的狀態」（等級、經驗、配額、解鎖、偏好、萬聖狀態）
@@ -16,7 +17,7 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.3";
+        const CURRENT_APP_VERSION = "6.4";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -374,6 +375,7 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
                 if (hwInfo.end) HW_EVENT_END = hwInfo.end;
                 if (hwInfo.target) hwTotalTarget = hwInfo.target;
             }
+            if (K1K) K1K.update(ev);   // T100：千光模板色票、慶祝動畫、公告（只看伺服器時間）
         }
 
         function updateFestivalUI() {
@@ -486,7 +488,7 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
         function renderHwEpilogue() {
             const box = document.getElementById('hwEpilogue'); if (!box) return;
             let closed = false; try { closed = localStorage.getItem(HW_EPILOGUE_CLOSED_KEY) === '1'; } catch (e) {}
-            const show = !IS_HALLOWEEN && !!hwEpilogue && !closed;
+            const show = !IS_HALLOWEEN && !!hwEpilogue && !closed && !(K1K && K1K.holdsNoticeSlot());   // T100：千光公告這次要出現時，謝幕下次再顯示
             if (show) document.getElementById('hwEpilogueText').innerHTML = hwEpilogueText(hwEpilogue);
             box.hidden = !show;
         }
@@ -494,6 +496,20 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
             playSound('click'); try { localStorage.setItem(HW_EPILOGUE_CLOSED_KEY, '1'); } catch (e) {}
             document.getElementById('hwEpilogue').hidden = true;
         });
+        // T100「一千道光」（k1000.js）：期間由伺服器時間決定，applyEventState 每次拿到 events 都會呼叫 K1K.update
+        K1K = createK1000({
+            addSwatch: (theme, cls, name, cap) => { const btn = addLimitedSwatch(theme, cls, name, cap); syncPickerState(); return btn; },
+            removeSwatch: (btn) => {
+                const cell = btn.closest('.sw-cell'); if (cell) cell.remove();
+                if (currentTheme === 'theme-k1000') { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); }
+                syncPickerState();
+            },
+            openManual: () => { if (PUI) PUI.openEditor(document.getElementById('userAvatar')); },
+            focusComposer: () => { document.getElementById('composer').classList.add('expanded'); const m = document.getElementById('msgInput'); if (m) m.focus(); },
+            nowMs: () => nowMs(),
+            canShowNotice: () => !document.getElementById('onboardingOverlay').classList.contains('active') && !document.querySelector('.pc-overlay'),
+        });
+        if (USE_EMULATOR) window.__k1k = K1K;
 
         let entitiesCreated = false;
         function createHwEntities(emoji) {
@@ -1041,13 +1057,13 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
         const THEME_CLASS = { 'theme-classic': 't-classic', 'theme-sage': 't-sage', 'theme-lemon': 't-lemon', 'theme-slate': 't-slate', 'theme-lavender': 't-lavender',
             'theme-matcha': 't-matcha', 'theme-ice': 't-ice', 'theme-midnight': 't-midnight', 'theme-wine': 't-wine', 'theme-terracotta': 't-terracotta',
             'theme-neon': 't-r-neon', 'theme-holo': 't-r-holo', 'theme-gold': 't-r-gold', 'theme-cosmic': 't-r-cosmic', 'theme-ultimate': 't-r-ultimate',
-            'theme-admin': 't-admin', 'theme-admin-neon': 't-admin-neon', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon' };
+            'theme-admin': 't-admin', 'theme-admin-neon': 't-admin-neon', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon', 'theme-k1000': 'k1000-card' };
         const THEME_NAMES = { 'theme-classic': '純淨白', 'theme-sage': '鼠尾草綠', 'theme-lemon': '檸檬霜', 'theme-slate': '迷霧灰', 'theme-lavender': '薰衣草紫',
             'theme-matcha': '抹茶青', 'theme-ice': '冰川藍', 'theme-midnight': '星空黑', 'theme-wine': '勃根地紅', 'theme-terracotta': '陶土橘',
             'theme-neon': '霓虹幻影', 'theme-holo': '極光幻境', 'theme-gold': '璀璨鑽金', 'theme-cosmic': '星際領航', 'theme-ultimate': '傳說之神',
-            'theme-admin': '金鑽星冕', 'theme-admin-neon': '霓虹流光', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光' };
+            'theme-admin': '金鑽星冕', 'theme-admin-neon': '霓虹流光', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光', 'theme-k1000': '千光' };
         const THEME_PIPS = { 'theme-neon': 1, 'theme-holo': 2, 'theme-gold': 3, 'theme-cosmic': 4, 'theme-ultimate': 5 };
-        const FX_THEMES = new Set(['theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon', 'theme-halloween', 'theme-moonlight']);
+        const FX_THEMES = new Set(['theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon', 'theme-halloween', 'theme-moonlight', 'theme-k1000']);
         // 管理員模板兩款：至尊 v3「金鑽星冕」（theme-admin）、原版「霓虹流光」（theme-admin-neon，T097）。固定上牆、最上層景深兩款都適用
         const ADMIN_THEMES = new Set(['theme-admin', 'theme-admin-neon']);
         const FX2_THEMES = new Set(['theme-ultimate', 'theme-admin']);
@@ -2796,7 +2812,7 @@ let PROFILE = null, PUI = null;     // T098：startApp 裡建立
         const LIST_PAGE = 30;
         const listState = { mode: 'wall', query: '', filter: 'all', sort: 'new', shown: LIST_PAGE, items: [], focusId: null, observer: null };
         const LIST_BAR_CLASS = { 'theme-classic': 'lt-classic', 'theme-sage': 'lt-sage', 'theme-lemon': 'lt-lemon', 'theme-slate': 'lt-slate', 'theme-lavender': 'lt-lavender',
-            'theme-matcha': 'lt-matcha', 'theme-ice': 'lt-ice', 'theme-midnight': 'lt-midnight', 'theme-wine': 'lt-wine', 'theme-terracotta': 'lt-terracotta', 'theme-moonlight': 'lt-moon',
+            'theme-matcha': 'lt-matcha', 'theme-ice': 'lt-ice', 'theme-midnight': 'lt-midnight', 'theme-wine': 'lt-wine', 'theme-terracotta': 'lt-terracotta', 'theme-moonlight': 'lt-moon', 'theme-k1000': 'k1000-lt',
             'theme-halloween': 'lt-halloween', 'theme-neon': 'lt-r-neon', 'theme-holo': 'lt-r-holo', 'theme-gold': 'lt-r-gold', 'theme-cosmic': 'lt-r-cosmic', 'theme-ultimate': 'lt-r-ultimate', 'theme-admin': 'lt-admin', 'theme-admin-neon': 'lt-admin-neon' };
         function setViewMode(mode) {
             if (mode === listState.mode) return;

@@ -1,0 +1,212 @@
+/* 正式站版本：由 design/千光/k1000.css（美術總監 2，2026-11-01，小陳已審）原樣搬入，只在檔尾補少量接法用的樣式（程式設計 T100）。 */
+/* ==========================================================================
+   感謝牆「一千道光」里程碑（k1000）　美術總監 2　2026-11-01
+   直接併入 app.css 末端即可。三個部分：
+     A. 千光卡片模板   .k1000-card（＝theme-k1000 的卡片 class）、清單色條 .k1000-lt
+     B. 開站慶祝動畫   .k1000-sky
+     C. 站內公告       .k1000-note（放在 #hwEpilogue 同一個位置）
+   只動 transform／opacity；prefers-reduced-motion 時全部靜止、動畫不播。
+   ========================================================================== */
+
+/* ---------- 0. Token ---------- */
+:root {
+  --k1000-night-a: #1e2b4f;   /* 夜藍（亮） */
+  --k1000-night-b: #131b36;   /* 夜藍（暗） */
+  --k1000-light: #ffd27a;     /* 暖光（主色）：夜藍底上 9.8:1 以上 */
+  --k1000-light-2: #ffe7b0;   /* 暖光（淺） */
+  --k1000-core: #fff6dc;      /* 光點中心 */
+  --k1000-ink: #f7f1e3;       /* 夜藍底上的內文：12.3:1 以上 */
+  --k1000-muted: #c5cbe0;     /* 夜藍底上的次要文字：8.6:1 以上 */
+}
+
+/* ==========================================================================
+   A. 千光卡片模板
+   - 比 Lv.9 霓虹樸素：1px 淡金細框、沒有外光暈、沒有等級鑽 ◆、只有極慢的透明度閃爍。
+   - 和深色基本款「午夜」分得開：午夜是灰藍 #353d5c＋蜜桃色字；千光更深、更藍，有光點和燈籠。
+   - 和萬聖（紫底橘框）、至尊（金冠虹框）都不同色系。
+   ========================================================================== */
+.k1000-card {
+  --c-bg: radial-gradient(120% 80% at 8% 108%, rgba(255,190,96,.16) 0%, transparent 55%),
+          linear-gradient(165deg, var(--k1000-night-a) 0%, var(--k1000-night-b) 100%);
+  --c-ink: var(--k1000-ink);
+  --c-accent: var(--k1000-light);
+  --c-muted: var(--k1000-muted);
+  --c-border: rgba(255,210,122,.30);
+  --c-like-bg: rgba(255,210,122,.14);
+  --c-like-ink: var(--k1000-light-2);
+}
+/* 有 .fx 才有光點與燈籠（app.js：把 theme-k1000 加進 FX_THEMES） */
+.k1000-card .card-to { padding-right: calc(22px * var(--s)); }   /* 右上角留給燈籠 */
+/* 燈籠：自繪線條，右上角，低調 */
+.k1000-card .fx::before {
+  right: calc(10px * var(--s)); top: calc(8px * var(--s));
+  width: calc(14px * var(--s)); height: calc(20px * var(--s)); opacity: .62;
+  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 20' fill='none' stroke='%23ffd27a' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 1v2.2'/%3E%3Cpath d='M4.6 3.4h4.8'/%3E%3Cpath d='M3.6 5.2c0-1 .9-1.8 1.9-1.8h3c1 0 1.9.8 1.9 1.8v7.6c0 1-.9 1.8-1.9 1.8h-3c-1 0-1.9-.8-1.9-1.8z'/%3E%3Cpath d='M5.2 16.4h3.6'/%3E%3Cpath d='M7 16.4v2.4'/%3E%3Ccircle cx='7' cy='9' r='1.6' fill='%23ffd27a' stroke='none'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 3px rgba(255,200,100,.55));
+}
+/* 散落的細光點：9 顆，大小隨卡片縮放；避開左上收件人與左下作者的主要區 */
+.k1000-card .fx::after {
+  inset: 0;
+  background:
+    radial-gradient(calc(1.6px * var(--s)) calc(1.6px * var(--s)) at 58% 14%, var(--k1000-core) 55%, transparent 100%),
+    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 74% 30%, var(--k1000-light-2) 55%, transparent 100%),
+    radial-gradient(calc(2px * var(--s)) calc(2px * var(--s)) at 90% 52%, var(--k1000-light) 50%, transparent 100%),
+    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 82% 70%, var(--k1000-core) 55%, transparent 100%),
+    radial-gradient(calc(1.4px * var(--s)) calc(1.4px * var(--s)) at 46% 92%, var(--k1000-light-2) 55%, transparent 100%),
+    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 32% 8%, var(--k1000-light-2) 55%, transparent 100%),
+    radial-gradient(calc(1.8px * var(--s)) calc(1.8px * var(--s)) at 96% 22%, var(--k1000-core) 55%, transparent 100%),
+    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 64% 60%, var(--k1000-light) 55%, transparent 100%),
+    radial-gradient(calc(1.4px * var(--s)) calc(1.4px * var(--s)) at 6% 56%, var(--k1000-light-2) 55%, transparent 100%);
+  opacity: .85;
+  animation: k1000-twinkle 5.2s ease-in-out infinite alternate;
+}
+@keyframes k1000-twinkle { from { opacity: .55; } to { opacity: 1; } }
+/* 放大卡：光點跟著 --s 變大；放大時陰影沿用 .message-card.focused 的 --sh-3，不另加光暈 */
+/* 樣式選單的小色票：燈籠縮小、置中靠右 */
+.swatch.card.k1000-card .fx::before { top: 50%; margin-top: -10px; right: 10px; }
+.k1000-swatch-cap b { color: #2b2b33; }
+.k1000-swatch-cap .k1000-until { display: block; color: #8a5a00; font-weight: 700; white-space: nowrap; }   /* 白底 5.9:1 */
+/* 撰寫區「樣式」按鈕上的 26px 小樣本：只要底色 */
+.style-btn .sw.card.k1000-card .fx { display: none; }
+
+/* 清單模式：左側色條＝暖光漸入夜藍，時間軸節點是一顆暖光點 */
+.list-row.k1000-lt { --bar: linear-gradient(#ffd27a 0%, #e9a94a 35%, #24345f 75%); }
+.list-row.k1000-lt::after { background: radial-gradient(circle at 40% 40%, #fff6dc, #ffd27a 55%, #c98a2b); }
+
+@media (prefers-reduced-motion: reduce) {
+  .k1000-card .fx::after { animation: none; opacity: .85; }
+}
+
+/* ==========================================================================
+   B. 開站慶祝動畫 .k1000-sky
+   結構（由 JS 產生，見 k1000-sky.js）：
+     <div class="k1000-sky" aria-hidden="true">
+       <div class="k1000-veil"></div>
+       <i class="k1000-dot" style="--x0 --y0 --x1 --y1 --x2 --y2 --d"></i> × N（桌機 ≤40、手機 ≤16）
+       <div class="k1000-num"><b>1,000</b><span>一千道光</span></div>
+     </div>
+     <button class="k1000-skip">略過</button>（在 .k1000-sky 外面，鍵盤可聚焦）
+   時間軸（總長 2,100ms；光點最晚延遲 200ms → 2,300ms 前一定結束 — 見規格 3.2）：
+     0–200 遮罩淡入 → 100–1,100 光點從各卡升起、飛向數字 → 900–1,250 數字亮起
+     → 1,250–1,750 停留 → 1,750–2,100 光點散開、數字與遮罩淡出
+   ========================================================================== */
+.k1000-sky { position: fixed; inset: 0; z-index: 94500; pointer-events: auto; cursor: pointer; overflow: hidden; contain: strict; }
+.k1000-veil { position: absolute; inset: 0; opacity: 0;
+  background: radial-gradient(38% 30% at 50% 30%, rgba(255,176,72,.16) 0%, transparent 100%), linear-gradient(180deg, rgba(13,19,42,.84) 0%, rgba(13,19,42,.74) 100%);
+  animation: k1000-veil 2100ms linear forwards; }
+@keyframes k1000-veil { 0% { opacity: 0; } 10% { opacity: 1; } 83% { opacity: 1; } 100% { opacity: 0; } }
+
+.k1000-dot { position: absolute; z-index: 2; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; opacity: 0;
+  background: radial-gradient(circle, var(--k1000-core) 0%, var(--k1000-light) 45%, rgba(255,190,90,0) 72%);
+  box-shadow: 0 0 10px 2px rgba(255,186,84,.55);
+  will-change: transform, opacity;
+  animation: k1000-fly 1900ms cubic-bezier(.33,0,.2,1) var(--d, 0ms) forwards; }
+@keyframes k1000-fly {
+  0%   { transform: translate(var(--x0), var(--y0)) scale(.4); opacity: 0; }
+  8%   { transform: translate(var(--x0), calc(var(--y0) - 14px)) scale(.8); opacity: 1; }
+  52%  { transform: translate(var(--x1), var(--y1)) scale(1); opacity: 1; }
+  80%  { transform: translate(var(--x1), var(--y1)) scale(.9); opacity: .9; }
+  100% { transform: translate(var(--x2), var(--y2)) scale(.3); opacity: 0; }
+}
+
+.k1000-num { position: absolute; z-index: 1; left: 50%; top: 30%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; opacity: 0;
+  animation: k1000-num 2100ms ease-out forwards; }
+.k1000-num b { display: block; font: 800 clamp(72px, 13vw, 156px)/1 var(--font); letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--k1000-core);
+  text-shadow: 0 0 14px rgba(255,214,140,.95), 0 0 42px rgba(255,176,72,.75), 0 0 90px rgba(255,150,40,.45); }
+.k1000-num span { display: block; margin-top: 10px; font: 700 clamp(15px, 1.6vw, 20px)/1.4 var(--font); letter-spacing: .5em; text-indent: .5em; color: var(--k1000-light-2);
+  text-shadow: 0 0 10px rgba(19,27,54,.9), 0 0 16px rgba(255,190,90,.5); }
+@keyframes k1000-num {
+  0%, 42% { opacity: 0; transform: translate(-50%, -50%) scale(.92); }
+  60%     { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  83%     { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+  100%    { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
+}
+
+/* 跳過：點畫面任何地方都會跳過；這顆給鍵盤與螢幕閱讀器（Esc 也可以） */
+.k1000-skip { position: fixed; z-index: 94510; right: 20px; top: 20px; min-width: 72px; height: 44px; padding: 0 18px; border-radius: 999px;
+  border: 1px solid rgba(255,231,176,.55); background: rgba(19,27,54,.55); color: var(--k1000-light-2); font: 700 14px var(--font); cursor: pointer;
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: k1000-veil 2100ms linear forwards; }
+.k1000-skip:hover { background: rgba(19,27,54,.75); }
+.k1000-skip:focus-visible { outline: 3px solid var(--k1000-light); outline-offset: 2px; }
+/* 跳過或播完：加 .is-leaving，150ms 淡出後由 JS 移除 */
+.k1000-sky.is-leaving, .k1000-skip.is-leaving { animation: none; opacity: 0; transition: opacity 150ms ease-out; }
+.k1000-sky.is-leaving * { animation-play-state: paused; }
+
+@media (max-width: 768px) {
+  .k1000-num { top: 34%; }
+  .k1000-dot { width: 12px; height: 12px; margin: -6px 0 0 -6px; }
+  .k1000-skip { right: 12px; top: calc(12px + env(safe-area-inset-top)); }
+}
+@media (prefers-reduced-motion: reduce) { .k1000-sky, .k1000-skip { display: none !important; } }   /* JS 也要直接不建立 */
+
+/* ==========================================================================
+   C. 站內公告 .k1000-note（沿用 .hw-epilogue 的位置、寬度、左邊色條與 ✕ 44px；配色換成夜藍＋暖光）
+   ========================================================================== */
+.k1000-note { position: relative; margin: 10px auto 0; max-width: 540px; padding: 14px 6px 14px 16px; border-radius: 14px; text-align: left;
+  background: radial-gradient(90% 120% at 100% 0%, rgba(255,190,96,.20) 0%, transparent 55%), linear-gradient(160deg, var(--k1000-night-a) 0%, var(--k1000-night-b) 100%);
+  border: 1px solid rgba(255,210,122,.32); border-left: 3px solid var(--k1000-light); color: var(--k1000-ink);
+  box-shadow: 0 10px 24px -14px rgba(19,27,54,.6); }
+.k1000-note[hidden] { display: none; }
+.k1000-note::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: .8;
+  background: radial-gradient(1.6px 1.6px at 62% 18%, #fff6dc 55%, transparent), radial-gradient(1.2px 1.2px at 80% 64%, #ffe7b0 55%, transparent),
+              radial-gradient(1.8px 1.8px at 92% 40%, #ffd27a 50%, transparent), radial-gradient(1.2px 1.2px at 44% 88%, #ffe7b0 55%, transparent); }
+.k1000-note > * { position: relative; }
+.k1000-note-head { display: flex; align-items: flex-start; gap: 4px; }
+.k1000-note-title { flex: 1; min-width: 0; margin: 0; font-size: 16px; font-weight: 800; letter-spacing: 3px; color: var(--k1000-light); line-height: 1.5; padding-top: 1px; }
+.k1000-note-title i { font-style: normal; font-size: 11px; vertical-align: 2px; letter-spacing: 0; margin: 0 6px; color: var(--k1000-light-2); }
+.k1000-note-close { flex: none; width: 44px; height: 44px; margin: -10px 0 -8px; border: 0; border-radius: 12px; background: none; color: var(--k1000-light-2); font-size: 16px; cursor: pointer; }
+.k1000-note-close:hover { background: rgba(255,231,176,.12); }
+.k1000-note-close:focus-visible, .k1000-note button:focus-visible, .k1000-note a:focus-visible { outline: 3px solid var(--k1000-light); outline-offset: -3px; }
+.k1000-note-lead { margin: 2px 40px 0 0; font-size: 14px; line-height: 1.7; color: var(--k1000-ink); }
+.k1000-note-lead b { color: var(--k1000-light); font-weight: 800; }
+
+/* 三段獎勵：小圖示＋一行字 */
+.k1000-gifts { list-style: none; margin: 10px 10px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.k1000-gift { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border-radius: 10px; background: rgba(255,231,176,.07); border: 1px solid rgba(255,210,122,.18); font-size: 13px; line-height: 1.5; color: var(--k1000-muted); }
+.k1000-gift svg { flex: none; width: 20px; height: 20px; margin-top: 1px; stroke: var(--k1000-light); fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.k1000-gift b { display: block; color: var(--k1000-ink); font-size: 13px; font-weight: 800; }
+
+/* 完整故事（按「讀完整故事」展開；在公告裡捲動，不把牆推下去） */
+.k1000-story { margin: 10px 10px 0 0; padding: 12px 14px; max-height: min(46vh, 380px); overflow-y: auto; overscroll-behavior: contain; border-radius: 10px;
+  background: rgba(8,12,28,.35); font-size: 14px; line-height: 1.85; color: var(--k1000-ink); }
+.k1000-story[hidden] { display: none; }
+.k1000-note.is-open .k1000-note-lead, .k1000-note.is-open .k1000-gifts { display: none; }   /* 展開故事時，導言和三格獎勵收起（故事裡都有），不重複 */
+.k1000-story p { margin: 0 0 10px; }
+.k1000-story p:last-child { margin-bottom: 0; }
+.k1000-story b { color: var(--k1000-light); }
+.k1000-story h4 { display: flex; align-items: center; gap: 6px; margin: 14px 0 2px; font-size: 14px; color: var(--k1000-light); }
+.k1000-story h4 svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.k1000-story .k1000-legend { font-style: italic; color: var(--k1000-light-2); }
+.k1000-story::-webkit-scrollbar { width: 6px; } .k1000-story::-webkit-scrollbar-thumb { background: rgba(255,231,176,.3); border-radius: 3px; }
+
+.k1000-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 10px 0 0; }
+.k1000-btn { min-height: 44px; padding: 0 18px; border-radius: 999px; font: 800 14px var(--font); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+.k1000-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.k1000-btn.is-primary { border: 0; color: #2a1a00; background: linear-gradient(135deg, #ffe2a0 0%, #ffc65c 100%); box-shadow: 0 6px 16px -8px rgba(255,170,60,.9); }   /* 深字 10.8:1 以上 */
+.k1000-btn.is-primary:hover { background: linear-gradient(135deg, #ffe9b6 0%, #ffd277 100%); }
+.k1000-btn.is-ghost { border: 1px solid rgba(255,231,176,.45); background: transparent; color: var(--k1000-light-2); }
+.k1000-btn.is-ghost:hover { background: rgba(255,231,176,.1); }
+.k1000-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.k1000-note-foot { margin: 10px 10px 0 0; font-size: 12px; color: var(--k1000-muted); }
+.k1000-short { display: none; }   /* 手機短版的導言 */
+
+@media (max-width: 768px) {
+  .k1000-note { grid-column: 1 / -1; grid-row: 3; margin: 6px 0 0; max-width: none; padding: 12px 4px 12px 14px; }
+  .k1000-note-title { font-size: 15px; letter-spacing: 2px; }
+  .k1000-note-lead { margin-right: 10px; }
+  .k1000-long { display: none; } .k1000-short { display: inline; }
+  .k1000-gifts { grid-template-columns: 1fr; gap: 6px; }
+  .k1000-gift { padding: 7px 10px; align-items: center; }
+  .k1000-gift b { display: inline; margin-right: 6px; }
+  .k1000-actions { display: grid; grid-template-columns: 1fr 1fr; }
+  .k1000-btn { justify-content: center; padding: 0 10px; }
+  .k1000-btn.is-primary { grid-column: 1 / -1; }
+  .k1000-story { max-height: 42vh; }
+}
+@media (max-width: 380px) { .k1000-gift { font-size: 12.5px; } }
+
+/* ==========================================================================
+   接法補充（程式設計 T100）
+   ========================================================================== */
+.k1000-note .k1000-ico-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
+body.hw .k1000-note { color: var(--k1000-ink); }      /* 萬聖深色模式也維持夜藍公告 */

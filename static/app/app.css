@@ -1824,3 +1824,8 @@ body.hw #hwOverlay .modal-box :focus-visible, body.hw #onboardingOverlay .modal-
 @media (max-width: 400px) {
   .message-card.focused.t-admin .card-date { padding-left: 26px; }
 }
+
+/* 清單模式的放大卡不要套牆面放大卡的置中位移（T097b 的 translate(-50%,-50%) 會讓清單放大卡往左上偏、長文被切掉）；6.4 修正 */
+.lm-focus .card.focused, .lm-focus .card.focused:not(.has-image) { transform: none !important; }
+@media (max-width: 480px) { .lm-focus { padding: 16px; } #lmFocus .card.focused { width: calc(100vw - 32px) !important; } }   /* 手機：清單放大卡寬度扣掉左右留白，才會置中不超出 */
+.lm-focus { grid-template-columns: minmax(0, 1fr); } .lm-focus-stage { max-width: 100%; } .lm-focus-bar { box-sizing: border-box; max-width: 100%; }   /* 清單放大卡下方的時間列不超出留白（超出會把整組往右推、卡片沒置中） */

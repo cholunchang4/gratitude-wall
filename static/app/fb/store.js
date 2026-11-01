@@ -205,6 +205,8 @@ export class WallStore {
     const out = { active: active ? [active] : [],
       hw2026: { start: R.HW.start, end: R.HW.end, infected_count: count, elite_count: this.eliteCount(), target: R.HW.target || 200, stage: R.hwStage(count) } };
     if (active === 'midautumn2026') out.midautumn2026 = { start: R.MIDAUTUMN.start, end: R.MIDAUTUMN.end };
+    if (R.k1000Active(now)) out.k1000 = { start: R.K1000.start, end: R.K1000.end };                       // T100 公告與動畫
+    if (R.k1000ThemeActive(now)) out.k1000_theme = { start: R.K1000_THEME.start, end: R.K1000_THEME.end };   // T100 千光模板
     if (R.hwEpilogueActive(now)) out.hw2026_epilogue = { start: R.HW_EPILOGUE.start, end: R.HW_EPILOGUE.end, final_count: count, reward_until: R.hwRewardExpiry(count) };
     return out;
   }
