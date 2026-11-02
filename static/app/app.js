@@ -17,7 +17,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.4.2";
+        const CURRENT_APP_VERSION = "6.4.3";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -2650,6 +2650,55 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             });
             enforceFxBudget();
         }
+
+        // 6.4.3（T103，移植 6.5 的做法）：保護區（scRegion 的障礙物）變了——千光公告出現／關閉／展開故事、萬聖謝幕出現／關閉（都在 .brand 裡，會撐大標題膠囊）：
+        // 壓到保護區的卡重新找位置；保護區變小時，空出來的位置從輪播池補卡（wallFillFreed）。不整面重排
+        function wallAvoidObstacles() {
+            const R = wallState.R;
+            if (!R || !wallState.rendered || !wallState.layout || wallState.layout.isMobile || (typeof listState !== 'undefined' && listState.mode !== 'wall') || wallState.validCount === 0) return;
+            const prevFree = R.freePts ? R.freePts.length : 0;
+            const fresh = scRegion();
+            R.obstacles = fresh.obstacles; R.freePts = fresh.freePts; R.cellFree = fresh.cellFree;
+            const placed = scLivePlaced();
+            const hit = placed.filter(c => c.cx != null && !c.el._dragged && c.el !== currentFocusedCard && !scInside(c, R));
+            hit.forEach(c => {
+                const others = scLivePlaced().filter(p => p !== c);
+                scRecomputeCover(others);
+                if (scFindSpot(c, others, R, 420)) scPlace(c, 0);
+                else { c.el.remove(); wallState.hidden.push(c.m); }
+            });
+            if (hit.length) { const live = scLivePlaced(); scRecomputeCover(live); scRestack(live); }
+            if (fresh.freePts.length > prevFree + 20) wallFillFreed(R, fresh);   // 可用面積變大（約 20 個取樣點＝8,000px² 以上）才補
+        }
+        // 6.4.3（T103）：保護區變小（千光公告關閉、收起故事、謝幕關閉、面板收合）時，空出來的位置從輪播池補卡。
+        // 只往空位補、不動已經在牆上的卡（不整面重排）；張數上限照目前的可用面積重算。卓倫回報：公告開著時牆面重排過，關掉公告後中間一大片空白
+        function wallFillFreed(R, fresh) {
+            if (wallState.dealing || isFilterMeOnly || currentFocusedCard || activeDragCard || !wallState.byId) return;
+            const maxBase = parseInt(systemSettings.maxMessages) || 50;
+            const target = Math.min(fresh.N, fresh.wide ? Math.round(maxBase * fresh.N / SC_COVER_CAP) : maxBase);
+            const placed = scLivePlaced();
+            if (placed.length >= target) return;
+            wallState.safeMax = Math.max(wallState.safeMax || 0, target);
+            const onWall = new Set(placed.map(p => p.m.id));
+            const pool = wallState.hidden.filter(m => !onWall.has(m.id) && wallState.byId.has(m.id)).map(m => wallState.byId.get(m.id));
+            const t0 = performance.now();
+            while (placed.length < target && pool.length && performance.now() - t0 < 160) {
+                const m = pool.shift();
+                scRecomputeCover(placed);
+                const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
+                let ok = scFindSpot(c, placed, R, 420);
+                if (!ok) { // 和發牌一樣：放不下就縮小 10% 再試（字仍 ≥ 12px）
+                    scSizeCard(c.el, c.m, SC_DEPTH[c.depth] * R.B * .9); scMeasure(c);
+                    ok = 15 * parseFloat(c.el.style.getPropertyValue('--s')) >= 12 && scFindSpot(c, placed, R, 400);
+                }
+                if (ok) { scCommit(c, placed); scPlace(c, 0); wallState.hidden = wallState.hidden.filter(h => h.id !== m.id); }
+                else c.el.remove();
+            }
+            wallState.placed = placed; scRecomputeCover(placed); scRestack(placed); enforceFxBudget();
+        }
+        { const brand = document.querySelector('.brand');
+          if (brand && 'MutationObserver' in window) { let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wallAvoidObstacles, 150); })
+            .observe(brand, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] }); } }
 
         // 牆上卡片超過上限時，把最底層的卡片收回輪播池
         function trimExcessCards() {
