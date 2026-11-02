@@ -83,49 +83,50 @@
      <div class="k1000-sky" aria-hidden="true">
        <div class="k1000-veil"></div>
        <i class="k1000-dot" style="--x0 --y0 --x1 --y1 --x2 --y2 --d"></i> × N（桌機 ≤40、手機 ≤16）
-       <div class="k1000-num"><b>1,000</b><span>一千道光</span></div>
+       <div class="k1000-num"><b>1,000</b><span>一千道光</span><em class="k1000-caption">字幕</em></div>
      </div>
      <button class="k1000-skip">略過</button>（在 .k1000-sky 外面，鍵盤可聚焦）
-   時間軸（總長 2,100ms；光點最晚延遲 200ms → 2,300ms 前一定結束 — 見規格 3.2）：
-     0–200 遮罩淡入 → 100–1,100 光點從各卡升起、飛向數字 → 900–1,250 數字亮起
-     → 1,250–1,750 停留 → 1,750–2,100 光點散開、數字與遮罩淡出
+   時間軸（6.4.2 放慢，卓倫回饋「太快來不及看」；總長 4,500ms＝k1000.js K1000_ANIM_MS）：
+     0–400 遮罩淡入 → 0–2,100 光點從各卡／地平線升起、慢慢飛向數字（每顆再隨機延遲 0–200）
+     → 1,700–2,400 數字、「一千道光」、字幕亮起 → 2,400–4,000 停留（約 1.6 秒）
+     → 4,000–4,500 光點散開、數字與遮罩淡出
    ========================================================================== */
 .k1000-sky { position: fixed; inset: 0; z-index: 94500; pointer-events: auto; cursor: pointer; overflow: hidden; contain: strict; }
 .k1000-veil { position: absolute; inset: 0; opacity: 0;
   background: radial-gradient(38% 30% at 50% 30%, rgba(255,176,72,.16) 0%, transparent 100%), linear-gradient(180deg, rgba(13,19,42,.84) 0%, rgba(13,19,42,.74) 100%);
-  animation: k1000-veil 2100ms linear forwards; }
-@keyframes k1000-veil { 0% { opacity: 0; } 10% { opacity: 1; } 83% { opacity: 1; } 100% { opacity: 0; } }
+  animation: k1000-veil 4500ms linear forwards; }
+@keyframes k1000-veil { 0% { opacity: 0; } 9% { opacity: 1; } 89% { opacity: 1; } 100% { opacity: 0; } }
 
 .k1000-dot { position: absolute; z-index: 2; left: 0; top: 0; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%; opacity: 0;
   background: radial-gradient(circle, var(--k1000-core) 0%, var(--k1000-light) 45%, rgba(255,190,90,0) 72%);
   box-shadow: 0 0 10px 2px rgba(255,186,84,.55);
   will-change: transform, opacity;
-  animation: k1000-fly 1900ms cubic-bezier(.33,0,.2,1) var(--d, 0ms) forwards; }
+  animation: k1000-fly 4300ms cubic-bezier(.33,0,.2,1) var(--d, 0ms) forwards; }   /* 4,300＋延遲最多 200＝4,500 */
 @keyframes k1000-fly {
   0%   { transform: translate(var(--x0), var(--y0)) scale(.4); opacity: 0; }
-  8%   { transform: translate(var(--x0), calc(var(--y0) - 14px)) scale(.8); opacity: 1; }
-  52%  { transform: translate(var(--x1), var(--y1)) scale(1); opacity: 1; }
-  80%  { transform: translate(var(--x1), var(--y1)) scale(.9); opacity: .9; }
+  6%   { transform: translate(var(--x0), calc(var(--y0) - 14px)) scale(.8); opacity: 1; }
+  48%  { transform: translate(var(--x1), var(--y1)) scale(1); opacity: 1; }
+  90%  { transform: translate(var(--x1), var(--y1)) scale(.9); opacity: .9; }
   100% { transform: translate(var(--x2), var(--y2)) scale(.3); opacity: 0; }
 }
 
 .k1000-num { position: absolute; z-index: 1; left: 50%; top: 30%; transform: translate(-50%, -50%); text-align: center; pointer-events: none; opacity: 0;
-  animation: k1000-num 2100ms ease-out forwards; }
+  animation: k1000-num 4500ms ease-out forwards; }
 .k1000-num b { display: block; font: 800 clamp(72px, 13vw, 156px)/1 var(--font); letter-spacing: .04em; font-variant-numeric: tabular-nums; color: var(--k1000-core);
   text-shadow: 0 0 14px rgba(255,214,140,.95), 0 0 42px rgba(255,176,72,.75), 0 0 90px rgba(255,150,40,.45); }
 .k1000-num span { display: block; margin-top: 10px; font: 700 clamp(15px, 1.6vw, 20px)/1.4 var(--font); letter-spacing: .5em; text-indent: .5em; color: var(--k1000-light-2);
   text-shadow: 0 0 10px rgba(19,27,54,.9), 0 0 16px rgba(255,190,90,.5); }
 @keyframes k1000-num {
-  0%, 42% { opacity: 0; transform: translate(-50%, -50%) scale(.92); }
-  60%     { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  83%     { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
+  0%, 38% { opacity: 0; transform: translate(-50%, -50%) scale(.92); }
+  53%     { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  89%     { opacity: 1; transform: translate(-50%, -50%) scale(1.02); }
   100%    { opacity: 0; transform: translate(-50%, -50%) scale(1.08); }
 }
 
 /* 跳過：點畫面任何地方都會跳過；這顆給鍵盤與螢幕閱讀器（Esc 也可以） */
 .k1000-skip { position: fixed; z-index: 94510; right: 20px; top: 20px; min-width: 72px; height: 44px; padding: 0 18px; border-radius: 999px;
   border: 1px solid rgba(255,231,176,.55); background: rgba(19,27,54,.55); color: var(--k1000-light-2); font: 700 14px var(--font); cursor: pointer;
-  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: k1000-veil 2100ms linear forwards; }
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); animation: k1000-veil 4500ms linear forwards; }
 .k1000-skip:hover { background: rgba(19,27,54,.75); }
 .k1000-skip:focus-visible { outline: 3px solid var(--k1000-light); outline-offset: 2px; }
 /* 跳過或播完：加 .is-leaving，150ms 淡出後由 JS 移除 */
@@ -187,7 +188,6 @@
 .k1000-btn.is-ghost { border: 1px solid rgba(255,231,176,.45); background: transparent; color: var(--k1000-light-2); }
 .k1000-btn.is-ghost:hover { background: rgba(255,231,176,.1); }
 .k1000-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
-.k1000-note-foot { margin: 10px 10px 0 0; font-size: 12px; color: var(--k1000-muted); }
 .k1000-short { display: none; }   /* 手機短版的導言 */
 
 @media (max-width: 768px) {
@@ -211,7 +211,7 @@
 .k1000-note .k1000-ico-defs { position: absolute; width: 0; height: 0; overflow: hidden; }
 body.hw .k1000-note { color: var(--k1000-ink); }      /* 萬聖深色模式也維持夜藍公告 */
 
-/* 6.4.1：月初牆上的卡很少時，「1,000」下方加一行輕字幕（跟著數字一起淡入淡出） */
+/* 「1,000／一千道光」下方的輕字幕（跟著數字一起淡入淡出）；6.4.2 起一律顯示 */
 .k1000-num .k1000-caption { display: block; margin-top: 8px; font: 600 clamp(13px, 1.3vw, 16px)/1.5 var(--font); font-style: normal; letter-spacing: .18em; text-indent: .18em;
   color: var(--k1000-light-2); opacity: .88; text-shadow: 0 0 10px rgba(19,27,54,.9), 0 0 14px rgba(255,190,90,.35); white-space: nowrap; }
 @media (max-width: 380px) { .k1000-num .k1000-caption { letter-spacing: .08em; text-indent: .08em; } }

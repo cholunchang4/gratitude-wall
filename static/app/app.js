@@ -17,7 +17,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.4.1";
+        const CURRENT_APP_VERSION = "6.4.2";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1761,7 +1761,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 + `<div class="mb-pop" id="mbPop" role="region" aria-label="${title}前 5 名"${popOpen ? '' : ' hidden'}>`
                 + `<p class="mb-pop-sub">上個月最常送出與收到感謝的同事</p><div class="mb-cols">${MB_TABS.map(mbTopHtml).join('')}</div>`
                 + mbOptoutHtml('mbOptout')
-                + `<div class="mb-foot"><span>每月 1 號更新・送出榜只計具名卡・和考核無關</span><button type="button" class="mb-link" data-act="list">看全部感謝</button></div></div>`;
+                + `<div class="mb-foot"><span>每月 1 號更新・送出榜只計具名卡</span><button type="button" class="mb-link" data-act="list">看全部感謝</button></div></div>`;
             const toggle = (loading || failed || none) ? ''
                 : `<button type="button" class="mb-toggle" id="mbToggle" data-act="pop" aria-expanded="${popOpen}" aria-controls="mbPop" aria-label="${popOpen ? '收起' : '查看'}${title}前 5 名"><span class="mb-toggle-text" aria-hidden="true">前 5 名</span>${MB_ICON.chev}</button>`;
             mboardEl.innerHTML = `<div class="mb-head"><h2 class="mb-title" id="mbTitle" aria-label="${ym.y} 年 ${ym.m} 月感謝榜">${MB_ICON.trophy}${title}</h2>${toggle}</div>`

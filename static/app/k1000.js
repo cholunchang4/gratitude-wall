@@ -1,18 +1,23 @@
 // T100「一千道光」：留言破千的期間限定模板、一次性慶祝動畫、站內公告（game-design/千則里程碑.md 第 3、6 節；視覺 design/千光/，美術總監 2）。
 // 要不要顯示只看伺服器時間（bootstrap.events.k1000／k1000_theme，由 fb/store.js 依規則常數算好），不看使用者電腦的時間。
 // - 千光模板：k1000_theme 期間（11/03～11/30）樣式選單「限定」區出現；不進自動預設（app.js pickAutoTheme 只挑基本款）。
-// - 動畫：k1000 期間（11/03～11/09）、這台裝置沒播過才播；系統開了「減少動態」就不播。點畫面、按「略過」或 Esc 跳過。
+// - 動畫：k1000 期間（11/03～11/09）每次打開網站（新分頁／視窗）都播，同一個分頁重新整理不重播（sessionStorage，6.4.2 卓倫回饋）；
+//   整段約 4.5 秒（時間軸見 k1000.css B 段）；系統開了「減少動態」就不播。點畫面、按「略過」或 Esc 跳過。
 // - 公告：放在萬聖謝幕公告同一個位置（標題下方）；動畫播完（或跳過、不播）才出現；按 ✕ 後這台裝置不再顯示。B 版文字。
 // - 和萬聖謝幕公告一次只出現一個：這次載入千光公告要出現時，謝幕留到下一次載入（app.js renderHwEpilogue 看 holdsNoticeSlot）。
 // - 第 1,000 則的作者不表揚；不做計數器、不讀任何額外資料。
-export const K1000_KEYS = { anim: 'k1000_anim_seen', closed: 'k1000_notice_closed' };
+export const K1000_KEYS = { anim: 'k1000_anim_seen', closed: 'k1000_notice_closed' };   // anim 存 sessionStorage（這個分頁播過）；closed 存 localStorage（這台裝置關過公告）
+export const K1000_ANIM_MS = 4500;                         // 動畫總長；要和 k1000.css 的 k1000-veil／k1000-num 動畫時間一致
 
 const ls = {
   get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* 無痕等不能存：這次照樣關掉 */ } },
 };
-const SPARSE_CARDS = 16;                                   // 牆上看得到的卡少於這個數：不足的光點從地平線升起，並加字幕
-const SKY_CAPTION = '從第一張卡起，每一道光都在';          // 暫定（6.4.1），待文字美學官定稿
+const ss = {                                               // 6.4.2：動畫「這個分頁播過」；關掉分頁就清掉，下次打開網站再播
+  get(k) { try { return sessionStorage.getItem(k); } catch (e) { return null; } },
+  set(k, v) { try { sessionStorage.setItem(k, v); } catch (e) { /* 不能存：重新整理會再播，不影響使用 */ } },
+};
+const SKY_CAPTION = '從第一張卡起，每一道光都在';          // 「1,000／一千道光」下方的字幕；6.4.2 起不管牆上幾張卡都顯示
 const reducedMotion = () => !!(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
 
 // 自繪線條圖示（design/千光/mockup.html 的 symbol k-*）
@@ -46,8 +51,7 @@ const NOTICE_HTML = ICON_DEFS
   + '<div class="k1000-actions">'
   + `<button type="button" class="k1000-btn is-primary" data-k1k="manual">${ic('book')}翻開我的使用說明書</button>`
   + `<button type="button" class="k1000-btn is-ghost" data-k1k="write">${ic('pen')}先去寫卡</button>`
-  + `<button type="button" class="k1000-btn is-ghost" data-k1k="more" aria-expanded="false" aria-controls="k1000Story"><span>讀完整故事</span>${ic('chev')}</button></div>`
-  + '<p class="k1000-note-foot">這是好玩的小紀念，和考核沒有任何關係。</p>';
+  + `<button type="button" class="k1000-btn is-ghost" data-k1k="more" aria-expanded="false" aria-controls="k1000Story"><span>讀完整故事</span>${ic('chev')}</button></div>`;
 
 /**
  * deps = {
@@ -112,7 +116,7 @@ export function createK1000(deps) {
 
   // ---------------------------------------------------------------- 慶祝動畫（design/千光/k1000-sky.js 的做法：canvas 取樣字形，光點落在「1,000」上）
   function celebrate(done) {
-    ls.set(K1000_KEYS.anim, '1');                                      // 開始播就算看過（中途關頁也不再播）
+    ss.set(K1000_KEYS.anim, '1');                                      // 開始播就算這個分頁看過（中途重新整理不再播）
     const vw = window.innerWidth, vh = window.innerHeight;
     const max = vw <= 768 ? 16 : 40;
     const starts = [...document.querySelectorAll('#wall .message-card')]
@@ -139,9 +143,7 @@ export function createK1000(deps) {
       const x2 = x1 + Math.cos(a) * dist, y2 = y1 + Math.sin(a) * dist - 20;
       html += `<i class="k1000-dot" data-from="${i < fromCards ? 'card' : 'sky'}" style="--x0:${x0 | 0}px;--y0:${y0 | 0}px;--x1:${x1 | 0}px;--y1:${y1 | 0}px;--x2:${x2 | 0}px;--y2:${y2 | 0}px;--d:${Math.round(Math.random() * 200)}ms"></i>`;
     });
-    // 牆上的卡不多時（月初）加一句輕字幕，說明光不只來自這面牆上看得到的卡（暫定文字，待文字美學官定稿）
-    const caption = fromCards < SPARSE_CARDS ? `<em class="k1000-caption">${SKY_CAPTION}</em>` : '';
-    sky.innerHTML = html + `<div class="k1000-num"><b>1,000</b><span>一千道光</span>${caption}</div>`;
+    sky.innerHTML = html + `<div class="k1000-num"><b>1,000</b><span>一千道光</span><em class="k1000-caption">${SKY_CAPTION}</em></div>`;
     const skip = document.createElement('button'); skip.type = 'button'; skip.className = 'k1000-skip'; skip.textContent = '略過';
     skip.setAttribute('aria-label', '略過一千道光慶祝動畫');
     document.body.append(sky, skip);
@@ -157,7 +159,10 @@ export function createK1000(deps) {
     sky.addEventListener('pointerdown', end, { once: true });
     skip.addEventListener('click', end, { once: true });
     document.addEventListener('keydown', onKey, true);
-    setTimeout(end, 2300);
+    // 播完：等遮罩動畫（4.5 秒）真的結束才收，系統忙、第一個畫格晚出現時也不會切掉尾巴；
+    // CSS 沒載入或分頁在背景時 animationend 可能不來，計時器保險
+    sky.querySelector('.k1000-veil').addEventListener('animationend', end, { once: true });
+    setTimeout(end, K1000_ANIM_MS + 600);
   }
   function sampleText(text, px, n) {
     const c = document.createElement('canvas'), w = Math.ceil(px * 3.4), h = Math.ceil(px * 1.2);
@@ -179,7 +184,7 @@ export function createK1000(deps) {
     if (!ev.k1000 || startedThisPage) return;
     startedThisPage = true;
     slot = ls.get(K1000_KEYS.closed) !== '1';   // 這次載入千光公告要出現：萬聖謝幕（到 11/07）留到下一次載入，一次只跳一個
-    const play = ls.get(K1000_KEYS.anim) !== '1' && !reducedMotion();
+    const play = ss.get(K1000_KEYS.anim) !== '1' && !reducedMotion();
     if (play) setTimeout(() => celebrate(showNotice), 900);              // 牆面先發牌，光點才有卡可以飄起
     else showNotice();
   }

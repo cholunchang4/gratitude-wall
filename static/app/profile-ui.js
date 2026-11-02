@@ -208,7 +208,7 @@ export function createProfileUI(deps) {
       orig: orig || PL.normalizeCard(null), draft: PL.normalizeCard(orig), photo: profile.smallOf(uid) ? await profile.largeOf(uid) : '',
       removePhoto: false, uploading: false, saving: false, alert: '',
     };
-    const reassure = `<p class="pe-reassure">${ic('shield')}<span><span class="long">寫幾句話，讓同事更快認識你、知道怎麼和你合作。每一格都可以不填，想到再寫，隨時能改或清空；這張卡和考核沒有任何關係。<small>寫工作上的你就好，健康、家庭這類私事不用寫。登入的同事都看得到你的卡。</small></span><span class="short">寫幾句話，讓同事更認識你。每格都可以不填、隨時能改，和考核沒有任何關係。<small>登入的同事都看得到。</small></span></span></p>`;
+    const reassure = `<p class="pe-reassure">${ic('shield')}<span><span class="long">寫幾句話，讓同事更快認識你、知道怎麼和你合作。每一格都可以不填，想到再寫，隨時能改或清空。<small>寫工作上的你就好，健康、家庭這類私事不用寫。登入的同事都看得到你的卡。</small></span><span class="short">寫幾句話，讓同事更認識你。每格都可以不填、隨時能改。<small>登入的同事都看得到。</small></span></span></p>`;
     const counter = (v, max) => { const n = PL.countChars(v); return `<span class="pe-count${n >= max ? ' is-full' : n >= max * 0.8 ? ' is-near' : ''}" aria-hidden="true">${n}／${max}</span>`; };
     const clearBtn = (v, label, key) => `<button class="text-btn danger" type="button" data-clear="${key}" aria-label="清空「${esc(label)}」"${v ? '' : ' hidden'}>${ic('x')}清空</button>`;
     const fieldHtml = (f) => {
