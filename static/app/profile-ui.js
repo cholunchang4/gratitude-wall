@@ -16,10 +16,15 @@ const MENU_SEEN_KEY = 'pc_menu_seen_v1';
  *   writeTo(name)   // 關掉資料卡後：收件人帶入 name、游標到內容欄（app.js 負責）
  *   logout()        // 原本的登出流程（含確認）
  *   avatarBtn: HTMLElement   // 撰寫區自己的頭像 #userAvatar
+ *   ext?: T101 點亮星空的掛勾（sky/sky.js 的 ext；沒有就和 6.3 完全一樣）
+ *     viewerCell(uid, fieldKey, self) → html、viewerExtra(uid, self) → { body, foot }、onViewerClick(e, uid, name) → 處理了回 true、
+ *     editorHead() → html、stressHelp() → 字串、onEditorChange(e)、afterSave(舊卡, 新卡) → 自己出了提示回 true
  * }
+ * writeTo(name, { uid, filled }) 的第二個參數：從資料卡按「寫感謝卡給他」時帶上（filled＝對方說明書寫了幾格），給星光卡用。
  */
 export function createProfileUI(deps) {
   const { profile } = deps;
+  const X = deps.ext || {};
   const stack = [];                      // 開著的浮層（最上面的在最後）
   let menu = null, toastTimer = null;
 
@@ -82,8 +87,9 @@ export function createProfileUI(deps) {
   }, true);
 
   // ------------------------------------------------------------ 檢視
-  function cellHtml(card, f) {
-    const head = `<header class="pc-cell-h"><span class="ico-wrap">${ic(f.k)}</span><h3>${esc(f.t)}</h3></header>`;
+  function cellHtml(card, f, uid = '', self = false) {
+    const extra = X.viewerCell ? X.viewerCell(uid, f.k, self) || '' : '';
+    const head = `<header class="pc-cell-h"><span class="ico-wrap">${ic(f.k)}</span><h3>${esc(f.t)}</h3>${extra}</header>`;
     if (f.dd) {
       const parts = [];
       if (card.work.ok.trim()) parts.push(`<div class="is-do"><h4>${ic('plus')}${esc(f.ok.t)}</h4><p>${esc(card.work.ok)}</p></div>`);
@@ -102,13 +108,14 @@ export function createProfileUI(deps) {
     const name = self ? deps.meName() : deps.nameOf(uid);
     const list = card ? PL.filledFields(card) : [];
     const close = `<button class="pc-close" type="button" data-pc="close" aria-label="關閉">${ic('x')}</button>`;
+    const x = !preview && X.viewerExtra ? X.viewerExtra(uid, self) || {} : {};
     if (!list.length) {
       const art = '<svg class="pc-empty-art" viewBox="0 0 140 56" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><rect x="4" y="10" width="36" height="36" rx="8" stroke-dasharray="4 4"/><rect x="52" y="10" width="36" height="36" rx="8" stroke-dasharray="4 4"/><rect x="100" y="10" width="36" height="36" rx="8" stroke-dasharray="4 4"/><path d="M70 33s-5-3-5-6.4a2.6 2.6 0 0 1 5-1.3 2.6 2.6 0 0 1 5 1.3C75 30 70 33 70 33z" fill="#fdeef1" stroke="#c9184a"/></svg>';
       const body = preview ? `<p class="pc-empty-msg">還沒有填任何一格</p><p class="pc-empty-sub">同事會看到這個樣子。</p><button class="action-btn primary" type="button" data-pc="back">${ic('pen')}回去編輯</button>`
         : self ? `<p class="pc-empty-msg">你的使用說明書還是空白的</p><p class="pc-empty-sub">寫一兩句就好，<br>讓同事更快知道怎麼和你合作。<br>每格都可以不填、隨時能改。</p><button class="action-btn primary" type="button" data-pc="edit">${ic('pen')}開始寫</button>`
         : `<p class="pc-empty-msg">${esc(name)} 的<span class="nw">使用說明書</span>還在<span class="nw">醞釀中</span></p><p class="pc-empty-sub">想多認識 ${esc(name)}，先寫一張感謝卡打聲招呼吧。</p><button class="action-btn primary" type="button" data-pc="write">${ic('send')}寫感謝卡給 ${esc(name)}</button>`;
       return { wrap: 'is-empty-wrap', html: `<section class="pc-box is-empty has-scroll" role="dialog" aria-modal="true" aria-labelledby="pcName">${close}`
-        + `<div class="pc-scroll"><div class="pc-empty">${pav(uid, name, 96, photo)}<h2 class="pc-name" id="pcName">${esc(name)}</h2>${art}${body}${preview ? '' : adminHtml(uid, card, photo)}</div></div></section>` };
+        + `<div class="pc-scroll"><div class="pc-empty">${pav(uid, name, 96, photo)}<h2 class="pc-name" id="pcName">${esc(name)}</h2>${art}${body}${x.foot ? `<div class="pc-x-foot">${x.foot}</div>` : ''}${preview ? '' : adminHtml(uid, card, photo)}</div>${x.body || ''}</div></section>` };
     }
     const full = list.length === PL.FIELDS.length, n = list.length;
     const cols = n <= 2 ? n : (n === 4 ? 2 : 3);                         // 4 格排 2×2，避免落單
@@ -116,10 +123,10 @@ export function createProfileUI(deps) {
     const updated = card.t && !preview ? `<p class="pc-meta">更新於 ${PL.tpeDate(card.t)}</p>` : '';
     const id = `<div class="pc-id">${pav(uid, name, idSize, photo)}<div class="pc-id-txt"><h2 class="pc-name" id="pcName">${esc(name)}</h2><p class="pc-kicker">我的使用說明書</p><p class="pc-en">My Operating Manual</p>${updated}</div></div>`;
     const foot = preview ? `<p class="pc-note">這是同事會看到的樣子（還沒儲存）。沒填的格子不會出現。</p><div class="pc-actions"><button class="action-btn primary" type="button" data-pc="back">${ic('pen')}回去編輯</button></div>`
-      : self ? `<p class="pc-note">這是同事看到的樣子。沒填的格子不會出現。</p><div class="pc-actions"><button class="action-btn primary" type="button" data-pc="edit">${ic('edit')}編輯</button></div>`
+      : self ? `${x.foot ? `<div class="pc-x-foot">${x.foot}</div>` : ''}<p class="pc-note">這是同事看到的樣子。沒填的格子不會出現。</p><div class="pc-actions"><button class="action-btn primary" type="button" data-pc="edit">${ic('edit')}編輯</button></div>`
       : `<p class="pc-note">想多認識 ${esc(name)}？從一張感謝卡開始吧。</p><div class="pc-actions"><button class="action-btn primary" type="button" data-pc="write">${ic('send')}寫感謝卡給 ${esc(name)}</button></div>${adminHtml(uid, card, photo)}`;
     return { wrap: '', html: `<section class="pc-box has-scroll${!full && cols <= 2 ? ' is-narrow' : ''}" role="dialog" aria-modal="true" aria-labelledby="pcName">${close}`
-      + `<div class="pc-scroll"><div class="pc-body"><div class="pc-grid ${full ? 'is-full' : 'is-flow'}" style="--cols:${cols}">${id}${list.map(f => cellHtml(card, f)).join('')}</div></div>`
+      + `<div class="pc-scroll"><div class="pc-body"><div class="pc-grid ${full ? 'is-full' : 'is-flow'}" style="--cols:${cols}">${id}${list.map(f => cellHtml(card, f, preview ? '' : uid, self)).join('')}</div></div>${x.body || ''}`
       + `<footer class="pc-foot">${foot}</footer></div></section>` };
   }
 
@@ -156,11 +163,12 @@ export function createProfileUI(deps) {
     return entry;
   }
   async function onViewerClick(e, entry, uid, name) {
+    if (X.onViewerClick && X.onViewerClick(e, uid, name)) return;
     const b = e.target.closest('[data-pc]'); if (!b) return;
     const act = b.dataset.pc;
     if (act === 'close' || act === 'back') return closeOverlay(entry);
     if (act === 'retry') { closeOverlay(entry, { restoreFocus: false }); return openViewer(uid, entry.returnTo); }
-    if (act === 'write') { closeAll(); deps.writeTo(name); return; }
+    if (act === 'write') { closeAll(); deps.writeTo(name, { uid, filled: entry.data && entry.data.card ? PL.filledFields(entry.data.card).length : 0 }); return; }
     if (act === 'edit') { closeOverlay(entry, { restoreFocus: false }); return openEditor(entry.returnTo); }
     if (act === 'admin-card' || act === 'admin-avatar') {
       const what = act === 'admin-card' ? 'card' : 'avatar';
@@ -221,11 +229,11 @@ export function createProfileUI(deps) {
       const v = S.draft[f.k];
       return `<div class="pe-field${f.k === 'stress' ? ' is-wide' : ''}"><label for="pe-${f.k}">${lbl}</label>`
         + `<textarea id="pe-${f.k}" data-key="${f.k}" maxlength="${f.max}" placeholder="${esc(f.ph)}" rows="2"${f.help ? ` aria-describedby="pe-h-${f.k}"` : ''}>${esc(v)}</textarea>`
-        + (f.help ? `<p class="pe-help" id="pe-h-${f.k}">${esc(f.help)}</p>` : '') + `<div class="pe-field-foot">${clearBtn(v, f.t, f.k)}${counter(v, f.max)}</div></div>`;
+        + (f.help ? `<p class="pe-help" id="pe-h-${f.k}">${esc(f.help)}${f.k === 'stress' && X.stressHelp && X.stressHelp() ? `<br>${esc(X.stressHelp())}` : ''}</p>` : '') + `<div class="pe-field-foot">${clearBtn(v, f.t, f.k)}${counter(v, f.max)}</div></div>`;
     };
     const entry = pushOverlay({ returnTo: from, requestClose: () => tryClose(),
       html: `<section class="pc-box pe-box has-scroll" role="dialog" aria-modal="true" aria-labelledby="peTitle"><button class="pc-close" type="button" data-pc="close" aria-label="關閉">${ic('x')}</button>`
-        + `<div class="pc-scroll"><div class="pe-head"><h2 id="peTitle">編輯我的使用說明書</h2>${reassure}</div>`
+        + `<div class="pc-scroll"><div class="pe-head"><h2 id="peTitle">編輯我的使用說明書</h2>${reassure}${X.editorHead ? X.editorHead() || '' : ''}</div>`
         + `<div class="pe-body"><aside class="pe-avatar" aria-labelledby="peAvTitle"></aside><div class="pe-fields">${PL.FIELDS.map(fieldHtml).join('')}</div></div>`
         + `<p class="pc-sr" id="peLive" aria-live="polite"></p>`
         + `<footer class="pe-foot"><span class="pe-status"></span><span class="grow"></span><button class="action-btn ghost" type="button" data-pc="preview">${ic('eye')}預覽</button>`
@@ -253,6 +261,7 @@ export function createProfileUI(deps) {
         + `<p class="pe-hint">沒有頭像時，會顯示姓名縮寫。${S.removePhoto ? '<br><b>按「儲存」後才會移除。</b>' : ''}</p>`;
     };
     const announce = (t) => { const l = el.querySelector('#peLive'); l.textContent = ''; setTimeout(() => { l.textContent = t; }, 30); };
+    if (X.onEditorChange) el.addEventListener('change', (e) => { X.onEditorChange(e); });
     el.addEventListener('input', (e) => {
       const ta = e.target.closest('textarea[data-key]'); if (!ta) return;
       const key = ta.dataset.key, v = ta.value, max = Number(ta.maxLength);
@@ -287,7 +296,10 @@ export function createProfileUI(deps) {
         S.saving = false;
         closeOverlay(entry, { restoreFocus: false });
         openViewer(uid, entry.returnTo);
-        toast(PL.buildCardValue(S.draft) ? '已儲存，同事現在看得到了' : '已儲存，資料卡已清空');
+        const saved = PL.buildCardValue(S.draft);
+        let shown = false;
+        try { shown = !!(X.afterSave && saved && X.afterSave(S.orig, PL.normalizeCard(saved))); } catch (e2) { console.error(e2); }
+        if (!shown) toast(saved ? '已儲存，同事現在看得到了' : '已儲存，資料卡已清空');
       } catch (err) {
         S.saving = false; sync();
         toast(err && err.code === 'TOO_LONG' ? err.message : '沒有儲存成功，請再試一次', { error: true });

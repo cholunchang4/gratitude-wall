@@ -231,7 +231,7 @@ export class WallBackend {
     if (typeof theme !== 'string' || typeof anonymous !== 'boolean' || !(image === null || typeof image === 'string')) {
       throw new W.WallError(400, 'BAD_REQUEST', '送出的資料格式不正確，請重新整理頁面後再試一次。');
     }
-    const input = { text: body.text, receiver: body.receiver, theme, anonymous, photo: null };
+    const input = { text: body.text, receiver: body.receiver, theme, anonymous, photo: null, sky: body.sky && typeof body.sky === 'object' ? body.sky : null };
     // 先用目前狀態檢查（不通過就不用處理照片）
     W.validateNewMessage(s, { text: R.cleanText(body.text), receiver: R.cleanText(body.receiver, false), theme, anonymous, hasImage: !!image }, this.now());
     if (image) {
@@ -240,18 +240,23 @@ export class WallBackend {
     }
     const mid = W.randomId('m', this.now());
     let plan;
-    for (let attempt = 0; ; attempt++) {
+    for (let attempt = 0; ; ) {
       plan = W.buildCreateMessage(s, input, { now: this.now(), mid, slots: this.slots });
       try { await this.write(plan.updates); break; }
       catch (e) {
+        if (e.code !== 'DENIED') throw e;
+        // T101：星光卡的欄位被拒（規則還沒部署、對方剛離開通訊錄…）：先拿掉 skyme、再拿掉 src，卡片照樣送出去（不用等）
+        if (input.sky && input.sky.me && Object.keys(plan.sky ? plan.sky.me : {}).length) { input.sky = { ...input.sky, me: null }; console.warn('[sky] skyme 被拒，改成不帶'); continue; }
+        if (input.sky && plan.sky) { input.sky = null; console.warn('[sky] 星光卡標記被拒，改成一般卡'); continue; }
         // 被規則拒絕最常見的原因：3 秒內連發兩則、或另一個分頁剛好也在發文（經驗值、額度格子變了）。等一下用最新狀態再試一次。
-        if (e.code !== 'DENIED' || attempt >= 1) throw e;
+        if (attempt >= 1) throw e;
+        attempt++;
         await new Promise(r => setTimeout(r, K.POST_INTERVAL_MS + 300));
       }
     }
     if (input.photo) { this.s.photos.set(input.photo.id, input.photo.dataUrl); photoCache.put(input.photo.id, input.photo.dataUrl); }
     const m = s.messages.get(mid);
-    return { message: m ? s.messageDto(m) : null, me: s.meDto(this.now()), hw: plan.hw };
+    return { message: m ? s.messageDto(m) : null, me: s.meDto(this.now()), hw: plan.hw, sky: plan.sky };
   }
 
   async write(updates) {

@@ -16,6 +16,7 @@ export function normalizeMessage(id, v, { authorOf } = {}) {
     theme: v.th || 'theme-classic', image: v.im || '', level: Number(v.lv) || 1, bucket: v.b || 'regular', event_id: v.ev || '',
     mooncake: !!(v.lg && v.lg.mc), mooncake_opened: !!(v.lg && v.lg.mo), edited: !!v.ed, likes,
     deleted: !!v.del, deleted_by: v.del ? v.del.by || '' : '', deleted_reason: v.del ? v.del.reason || '' : '',
+    src: v.src === 'pc' || v.src === 'pc0' ? v.src : '', sto: typeof v.sto === 'string' ? v.sto : '',   // T101 星光卡標記
   };
 }
 
@@ -174,7 +175,7 @@ export class WallStore {
       likers: m.likes.map(u => (this.people[u] ? this.people[u].n : '某位同事')),
       liked_by_me: m.likes.includes(this.meId), is_mine: this.isMine(m),
       to_me: m.receiver_ids.includes(this.meId) || (!!myName && R.splitReceivers(m.receiver).includes(myName)),
-      is_admin_card: !anon && m.level >= K.ADMIN_LEVEL, edited: m.edited,
+      is_admin_card: !anon && m.level >= K.ADMIN_LEVEL, edited: m.edited, src: m.src || '',
       legacy: { mooncake: m.mooncake, mooncake_opened: m.mooncake_opened },
     };
   }
@@ -227,32 +228,42 @@ export class WallStore {
       .sort((a, b) => (Number(!a.toLowerCase().startsWith(q)) - Number(!b.toLowerCase().startsWith(q))) || (a.toLowerCase() < b.toLowerCase() ? -1 : a.toLowerCase() > b.toLowerCase() ? 1 : 0));
     return { names: names.slice(0, 6) };
   }
-  leaderboard(now) {
-    const msgs = this.visibleSorted().map(m => ({ created_at: m.created_at, named_author: m.mode === 'named' && m.author_name ? m.author_name : null,
-      receiver_text: m.receiver, is_event_extra: m.bucket === 'event' }));
-    let rd = Number(this.settings.retentionDays); if (!Number.isFinite(rd)) rd = 30;
-    return R.computeLeaderboard(msgs, this.rankedNames(), now, rd);
+  // 卡片作者「現在」的通訊錄姓名（感謝榜本月、上月共用）：離職／停用的人回 null，不在 people 裡的退回卡片上的姓名
+  currentAuthorName(m) {
+    const uid = m.author_id;
+    if (!uid) return null;                               // 匿名卡別人看不到作者（只少了「謝自己」的排除，見 README）
+    const u = this.people[uid];
+    if (!u) return m.author_name || null;
+    return u.s === 'active' ? u.n : null;
   }
-  monthlyLeaderboard(now) {
-    const cur = R.tpeMonthStart(now), prev = R.tpePrevMonthStart(now);
-    const currentName = (m) => {
-      const uid = m.author_id;
-      if (!uid) return null;                               // 匿名卡別人看不到作者（只少了「謝自己」的排除，見 README）
-      const u = this.people[uid];
-      if (!u) return m.author_name || null;
-      return u.s === 'active' ? u.n : null;
-    };
-    const msgs = [];
-    for (const m of this.messages.values()) {
-      if (!(prev <= m.created_at && m.created_at < cur)) continue;
-      const real = currentName(m);
-      msgs.push({ created_at: m.created_at, named_author: m.mode === 'named' ? real : null, real_author: real, receiver_text: m.receiver });
-    }
-    const out = R.computeMonthlyLeaderboard(msgs, this.rankedNames(), prev, cur);
+  thanksRow(m) {
+    const real = this.currentAuthorName(m);
+    return { created_at: m.created_at, named_author: m.mode === 'named' ? real : null, real_author: real, receiver_text: m.receiver };
+  }
+  // 只回名次與頭像顏色，不回張數
+  boardDto(out) {
     const idx = this.nameIndex();
     const rows = (lst) => lst.map(([n, , r]) => ({ name: n, rank: r, avatar_color: idx.get(n) ? R.avatarColorOf(idx.get(n)[0]) : null }));
     out.senders = rows(out.senders); out.receivers = rows(out.receivers);
     for (const k of ['senders_more', 'receivers_more']) if (out[k]) out[k] = { rank: out[k].rank, people: out[k].people };
+    return out;
+  }
+  // 感謝榜「本月」分頁（卓倫 2026-11-01：英雄榜併入感謝榜）：台灣時間本月 1 日起、活動加碼卡也算，和上月同一套算法；retentionDays 不再影響
+  leaderboard(now) {
+    const cur = R.tpeMonthStart(now);
+    const msgs = [];
+    for (const m of this.messages.values()) if (m.created_at >= cur) msgs.push(this.thanksRow(m));
+    const out = this.boardDto(R.computeLeaderboard(msgs, this.rankedNames(), now));
+    return { month: R.tpeMonthKey(now), start: cur, end: now, current_month: R.tpeMonthKey(now), ...out };
+  }
+  monthlyLeaderboard(now) {
+    const cur = R.tpeMonthStart(now), prev = R.tpePrevMonthStart(now);
+    const msgs = [];
+    for (const m of this.messages.values()) {
+      if (!(prev <= m.created_at && m.created_at < cur)) continue;
+      msgs.push(this.thanksRow(m));
+    }
+    const out = this.boardDto(R.computeMonthlyLeaderboard(msgs, this.rankedNames(), prev, cur));
     return { month: R.tpeMonthKey(prev), start: prev, end: cur, current_month: R.tpeMonthKey(now), ...out };
   }
   async roster(now) {

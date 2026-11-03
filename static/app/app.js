@@ -8,7 +8,8 @@ import { createK1000 } from './k1000.js';             // T100「一千道光」�
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
-let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
+let PROFILE = null, PUI = null, K1K = null;
+let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EXT 是給資料卡畫面的掛勾（建立後填入）     // T098：startApp 裡建立
 
         let currentUser = null;   // { uid, displayName }：由 me 轉出，維持 4.8 程式碼原本用的形狀
         let ME = null;            // 伺服器回傳的「我的狀態」（等級、經驗、配額、解鎖、偏好、萬聖狀態）
@@ -17,7 +18,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.4.4";
+        const CURRENT_APP_VERSION = "6.5";   // T101
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -86,8 +87,12 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const wrap = document.getElementById('composerWrap');
             if (window.innerWidth <= 768 && wrap && wrap.getClientRects().length) el.style.bottom = Math.round(window.innerHeight - wrap.getBoundingClientRect().top + 10) + 'px';
             else el.style.bottom = '';
+            el.style.top = '';
             el.classList.remove('hw-sent'); clearTimeout(hwToastTimer);
             el.textContent = text; el.classList.add('show');
+            // 感謝榜彈窗開著（例如切換「不在感謝榜上顯示我」）：提示放在彈窗上方，不蓋住底部的開關說明
+            const tbBox = document.querySelector('#leaderboardOverlay.active .modal-box');
+            if (tbBox) { el.style.bottom = 'auto'; el.style.top = Math.max(8, Math.round(tbBox.getBoundingClientRect().top - el.offsetHeight - 10)) + 'px'; }
             clearTimeout(toastTimer); toastTimer = setTimeout(() => el.classList.remove('show'), ms);
         }
         document.getElementById('wallToast').addEventListener('click', (e) => e.currentTarget.classList.remove('show'));
@@ -153,7 +158,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 b.setAttribute('aria-checked', on ? 'true' : 'false');
                 b.classList.toggle('active', on);
                 const cell = b.closest('.swatch-item'); if (cell) cell.classList.toggle('is-checked', on);
-                const locked = b.classList.contains('locked');
+                const locked = b.classList.contains('locked') || b.classList.contains('sn-locked');   // T101：星夜沒解鎖時的鎖
                 if (locked) b.setAttribute('aria-disabled', 'true'); else b.removeAttribute('aria-disabled');
                 const cap = cell && cell.querySelector('.swatch-cap[data-name]');
                 if (cap && cell.parentElement.id === 'pickBasic') cap.innerHTML = locked ? `${escapeHtml(cap.dataset.name)}<br><span class="need">Lv.4</span>` : escapeHtml(cap.dataset.name);
@@ -376,6 +381,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 if (hwInfo.target) hwTotalTarget = hwInfo.target;
             }
             if (K1K) K1K.update(ev);   // T100：千光模板色票、慶祝動畫、公告（只看伺服器時間）
+            if (SKY) { try { SKY.update(); } catch (e) { console.error('[sky]', e); } }   // T101：夜空、進度條、彈窗（只看伺服器時間；活動模組出錯不影響主牆）
         }
 
         function updateFestivalUI() {
@@ -583,6 +589,12 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         function cardAvatarOf(msg) { return (!msg.author || msg.anonymous) ? '' : (safeImageUrl(msg.avatarUrl) || avatarPhotoOf(msg.authorKey)); }
         function pcUidAttr(msg) { return (!msg.author || msg.anonymous || !isActiveUid(msg.authorKey)) ? '' : ` data-pc-uid="${escapeHtml(msg.authorKey)}"`; }
         // 資料卡上的「寫感謝卡給 ○○」：關掉放大卡，收件人帶入通訊錄姓名，游標到內容欄
+        // T101：星空元件用的頭像（和資料卡同一套 .pav：有上傳頭像就用照片，否則姓名縮寫色塊）
+        function skyAvatar(uid, name, size) {
+            const photo = PROFILE && uid ? PROFILE.smallOf(uid) : '';
+            if (photo) return `<span class="pav sz-${size} is-photo"><img src="${escapeHtml(photo)}" alt="" decoding="async"></span>`;
+            return `<span class="pav sz-${size}" style="background:${escapeHtml(avatarColorOf(uid, name || ''))}" aria-hidden="true">${escapeHtml(initialsOf(name || ''))}</span>`;
+        }
         function writeThanksTo(name) {
             closeFocus(); closeListFocus();
             const r = document.getElementById('receiverInput'), m = document.getElementById('msgInput');
@@ -639,7 +651,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         document.getElementById('guideBtn').addEventListener('click', () => { playSound('click'); guideOverlay.classList.add('active'); });
         document.getElementById('closeGuide').addEventListener('click', () => { playSound('click'); guideOverlay.classList.remove('active'); });
         const leaderboardOverlay = document.getElementById('leaderboardOverlay');
-        document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); syncLbOptout(); renderLeaderboard(); leaderboardOverlay.classList.add('active'); });
+        document.getElementById('leaderboardBtn').addEventListener('click', () => { playSound('click'); openBoard(); });   // 感謝榜（和左上小條開同一個彈窗）
         document.getElementById('closeLeaderboard').addEventListener('click', () => { playSound('click'); leaderboardOverlay.classList.remove('active'); });
         const levelUpOverlay = document.getElementById('levelUpOverlay');
         document.getElementById('closeLevelUpBtn').addEventListener('click', () => { playSound('click'); levelUpOverlay.classList.remove('active'); });
@@ -981,7 +993,10 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const stampsAtSend = hwSentStamps();
             try {
                 // 作者名稱、匿名稱號、等級、額度桶都由伺服器決定；這裡只告訴伺服器「要不要匿名」
-                const res = await apiWrite('api/messages', { receiver, text, theme: currentTheme, anonymous: anonCheck.checked, image_data_url: attachedImageBase64 || null });
+                const sendBody = { receiver, text, theme: currentTheme, anonymous: anonCheck.checked, image_data_url: attachedImageBase64 || null };
+                if (SKY) { try { SKY.decorateSend(sendBody); } catch (e) { console.error('[sky]', e); delete sendBody.sky; } }   // T101：從說明書寫的卡帶上星光卡標記
+                const res = await apiWrite('api/messages', sendBody);
+                if (SKY) Promise.resolve().then(() => SKY.afterSend(res, sendBody)).catch(e => console.error('[sky]', e));   // T101：星線、星座、流星
                 if (res && res.message) { upsertMessage(res.message); }
                 if (res && res.me) applyMe(res.me);
                 refreshNow();
@@ -1085,6 +1100,8 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             if (Number.isInteger(explicit) && explicit >= 0 && explicit < AVATAR_COLORS.length) return AVATAR_COLORS[explicit];
             return AVATAR_COLORS[hash32(key || String(name || '')) % AVATAR_COLORS.length];
         }
+        // T101 星夜模板（繁星解鎖、人人永久；不進自動預設）：卡片 class、名稱、星點特效
+        THEME_CLASS['theme-starnight'] = 'sn-card'; THEME_NAMES['theme-starnight'] = '星夜'; FX_THEMES.add('theme-starnight');
         function themeClassOf(t) { return THEME_CLASS[t] || 't-classic'; }
         // 畫面上用的主題：照留言本身的主題（中秋月光在活動外另有淺色顯示，見 themeClassOf）
         function displayThemeOf(msg) {
@@ -1149,7 +1166,8 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const isOwner = !!msg.isMine;
             const actionsHtml = isOwner ? `<div class="card-owner-actions"><button type="button" class="edit-msg-btn" title="修改文字">✏️ 編輯</button><button type="button" class="del-msg-btn" title="刪除留言 (會扣除經驗喔)">🗑️ 刪除</button></div>` : '';
             const dateObj = new Date(msg.timestamp || nowMs()); const dateStr = `${dateObj.getMonth()+1}/${dateObj.getDate()} ${dateObj.getHours()}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
-            const receiverHtml = msg.receiver ? `<div class="card-to">To: ${escapeHtml(msg.receiver)}</div>` : '';
+            const scMark = SKY ? SKY.markHtml(msg.src) : '';   // T101：星光卡記號（不配數字）
+            const receiverHtml = msg.receiver ? (scMark ? `<div class="card-to sc-to"><span class="sc-to-name">To: ${escapeHtml(msg.receiver)}</span>${scMark}</div>` : `<div class="card-to">To: ${escapeHtml(msg.receiver)}</div>`) : '';
             const authorName = msg.author || '匿名';
             // 大頭貼：一律是「姓名縮寫色塊」（卓倫決定，舊留言也是）。預留：有上傳照片的人（author.avatar_url 有值）才顯示照片
             const avatarImgSrc = isAnonAuthor ? '' : cardAvatarOf(msg);   // T098：有上傳頭像就放照片（匿名卡不放）
@@ -1177,7 +1195,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const img = msg.image ? String(msg.image) : '';
             return [msg.text, msg.receiver, msg.author, msg.anonymous, cardAvatarOf(msg), pcUidAttr(msg), msg.theme, msg.authorLevel, msg.isAdminCard, msg.isMine,
                     msg.timestamp, img, lc, (msg.likers || []).join('\u0002'), msg.likedByMe,
-                    (lc === maxLikes && maxLikes > 0), currentUser ? currentUser.uid : '', ownHiddenLevelFor(msg), IS_HALLOWEEN, IS_MID_AUTUMN].join('\u0001');
+                    (lc === maxLikes && maxLikes > 0), currentUser ? currentUser.uid : '', ownHiddenLevelFor(msg), IS_HALLOWEEN, IS_MID_AUTUMN, msg.src || ''].join('\u0001');   // T101 src
         }
 
         // 套用卡片外觀與內容（保留拖曳、放大、漂浮等狀態）
@@ -1435,11 +1453,24 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 timestamp: Number(d.created_at) || 0, author: a.name || '匿名', anonymous: !!a.anonymous, avatarUrl: a.avatar_url || null, authorKey: a.user_id || '', avatarColor: a.avatar_color, initials: a.initials || '',
                 authorLevel: Number(d.author_level) || 0, likeCount: Number(d.like_count) || 0, likers: Array.isArray(d.likers) ? d.likers.slice() : [],
                 likedByMe: !!d.liked_by_me, isMine: !!d.is_mine, toMe: !!d.to_me, isAdminCard: !!d.is_admin_card, edited: !!d.edited,
+                src: d.src === 'pc' || d.src === 'pc0' ? d.src : '',   // T101 星光卡記號
             };
         }
         function upsertMessage(d) { if (d && d.id) messageById.set(d.id, adaptMessage(d)); }
         function resortMessages() { rawMessages = Array.from(messageById.values()).sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)); }
-        function refreshNow() { resortMessages(); refreshWall(); refreshListView(); scheduleLeaderboard(); }
+        function refreshNow() { resortMessages(); refreshWall(); refreshListView(); scheduleLeaderboard(); updateLitCount(); }
+        // ---- 已經亮起 N 道光（卓倫 2026-11-01）：目前未刪除的全部留言數（含匿名、假面；已刪除的不在 messageById 裡）----
+        let litShown = -1;
+        function updateLitCount() {
+            const el = document.getElementById('litCount'); if (!el || !messagesLoaded) return;
+            const n = messageById.size; if (n === litShown) return;
+            const txt = n.toLocaleString('en-US');
+            el.setAttribute('aria-label', `全公司已經寫下 ${txt} 張感謝卡，已經亮起 ${txt} 道光`);
+            el.querySelector('b').textContent = txt;
+            if (litShown >= 0 && n > litShown) { el.classList.remove('is-bump'); void el.offsetWidth; el.classList.add('is-bump'); }   // 有新卡：暖色閃一次（減少動態時 CSS 不播）
+            litShown = n; el.hidden = false;   // 膠囊變高：bootstrap 先呼叫這裡再發牌，.brand 保護區會算進去
+        }
+        { const el = document.getElementById('litCount'); if (el) el.addEventListener('animationend', () => el.classList.remove('is-bump')); }
         let refreshTimer = null;
         function scheduleRefresh() { if (refreshTimer) return; refreshTimer = setTimeout(() => { refreshTimer = null; refreshNow(); }, 30); } // 一連串推播合併成一次更新
 
@@ -1501,6 +1532,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             } else if (NR.open) fetchRoster(false);
             pickAutoTheme(getValidMessages());
             if (first) { mbShowShell(); fetchMonthBoard(); scheduleMonthRollover(); } else scheduleMonthBoard(800);   // 面板先佔好位置，牆面再發牌
+            updateLitCount();   // 先撐開版頭膠囊，牆面發牌時才會避開
             refreshWall(); refreshListView(); scheduleLeaderboard();
         }
         async function startApp() {
@@ -1512,9 +1544,27 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 write: (up) => BACKEND.write(up), now: () => BACKEND.now() });
             PUI = createProfileUI({ profile: PROFILE, meId: SESSION.meId, isAdmin: !!SESSION.isAdmin,
                 meName: () => (ME && ME.name) || BACKEND.s.nameOf(SESSION.meId), nameOf: (u) => BACKEND.s.nameOf(u), isActive: isActiveUid, uidByName,
-                avatarColor: (u, n) => avatarColorOf(u, n), initials: initialsOf, writeTo: writeThanksTo, logout: doLogout, avatarBtn: userAvatar });
+                avatarColor: (u, n) => avatarColorOf(u, n), initials: initialsOf, logout: doLogout, avatarBtn: userAvatar, ext: SKY_EXT,
+                writeTo: (name, o) => (SKY && o && o.uid ? SKY.composeFrom({ ...o, name }) : writeThanksTo(name)) });   // T101：從說明書寫卡＝星光卡
             PROFILE.on(() => { scheduleRefresh(); mbRender(); if (ME) renderMyAvatar(); });   // 頭像下載好、有人換頭像：只重畫有變的卡（卡片指紋含頭像）
             PROFILE.start();
+            // T101 點亮星空 2.0（sky/sky.js）：動態載入，活動模組載入失敗或出錯時主牆照常可用。期間、門檻只看伺服器時間與 ev/stars；銀行沒上線時會自己降級
+            try {
+                const { createSky } = await import('./sky/sky.js');
+                SKY = createSky({ db: SESSION.db, user: SESSION.user, meId: SESSION.meId, isAdmin: !!SESSION.isAdmin, emulator: USE_EMULATOR,
+                    store: BACKEND.s, onBackend: (fn) => BACKEND.on(fn), profile: PROFILE,
+                    openProfile: (u, from) => PUI.openViewer(u, from), openEditor: (from) => PUI.openEditor(from || userAvatar), closeProfiles: () => PUI.closeAll(),
+                    writeTo: writeThanksTo, setPref: (k, v) => api('POST', 'api/me/prefs', { key: k, value: v }).then(r => { if (r && r.prefs && ME) ME.prefs = r.prefs; return r; }),
+                    avatar: skyAvatar, themeClass: (t) => themeClassOf(t), nowMs: () => nowMs(), toast: (t) => showToast(t, 5000),
+                    isPaused: () => !imgViewer.hidden,
+                    canShowPopup: () => !document.getElementById('onboardingOverlay').classList.contains('active') && !document.querySelector('.pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim'),
+                    selectTheme: (t) => { playSound('click'); themeManuallySelected = true; currentTheme = t; onThemeChosen(); },
+                    currentTheme: () => currentTheme,
+                    resetTheme: () => { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); syncPickerState(); updateStyleButton(); },
+                    onLayout: () => { if (messagesLoaded && window.innerWidth > 768) renderWall(); } });
+                Object.assign(SKY_EXT, SKY.ext);
+                if (USE_EMULATOR) window.__sky = SKY;
+            } catch (e) { SKY = null; console.error('[sky] 點亮星空模組沒有載入，主牆照常運作', e); }
             if (USE_EMULATOR) { window.__profile = PROFILE; window.__pui = PUI; }
             for (let attempt = 1; ; attempt++) {
                 try { await BACKEND.start(); applyBootstrap(await api('GET', 'api/bootstrap')); startStream(); return; }
@@ -1616,61 +1666,28 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             } catch (err) { showToast('⚠️ ' + err.message, 6000); }
         }
 
-        // ---- 英雄榜：打開時向伺服器要（伺服器依規則計算，前台只負責畫出來） ----
-        let lbSeq = 0, lbTimer = null;
-        function scheduleLeaderboard() {
-            if (!leaderboardOverlay.classList.contains('active')) return;
-            clearTimeout(lbTimer); lbTimer = setTimeout(renderLeaderboard, 1500);
-        }
-        async function renderLeaderboard() {
-            const seq = ++lbSeq;
-            const paintNote = (elementId, html) => { const ul = document.getElementById(elementId); ul.innerHTML = `<li style="justify-content:center; color:#6b6b76; font-weight:normal; text-align:center;">${html}</li>`; };
-            const paint = (listArr, elementId) => {
-                const ul = document.getElementById(elementId); ul.innerHTML = '';
-                if(listArr.length === 0) { paintNote(elementId, IS_HALLOWEEN ? '萬聖期間從 10/18 起重新計算，具名送卡就會上榜' : '目前還沒有資料喔，送出第一張感謝就會上榜'); return; }
-
-                const maxCount = listArr[0][1];
-                listArr.forEach((item, idx) => {
-                    const isTop = (item[1] === maxCount && maxCount > 1); // 4.8（設計 R12）：大家都只有 1 次時不顯示皇冠
-                    const li = document.createElement('li');
-                    if(isTop) li.className = 'top-rank';
-                    const nm = uidByName(item[0]) ? `<button type="button" class="pc-link" data-pc-name="${escapeHtml(item[0])}">${escapeHtml(item[0])}</button>` : escapeHtml(item[0]);   // T098
-                    li.innerHTML = `<span>${isTop ? '👑 ' : ''}${nm}</span> <span class="count">${Number(item[1]) || 0} 張</span>`;
-                    ul.appendChild(li);
-                });
-            };
-            if (!document.getElementById('topSendersList').children.length) { paintNote('topSendersList', '載入中…'); paintNote('topReceiversList', '載入中…'); }
-            try {
-                const d = await api('GET', 'api/leaderboard');
-                if (seq !== lbSeq) return;
-                const top10 = (arr) => (Array.isArray(arr) ? arr : []).filter(x => Array.isArray(x)).slice().sort((a, b) => b[1] - a[1]).slice(0, 10);
-                paint(top10(d.senders), 'topSendersList'); paint(top10(d.receivers), 'topReceiversList');
-            } catch (e) {
-                if (seq !== lbSeq) return;
-                paintNote('topSendersList', '英雄榜暫時讀不到，請稍後再試'); paintNote('topReceiversList', '英雄榜暫時讀不到，請稍後再試');
-            }
-        }
-
-        // ================= 上月排行榜（卓倫 2026-10-28）：牆面每月 1 號清空，上個月的感謝改用排行榜呈現 =================
-        // 伺服器計算（GET api/leaderboard/monthly）：送出最多／收到最多，競賽排名（1, 2, 2, 4）、只列名次 <= 5、最多 7 列，
-        // 整組放不下的同分組由伺服器回彙整（*_more）。這裡只負責畫出來。外觀：美術總監設計稿 v1（design/月排行榜/）。
+        // ================= 感謝榜（卓倫 2026-10-28 上月排行榜；2026-11-01 英雄榜併入：本月／上月兩個分頁） =================
+        // 伺服器計算（GET api/leaderboard＝本月、api/leaderboard/monthly＝上月）：同一套算法，前 5 名、競賽排名（1, 1, 3）、最多 7 列，
+        // 整組放不下的同分組由伺服器回彙整（*_more）；不回張數。牆面左上小條顯示「預設分頁」的第 1 名，
+        // 小條和右上獎盃都打開同一個彈窗（#leaderboardOverlay）。設計：design/感謝榜整合/（美術總監 3）。
         const mboardEl = document.getElementById('mboard');
-        const MB = { data: null, state: 'loading', seq: 0, timer: null, rolloverTimer: null, month: '', shown: false, lastRect: null, pop: false };
+        const MB = { d: { now: null, last: null }, st: { now: 'loading', last: 'loading' }, seq: { now: 0, last: 0 }, json: { now: '', last: '' },
+            timer: { now: null, last: null }, rolloverTimer: null, month: '', def: '', shown: false, lastRect: null, tab: 'last' };
+        const MB_API = { now: 'api/leaderboard', last: 'api/leaderboard/monthly' };
         const MB_ICON = {
             trophy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>',
             send: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>',
             heart: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9-9c-1.4-3.2.6-7 4.2-7 2 0 3.4 1.1 4.8 2.8C13.4 6.1 14.8 5 16.8 5c3.6 0 5.6 3.8 4.2 7-2 4.6-9 9-9 9z"/></svg>',
-            chev: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>',
+            chev: '<svg class="tb-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg>',
         };
         // 榜名（卓倫定案 2026-10-28）。全部不顯示則數（伺服器也不回）
-        const MB_TABS = [
-            { key: 'senders', label: '送出最多感謝', icon: MB_ICON.send, empty: '上個月還沒有具名送出的感謝。' },
-            { key: 'receivers', label: '收到最多感謝', icon: MB_ICON.heart, empty: '上個月還沒有人收到感謝。' },
-        ];
-        const mbMobile = () => window.innerWidth <= 768;
+        const MB_TABS = [{ key: 'senders', label: '送出最多感謝', icon: MB_ICON.send }, { key: 'receivers', label: '收到最多感謝', icon: MB_ICON.heart }];
         const MB_OPTOUT_KEY = 'lb_hidden';   // 「不在感謝榜上顯示我」：個人偏好（伺服器排除後名次由下一位遞補）
-        // 面板顯示的月份＝上個月（台灣時間）；資料還沒到時先用本機換算的伺服器時間，標題才不會閃
-        function mbBoardMonth() { return (MB.data && MB.data.month) || tpeMonthKey(tpeMonthStart(nowMs()) - 1); }
+        const tpeDayOf = (ms) => Math.floor((ms - tpeMonthStart(ms)) / 86400000) + 1;   // 台灣時間的「幾號」
+        // 預設分頁：每月 1～7 號看上月（剛結算），8 號起看本月（進行中）
+        function mbDefTab() { return tpeDayOf(nowMs()) <= 7 ? 'last' : 'now'; }
+        function mbMonthOf(which) { const d = MB.d[which]; if (d && d.month) return d.month; const n = nowMs(); return which === 'now' ? tpeMonthKey(n) : tpeMonthKey(tpeMonthStart(n) - 1); }
+        function mbBoardMonth() { return mbMonthOf(mbDefTab()); }
         function mbYM(key) { const m = /^(\d{4})-(\d{2})$/.exec(key || ''); return m ? { y: Number(m[1]), m: Number(m[2]) } : { y: 0, m: 0 }; }
         function mbDisplayName(n) { const s = String(n || ''); return s.replace(/\s*[(（][^)）]*[)）]\s*$/, '') || s; }   // 結尾的部門括號不顯示（完整姓名在 title 和讀屏）
         function mbRows(rows) {
@@ -1678,175 +1695,247 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 .map(r => ({ name: r.name, rank: Number(r.rank) || 1, color: r.avatar_color }));
             return arr.sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name, 'zh-Hant'));   // 同名次依姓名排序，不暗示先後
         }
-        function mbHasRows(key) { const d = MB.data || {}; return mbRows(d[key]).length > 0 || !!(d[key + '_more'] && Number(d[key + '_more'].people) > 0); }
-        // ===== 上月感謝榜 v2（美術總監設計稿 design/月排行榜/v2/）：平常是小條（兩榜各自的第 1 名），點開看前 5 名浮層 =====
-        // 浮層蓋在牆上（桌機 position:absolute），不改變面板外框，所以牆面卡片不會被推動
+        function mbHas(which, key) { const d = MB.d[which] || {}; return mbRows(d[key]).length > 0 || !!(d[key + '_more'] && Number(d[key + '_more'].people) > 0); }
         function mbAv(r) {
             const photo = avatarPhotoOf(uidByName(r.name));   // T098：有頭像放照片
             if (photo) return `<img class="mb-av" src="${escapeHtml(photo)}" alt="" aria-hidden="true" decoding="async">`;
             return `<span class="mb-av" style="background:${avatarColorOf(r.name, r.name, r.color)}" aria-hidden="true">${escapeHtml(initialsOf(r.name))}</span>`;
         }
         // 小條的一列：第 1 名（並列最多疊 3 個頭像；2 位寫兩個名字、3 位以上寫「等 N 位」）
-        function mbStarHtml(tab) {
-            const d = MB.data || {}, firsts = mbRows(d[tab.key]).filter(r => r.rank === 1), more = d[tab.key + '_more'];
+        function mbStarHtml(tab, which) {
+            const d = MB.d[which] || {}, firsts = mbRows(d[tab.key]).filter(r => r.rank === 1), more = d[tab.key + '_more'];
             const extra = (!firsts.length && more && Number(more.rank) === 1) ? Number(more.people) || 0 : 0;   // 第 1 名整組超過 7 人，伺服器只回彙整
+            const emptyTxt = which === 'now' ? '還沒有人上榜' : '上個月從缺';
             const label = `<span class="mb-star-label" aria-hidden="true">${tab.icon}${tab.label}</span>`;
-            if (!firsts.length && !extra) return `<li class="mb-star is-empty" aria-label="${tab.label}：${tab.empty}">${label}<span class="mb-star-who" aria-hidden="true"><span class="mb-empty">上個月從缺</span></span></li>`;
+            if (!firsts.length && !extra) return `<li class="mb-star is-empty" aria-label="${tab.label}：${emptyTxt}">${label}<span class="mb-star-who" aria-hidden="true"><span class="mb-empty">${emptyTxt}</span></span></li>`;
             const names = firsts.map(r => mbDisplayName(r.name)), full = firsts.map(r => r.name).join('、');
             const shown = extra ? `${extra} 位同事並列` : firsts.length === 1 ? names[0] : firsts.length === 2 ? names.join('、') : `${names[0]} 等 ${firsts.length} 位`;
             return `<li class="mb-star" aria-label="${tab.label}${firsts.length > 1 || extra ? '，並列第 1 名' : ''}：${escapeHtml(full || shown)}">${label}`
                 + `<span class="mb-star-who" aria-hidden="true"><span class="mb-stack">${firsts.slice(0, 3).map(mbAv).join('')}</span><span class="mb-name" title="${escapeHtml(full)}">${escapeHtml(shown)}</span></span></li>`;
         }
-        // 浮層的一欄：前 5 名（伺服器已經截好：名次 <= 5、最多 7 列、放不下的同分組回 *_more）；名次圓章有數字，不只靠顏色
-        function mbTopHtml(tab) {
-            const d = MB.data || {}, rows = mbRows(d[tab.key]), more = d[tab.key + '_more'];
-            const moreOk = more && Number(more.people) > 0;
-            const head = `<h4 class="mb-col-title" id="mbColT-${tab.key}">${tab.icon}${tab.label}</h4>`;
-            if (!rows.length && !moreOk) return `<section class="mb-col" aria-labelledby="mbColT-${tab.key}">${head}<p class="mb-empty">${tab.empty}</p></section>`;
-            const tied = (k) => rows.filter(x => x.rank === k).length > 1;
-            return `<section class="mb-col" aria-labelledby="mbColT-${tab.key}">${head}<ol class="mb-list">${rows.map(r => `<li class="mb-row" data-rank="${r.rank}" aria-label="${tied(r.rank) ? '並列' : ''}第 ${r.rank} 名，${escapeHtml(r.name)}">`
-                + `<span class="mb-rank" aria-hidden="true">${r.rank}</span>${mbAv(r)}${uidByName(r.name) ? `<button type="button" class="mb-name pc-link" data-pc-name="${escapeHtml(r.name)}" title="${escapeHtml(r.name)}" aria-label="看 ${escapeHtml(r.name)} 的使用說明書">${escapeHtml(mbDisplayName(r.name))}</button>` : `<span class="mb-name" title="${escapeHtml(r.name)}" aria-hidden="true">${escapeHtml(mbDisplayName(r.name))}</span>`}</li>`).join('')}</ol>`
-                + (moreOk ? `<p class="mb-more">${rows.length ? '還有 ' : ''}${Number(more.people)} 位同事並列第 ${Number(more.rank) || 1} 名</p>` : '') + `</section>`;
-        }
-        const MB_OPTOUT_HINT = { on: '已開啟：上月感謝榜和英雄榜都不會出現你的名字。<span class="nw">你的卡片照常顯示。</span>', off: '開啟後，上月感謝榜和英雄榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span>' };   // 固定字串（不含使用者資料）
+        const MB_OPTOUT_HINT = { on: '已開啟：本月和上月的感謝榜都不會出現你的名字。<span class="nw">你的卡片照常顯示。</span>', off: '開啟後，本月和上月的感謝榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span>' };   // 固定字串（不含使用者資料）
         function mbOptoutOn() { return prefGet(MB_OPTOUT_KEY) === '1'; }
-        function mbOptoutHtml(id) {
-            const on = mbOptoutOn();
-            return `<div class="mb-optout"><label class="mb-switch"><input type="checkbox" role="switch" id="${id}" data-act="optout"${on ? ' checked' : ''} aria-describedby="${id}-hint">`
-                + `<span class="mb-switch-track" aria-hidden="true"></span><span class="mb-switch-text">不在感謝榜上顯示我</span></label>`
-                + `<p class="mb-optout-hint" id="${id}-hint">${on ? MB_OPTOUT_HINT.on : MB_OPTOUT_HINT.off}</p></div>`;
-        }
-        // 英雄榜彈窗底部的同一個開關（index.html #lbOptout）：狀態跟著偏好
+        // 感謝榜彈窗底部的開關（index.html #lbOptout）：狀態跟著偏好
         function syncLbOptout() {
             const cb = document.getElementById('lbOptout'); if (!cb) return;
             const on = mbOptoutOn(); cb.checked = on;
             const hint = document.getElementById('lbOptout-hint'); if (hint) hint.innerHTML = on ? MB_OPTOUT_HINT.on : MB_OPTOUT_HINT.off;
         }
-        // 切換開關（兩處共用）：先等伺服器存好，再重抓月榜、英雄榜（開著的話），名次才會正確遞補
+        // 切換開關：先等伺服器存好，再重抓本月、上月，名次才會正確遞補
         let mbOptoutSeq = 0;
         async function setBoardOptout(on) {
             const seq = ++mbOptoutSeq, v = on ? '1' : '0', before = prefGet(MB_OPTOUT_KEY);
             if (ME) { ME.prefs = ME.prefs || {}; ME.prefs[MB_OPTOUT_KEY] = v; }
             try { localStorage.setItem(prefLocalKey(MB_OPTOUT_KEY), v); } catch (e) {}
-            mbRender(); syncLbOptout();
+            syncLbOptout();
             try {
                 await api('POST', 'api/me/prefs', { key: MB_OPTOUT_KEY, value: v });
                 if (seq !== mbOptoutSeq) return;
-                showToast(on ? '已設定：上月感謝榜和英雄榜不會顯示你的名字' : '已恢復：你的名字會出現在感謝榜和英雄榜');
+                showToast(on ? '已設定：感謝榜不會顯示你的名字' : '已恢復：你的名字會出現在感謝榜');
                 fetchMonthBoard();
-                if (leaderboardOverlay.classList.contains('active')) renderLeaderboard();
             } catch (err) {
                 if (seq !== mbOptoutSeq) return;
                 if (ME && ME.prefs) ME.prefs[MB_OPTOUT_KEY] = before;   // 沒存起來：開關退回原狀，並說明
                 try { localStorage.setItem(prefLocalKey(MB_OPTOUT_KEY), before); } catch (e) {}
-                mbRender(); syncLbOptout();
+                syncLbOptout();
                 showToast('⚠️ 設定沒有存起來，請檢查網路後再試一次。', 5000);
             }
         }
+        // ---- 牆面左上小條（v2 尺寸）：預設分頁的兩榜第 1 名；整條可點，鍵盤用「看榜」按鈕 ----
         function mbRender() {
             if (!mboardEl || !MB.shown) return;
-            const ym = mbYM(mbBoardMonth()), title = `${ym.m} 月感謝榜`;
-            const loading = MB.state === 'loading' && !MB.data, failed = MB.state === 'error' && !MB.data;
-            const none = !loading && !failed && !mbHasRows('senders') && !mbHasRows('receivers');
-            const popOpen = !!MB.pop && !loading && !failed && !none;
+            const which = mbDefTab(), d = MB.d[which], ym = mbYM(mbMonthOf(which));
+            const loading = !d && MB.st[which] === 'loading', failed = !d && MB.st[which] === 'error';
+            const none = !loading && !failed && !mbHas(which, 'senders') && !mbHas(which, 'receivers');
             const focusIn = mboardEl.contains(document.activeElement) ? (document.activeElement.id || '') : '';
-            mboardEl.classList.add('mb-v2');
-            mboardEl.classList.toggle('is-pop', popOpen);
+            mboardEl.classList.add('mb-v2'); mboardEl.classList.remove('is-pop');
             mboardEl.setAttribute('aria-busy', loading ? 'true' : 'false');
             let body;
-            if (loading) body = `<ul class="mb-stars" aria-hidden="true">${MB_TABS.map(t => `<li class="mb-star is-skel"><span class="mb-star-label">${t.icon}${t.label}</span><span class="mb-skel"><i></i><i></i></span></li>`).join('')}</ul><span class="nr-sr">排行榜載入中</span>`;
-            else if (failed) body = '<p class="mb-note">排行榜暫時讀不到<button type="button" class="mb-link" data-act="retry">重新整理</button></p>';
-            else if (none) { const next = mbYM(tpeMonthKey(tpeNextMonthStart(nowMs()))); body = `<p class="mb-note">上個月還沒有人上榜。這個月的感謝，<b>${next.m} 月 1 號</b>會在這裡表揚。</p>`; }
-            else body = `<ul class="mb-stars">${MB_TABS.map(mbStarHtml).join('')}</ul>`
-                + `<div class="mb-pop" id="mbPop" role="region" aria-label="${title}前 5 名"${popOpen ? '' : ' hidden'}>`
-                + `<p class="mb-pop-sub">上個月最常送出與收到感謝的同事</p><div class="mb-cols">${MB_TABS.map(mbTopHtml).join('')}</div>`
-                + mbOptoutHtml('mbOptout')
-                + `<div class="mb-foot"><span>每月 1 號更新・送出榜只計具名卡</span><button type="button" class="mb-link" data-act="list">看全部感謝</button></div></div>`;
-            const toggle = (loading || failed || none) ? ''
-                : `<button type="button" class="mb-toggle" id="mbToggle" data-act="pop" aria-expanded="${popOpen}" aria-controls="mbPop" aria-label="${popOpen ? '收起' : '查看'}${title}前 5 名"><span class="mb-toggle-text" aria-hidden="true">前 5 名</span>${MB_ICON.chev}</button>`;
-            mboardEl.innerHTML = `<div class="mb-head"><h2 class="mb-title" id="mbTitle" aria-label="${ym.y} 年 ${ym.m} 月感謝榜">${MB_ICON.trophy}${title}</h2>${toggle}</div>`
+            if (loading) body = `<ul class="mb-stars" aria-hidden="true">${MB_TABS.map(t => `<li class="mb-star is-skel"><span class="mb-star-label">${t.icon}${t.label}</span><span class="mb-skel"><i></i><i></i></span></li>`).join('')}</ul><span class="nr-sr">感謝榜載入中</span>`;
+            else if (failed) body = '<p class="mb-note">感謝榜暫時讀不到<button type="button" class="mb-link" data-act="retry">重新整理</button></p>';
+            else if (none) body = `<p class="mb-note">${which === 'now' ? '這個月還沒有人上榜。寫一張感謝，名字就會出現在這裡。' : '上個月沒有人上榜。點「看榜」看<b>本月進行中</b>的名單。'}</p>`;
+            else body = `<ul class="mb-stars">${MB_TABS.map(t => mbStarHtml(t, which)).join('')}</ul>`;
+            const chip = which === 'now' ? `<span class="tb-month is-live" aria-hidden="true">${ym.m} 月・進行中</span>` : `<span class="tb-month" aria-hidden="true">${ym.m} 月</span>`;
+            const toggle = (loading || failed) ? ''
+                : `<button type="button" class="mb-toggle" id="mbToggle" data-act="open" aria-haspopup="dialog" aria-controls="leaderboardOverlay" aria-label="打開感謝榜，看本月和上月前 5 名"><span class="mb-toggle-text" aria-hidden="true">看榜</span>${MB_ICON.chev}</button>`;
+            mboardEl.innerHTML = `<div class="mb-head"><h2 class="mb-title" id="mbTitle" aria-label="感謝榜，${ym.m} 月${which === 'now' ? '（本月，進行中）' : '（上月）'}">${MB_ICON.trophy}感謝榜</h2>${chip}${toggle}</div>`
                 + `<div class="mb-body" id="mbBody">${body}</div>`;
             if (focusIn) { const f = document.getElementById(focusIn); if (f) f.focus({ preventScroll: true }); }
-            // 每月第一次看到（資料已到）：柔和發亮一次，2 秒；減少動態時 CSS 不播
-            if (MB.data && !loading) {
+            // 預設月份第一次看到（資料已到）：柔和發亮一次，2 秒；減少動態時 CSS 不播（1 號看到上月亮一次，8 號換成本月再亮一次）
+            if (d) {
                 const k = 'mboardSeen:' + mbBoardMonth(); let seen = null; try { seen = localStorage.getItem(k); } catch (e) {}
                 if (!seen) { try { localStorage.setItem(k, '1'); } catch (e) {} mboardEl.classList.remove('is-fresh'); void mboardEl.offsetWidth; mboardEl.classList.add('is-fresh'); }
             }
-            mbSyncWall();   // 小條大小固定；浮層不算在面板外框裡，所以這裡通常什麼都不用搬
+            mbSyncWall();   // 小條大小固定，通常什麼都不用搬
         }
-        function mbSetPop(open, focus) {
-            if (!!MB.pop === open) return;
-            MB.pop = open; mbRender();
-            if (focus) { const t = document.getElementById('mbToggle'); if (t) t.focus({ preventScroll: true }); }
+        // ---- 感謝榜彈窗：分頁「本月｜上月」，兩頁規則相同 ----
+        const boardOpen = () => leaderboardOverlay.classList.contains('active');
+        function tbColHtml(tab, which) {
+            const d = MB.d[which] || {}, rows = mbRows(d[tab.key]), more = d[tab.key + '_more'], moreOk = !!(more && Number(more.people) > 0);
+            const head = `<h3 id="tbColT-${tab.key}">${tab.icon}${tab.label}</h3>`;
+            if (!rows.length && !moreOk) {
+                const m = mbYM(mbMonthOf('now')).m;
+                const msg = which === 'now'
+                    ? (tab.key === 'senders' ? `這個月還沒有具名送出的感謝。<br>從 <b>${m}/1</b> 起算，寫一張就會上榜。` : '這個月還沒有人收到感謝。')
+                    : (tab.key === 'senders' ? '上個月還沒有具名送出的感謝。' : '上個月還沒有人收到感謝。');
+                return `<section class="tb-col" aria-labelledby="tbColT-${tab.key}">${head}<p class="tb-empty">${msg}</p></section>`;
+            }
+            const tied = (k) => rows.filter(x => x.rank === k).length > 1 || (moreOk && Number(more.rank) === k);
+            return `<section class="tb-col" aria-labelledby="tbColT-${tab.key}">${head}<ol class="tb-list">${rows.map(r => {
+                const n = escapeHtml(r.name), shown = escapeHtml(mbDisplayName(r.name));
+                const nm = uidByName(r.name) ? `<button type="button" class="tb-name pc-link" data-pc-name="${n}" title="${n}" aria-label="看 ${n} 的使用說明書">${shown}</button>` : `<span class="tb-name" title="${n}">${shown}</span>`;   // T098：點名字開使用說明書
+                return `<li class="mb-row tb-row" data-rank="${r.rank}" aria-label="${tied(r.rank) ? '並列' : ''}第 ${r.rank} 名，${n}"><span class="mb-rank" aria-hidden="true">${r.rank}</span>${mbAv(r)}${nm}</li>`;
+            }).join('')}</ol>` + (moreOk ? `<p class="tb-more">${rows.length ? '還有 ' : ''}${Number(more.people)} 位同事並列第 ${Number(more.rank) || 1} 名</p>` : '') + '</section>';
+        }
+        function tbRender(focusTab) {
+            const box = document.getElementById('tbBox'); if (!box) return;
+            const which = MB.tab, d = MB.d[which], n = nowMs();
+            const loading = !d && MB.st[which] !== 'error', failed = !d && MB.st[which] === 'error';
+            const nowM = mbYM(mbMonthOf('now')), lastM = mbYM(mbMonthOf('last'));
+            const focusId = box.contains(document.activeElement) ? document.activeElement.id : '';
+            document.getElementById('tbTabs').innerHTML = ['now', 'last'].map(k => `<button type="button" class="tb-tab" role="tab" id="tbTab-${k}" aria-controls="tbPanel" aria-selected="${which === k}" tabindex="${which === k ? 0 : -1}">`
+                + `${k === 'now' ? '<span class="tb-live" aria-hidden="true"></span>本月' : '上月'}<small>${(k === 'now' ? nowM : lastM).m} 月</small></button>`).join('');
+            const panel = document.getElementById('tbPanel'); panel.setAttribute('aria-labelledby', 'tbTab-' + which);
+            const lastDays = new Date(Date.UTC(lastM.y, lastM.m, 0)).getUTCDate();
+            const period = which === 'now' ? `<p class="tb-period"><b>${nowM.m}/1</b> 起到今天（${nowM.m}/${tpeDayOf(n)}）・名單隨新卡更新</p>`
+                : `<p class="tb-period"><b>${lastM.m}/1～${lastM.m}/${lastDays}</b> 整個月・已結算</p>`;
+            let body;
+            if (loading) body = `<div class="tb-cols">${MB_TABS.map(t => `<section class="tb-col"><h3>${t.icon}${t.label}</h3>${'<div class="tb-skel" aria-hidden="true"><i></i><i></i><i></i></div>'.repeat(5)}</section>`).join('')}</div><span class="nr-sr">感謝榜載入中</span>`;
+            else if (failed) body = '<p class="tb-error">感謝榜暫時讀不到<button type="button" class="mb-link" data-act="tb-retry">重新整理</button></p>';
+            else body = `<div class="tb-cols">${MB_TABS.map(t => tbColHtml(t, which)).join('')}</div>`;
+            panel.innerHTML = period + body + '<div class="tb-foot"><span>前 5 名・同分同名次・送出榜只計具名卡・寫給自己不算</span><button type="button" class="mb-link" data-act="tb-list">看全部感謝</button></div>';
+            box.setAttribute('aria-busy', loading ? 'true' : 'false');
+            const f = focusTab ? document.getElementById('tbTab-' + which) : (focusId ? document.getElementById(focusId) : null);
+            if (f) f.focus({ preventScroll: true });
+        }
+        // 小條、右上獎盃都開這個；每次打開回到預設分頁（彈窗開著時使用者切的分頁保留）
+        function openBoard() {
+            MB.tab = mbDefTab(); syncLbOptout(); tbRender();
+            leaderboardOverlay.classList.add('active');
+            fetchMonthBoard();
+        }
+        {
+            const ov = leaderboardOverlay;
+            ov.addEventListener('click', (e) => {
+                const t = e.target.closest('.tb-tab');
+                if (t) { const k = t.id.replace('tbTab-', ''); if (k !== MB.tab) { playSound('click'); MB.tab = k; tbRender(true); } return; }
+                const act = e.target.closest('[data-act]');
+                if (act && act.dataset.act === 'tb-retry') { MB.st.now = MB.d.now ? MB.st.now : 'loading'; MB.st.last = MB.d.last ? MB.st.last : 'loading'; tbRender(); fetchMonthBoard(); return; }
+                if (act && act.dataset.act === 'tb-list') { playSound('click'); ov.classList.remove('active'); setViewMode('list'); return; }
+            });
+            ov.addEventListener('keydown', (e) => {
+                if (!e.target.classList || !e.target.classList.contains('tb-tab')) return;
+                let k = null;
+                if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') k = MB.tab === 'now' ? 'last' : 'now';
+                else if (e.key === 'Home') k = 'now'; else if (e.key === 'End') k = 'last';
+                if (!k) return;
+                e.preventDefault(); MB.tab = k; tbRender(true);
+            });
         }
         if (mboardEl) {
             mboardEl.addEventListener('animationend', (e) => { if (e.animationName === 'mbGlow') mboardEl.classList.remove('is-fresh'); });
-            mboardEl.addEventListener('change', (e) => { if (e.target.matches('[data-act="optout"]')) setBoardOptout(e.target.checked); });
             mboardEl.addEventListener('click', (e) => {
                 const act = e.target.closest('[data-act]');
-                if (act && act.dataset.act === 'retry') { MB.state = 'loading'; mbRender(); fetchMonthBoard(); return; }
-                if (act && act.dataset.act === 'list') { playSound('click'); MB.pop = false; setViewMode('list'); return; }
-                if (e.target.closest('.mb-pop')) return;          // 浮層裡面的點擊（開關、空白處）不關閉
-                // 小條整塊都可以點（標題列、兩列第 1 名）；鍵盤用「前 5 名」按鈕
-                if ((act && act.dataset.act === 'pop') || e.target.closest('.mb-head') || e.target.closest('.mb-stars')) {
-                    if (!mboardEl.querySelector('.mb-pop')) return;
-                    playSound('click'); mbSetPop(!MB.pop, true);
+                if (act && act.dataset.act === 'retry') { MB.st.now = MB.d.now ? MB.st.now : 'loading'; MB.st.last = MB.d.last ? MB.st.last : 'loading'; mbRender(); fetchMonthBoard(); return; }
+                // 小條整塊都可以點（標題列、兩列第 1 名）；鍵盤用「看榜」按鈕
+                if ((act && act.dataset.act === 'open') || e.target.closest('.mb-head') || e.target.closest('.mb-stars')) {
+                    if (!mboardEl.querySelector('#mbToggle')) return;   // 載入中、讀取失敗時不開
+                    playSound('click'); openBoard();
                 }
             });
-            document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && MB.pop) mbSetPop(false, true); });                     // Esc 關閉，焦點回到按鈕
-            document.addEventListener('pointerdown', (e) => { if (MB.pop && !mboardEl.contains(e.target)) mbSetPop(false, false); }, true); // 點外面關閉
             let mbW = window.innerWidth;
             window.addEventListener('resize', () => { if (window.innerWidth !== mbW) { mbW = window.innerWidth; mbRender(); } });
         }
         { const lbCb = document.getElementById('lbOptout'); if (lbCb) lbCb.addEventListener('change', () => setBoardOptout(lbCb.checked)); }
         // 第一次：先畫出骨架（和正式名單同高），牆面才會在發牌前就避開面板
-        function mbShowShell() { if (!mboardEl || MB.shown) return; MB.shown = true; mboardEl.hidden = false; mbRender(); }
-        function scheduleMonthBoard(delay) { clearTimeout(MB.timer); MB.timer = setTimeout(fetchMonthBoard, delay == null ? 1500 : delay); }
-        // 上個月的留言被刪除或復原時才需要重抓（本月的新留言不影響上月排行榜）
+        function mbShowShell() { if (!mboardEl || MB.shown) return; MB.shown = true; mboardEl.hidden = false; MB.def = mbDefTab(); mbRender(); }
+        function scheduleBoard(which, delay) { clearTimeout(MB.timer[which]); MB.timer[which] = setTimeout(() => fetchBoard(which), delay == null ? 1500 : delay); }
+        function scheduleMonthBoard(delay) { scheduleBoard('now', delay); scheduleBoard('last', delay); }
+        function scheduleLeaderboard() { scheduleBoard('now', 1500); }   // 資料有變（新卡、刪除、編輯）：本月分頁重算
+        // 上個月的留言被刪除或復原時才需要重抓上月（本月的新留言由 scheduleLeaderboard 重抓本月）
         function mbNoteChange(ts) {
             const cur = tpeMonthStart(nowMs());
-            if (ts && ts < cur && ts >= tpeMonthStart(cur - 1)) scheduleMonthBoard(1500);
+            if (ts && ts < cur && ts >= tpeMonthStart(cur - 1)) scheduleBoard('last', 1500);
         }
-        async function fetchMonthBoard() {
-            if (!mboardEl) return;
-            const seq = ++MB.seq;
+        async function fetchBoard(which) {
+            const seq = ++MB.seq[which];
             try {
-                const d = await api('GET', 'api/leaderboard/monthly');
-                if (seq !== MB.seq) return;
-                MB.data = d; MB.state = 'ready'; MB.month = tpeMonthKey(nowMs());
+                const d = await api('GET', MB_API[which]);
+                if (seq !== MB.seq[which]) return;
+                const j = JSON.stringify(d), same = j === MB.json[which] && MB.st[which] === 'ready';
+                MB.d[which] = d; MB.json[which] = j; MB.st[which] = 'ready'; MB.month = tpeMonthKey(nowMs());
+                if (same) return;                                // 名單沒變：不重畫（焦點、捲動位置不動）
             } catch (e) {
-                if (seq !== MB.seq || e.status === 401) return;
-                if (!MB.data) MB.state = 'error';               // 已經有資料：保留舊的，不打擾
+                if (seq !== MB.seq[which] || e.status === 401) return;
+                if (!MB.d[which]) MB.st[which] = 'error';       // 已經有資料：保留舊的，不打擾
             }
-            mbRender();
+            if (which === mbDefTab()) mbRender();
+            if (boardOpen() && which === MB.tab) tbRender();
         }
+        function fetchMonthBoard() { if (!mboardEl) return; fetchBoard('now'); fetchBoard('last'); }
         // 桌機：面板是牆面的保護區（scRegion 的障礙物）。面板變大（展開、名單比骨架長）時，只把壓到面板的卡重新找位置；
         // 變小（收合、名單比較短）時只更新保護區，空出來的位置等輪播自然補上。不整面重排
         function mbSyncWall() {
             const r = mboardEl.getBoundingClientRect(), rect = r.width ? { l: r.left, t: r.top, r: r.right, b: r.bottom } : null;
             const prev = MB.lastRect; MB.lastRect = rect;
             if (!rect || (prev && prev.l === rect.l && prev.t === rect.t && prev.r === rect.r && prev.b === rect.b)) return;
+            wallAvoidObstacles();
+        }
+        // 保護區（scRegion 的障礙物）變了：只把壓到障礙物的卡重新找位置；保護區變小時空出來的位置從輪播池補卡（6.4.3 wallFillFreed，原本等輪播自然補上）
+        function wallAvoidObstacles() {
             meTrimSlots();
             const R = wallState.R;
             if (!R || !wallState.rendered || !wallState.layout || wallState.layout.isMobile || listState.mode !== 'wall' || wallState.validCount === 0) return;
+            const prevFree = R.freePts ? R.freePts.length : 0;
             const fresh = scRegion();
             R.obstacles = fresh.obstacles; R.freePts = fresh.freePts; R.cellFree = fresh.cellFree;
             const placed = scLivePlaced();
             const hit = placed.filter(c => c.cx != null && !c.el._dragged && c.el !== currentFocusedCard && !scInside(c, R));
-            if (!hit.length) return;
             hit.forEach(c => {
                 const others = scLivePlaced().filter(p => p !== c);
                 scRecomputeCover(others);
                 if (scFindSpot(c, others, R, 420)) scPlace(c, 0);
                 else { c.el.remove(); wallState.hidden.push(c.m); }
             });
-            const live = scLivePlaced(); scRecomputeCover(live); scRestack(live);
+            if (hit.length) { const live = scLivePlaced(); scRecomputeCover(live); scRestack(live); }
+            if (fresh.freePts.length > prevFree + 20) wallFillFreed(R, fresh);   // 6.4.3：可用面積變大（約 20 個取樣點＝8,000px² 以上）才補
         }
-        // 頁面開著跨過 1 號 00:00（台灣時間）：牆面換成新月份、排行榜換成剛結束的那個月。準時切換＋每 30 秒檢查一次（電腦睡眠、計時器延遲）
+        // 6.4.3（T103）：保護區變小（千光公告關閉、收起故事、謝幕關閉、面板收合）時，空出來的位置從輪播池補卡。
+        // 只往空位補、不動已經在牆上的卡（不整面重排）；張數上限照目前的可用面積重算。卓倫回報：公告開著時牆面重排過，關掉公告後中間一大片空白
+        function wallFillFreed(R, fresh) {
+            if (wallState.dealing || isFilterMeOnly || currentFocusedCard || activeDragCard || !wallState.byId) return;
+            const maxBase = parseInt(systemSettings.maxMessages) || 50;
+            const target = Math.min(fresh.N, fresh.wide ? Math.round(maxBase * fresh.N / SC_COVER_CAP) : maxBase);
+            const placed = scLivePlaced();
+            if (placed.length >= target) return;
+            wallState.safeMax = Math.max(wallState.safeMax || 0, target);
+            const onWall = new Set(placed.map(p => p.m.id));
+            const pool = wallState.hidden.filter(m => !onWall.has(m.id) && wallState.byId.has(m.id)).map(m => wallState.byId.get(m.id));
+            const t0 = performance.now();
+            while (placed.length < target && pool.length && performance.now() - t0 < 160) {
+                const m = pool.shift();
+                scRecomputeCover(placed);
+                const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
+                let ok = scFindSpot(c, placed, R, 420);
+                if (!ok) { // 和發牌一樣：放不下就縮小 10% 再試（字仍 ≥ 12px）
+                    scSizeCard(c.el, c.m, SC_DEPTH[c.depth] * R.B * .9); scMeasure(c);
+                    ok = 15 * parseFloat(c.el.style.getPropertyValue('--s')) >= 12 && scFindSpot(c, placed, R, 400);
+                }
+                if (ok) { scCommit(c, placed); scPlace(c, 0); wallState.hidden = wallState.hidden.filter(h => h.id !== m.id); }
+                else c.el.remove();
+            }
+            wallState.placed = placed; scRecomputeCover(placed); scRestack(placed); enforceFxBudget();
+        }
+        // 一千道光公告、萬聖謝幕（桌機是 fixed、蓋在牆面上）出現、關閉或展開故事時：壓到的卡重新找位置
+        { const brand = document.querySelector('.brand');
+          if (brand && 'MutationObserver' in window) { let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wallAvoidObstacles, 150); })
+            .observe(brand, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] }); } }
+        // 頁面開著跨過 1 號 00:00（台灣時間）：牆面換成新月份、感謝榜重抓本月與上月；跨過 8 號 00:00 小條換成本月。準時切換＋每 30 秒檢查一次（電腦睡眠、計時器延遲）
         function checkMonthRollover() {
             if (!messagesLoaded) return;
             const k = tpeMonthKey(nowMs());
-            if (MB.month && MB.month !== k) { MB.month = k; MB.pop = false; fetchMonthBoard(); }
+            if (MB.month && MB.month !== k) { MB.month = k; fetchMonthBoard(); }
+            const def = mbDefTab(); if (MB.shown && MB.def !== def) { MB.def = def; mbRender(); }   // 8 號 00:00：小條從上月換成本月
             if (wallState.rendered && wallState.month && wallState.month !== k) refreshWall();
         }
         function scheduleMonthRollover() {
@@ -1893,7 +1982,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 focusComposerNow();   // 同步設定焦點（iOS 才會跳鍵盤）；「點撰寫區外面就收起」看到焦點在撰寫列就不會收起
             }
         });
-        window.__monthBoard = () => ({ state: MB.state, data: MB.data, month: MB.month, wallMonth: wallState.month, pop: !!MB.pop });   // 測試用
+        window.__monthBoard = () => ({ state: MB.st.last, data: MB.d.last, nowState: MB.st.now, now: MB.d.now, month: MB.month, wallMonth: wallState.month, tab: MB.tab, defTab: mbDefTab() });   // 測試用
         window.__monthBoardFetch = () => fetchMonthBoard();                                                                                    // 測試用
 
 
@@ -2033,7 +2122,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const isMobile = window.innerWidth <= 768;
             return {
                 isMobile, screenW: window.innerWidth, screenH: window.innerHeight,
-                sideLimit: isMobile ? 10 : 40, topLimit: isMobile ? 190 : 160, bottomLimit: isMobile ? 330 : 220, // 4.8：手機讓出標題（設計 M6）與輸入區（R4）
+                sideLimit: isMobile ? 10 : 40, topLimit: (isMobile ? 190 : 160) + (SKY ? SKY.topExtra() : 0), bottomLimit: isMobile ? 330 : 220,   // T101：桌機星空進度條讓出 86px // 4.8：手機讓出標題（設計 M6）與輸入區（R4）
                 mobileScaleDown: isMobile ? 0.6 : 1.0, overlapAllowance: 30,
             };
         }
@@ -2460,7 +2549,8 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const rectOf = (sel, pad = 8) => { const e = document.querySelector(sel); if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') return null; const b = e.getBoundingClientRect(); if (!b.width) return null; return { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad }; };
             const pad = 8;
             // 上月感謝榜小條也是保護區；留白 12（卡片上緣的稱號徽章「感謝大師」會凸出卡片外框，8 時旋轉後會貼到小條）
-            const obstacles = [rectOf('.brand'), rectOf('.tools'), rectOf('.signature'), rectOf('.mboard', 12)].filter(Boolean);
+            const obstacles = [rectOf('.brand'), rectOf('.tools'), rectOf('.signature'), rectOf('.mboard', 12), rectOf('#skBar.is-top', 12),
+                rectOf('#k1000Note:not([hidden])', 12), rectOf('#hwEpilogue:not([hidden])', 12)].filter(Boolean);   // 感謝榜整合：桌機公告改成 fixed，不在 .brand 外框裡，要另外避開   // T101：桌機星空進度條也是保護區
             const comp = rectOf('#composerWrap');
             if (comp) obstacles.push({ left: comp.left, right: comp.right, top: Math.min(comp.top, innerHeight - 20 - 104 - pad), bottom: innerHeight });
             const R = { x: 12, y: 12, w: innerWidth - 24, h: innerHeight - 24, obstacles };
@@ -2697,55 +2787,6 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             enforceFxBudget();
         }
 
-        // 6.4.3（T103，移植 6.5 的做法）：保護區（scRegion 的障礙物）變了——千光公告出現／關閉／展開故事、萬聖謝幕出現／關閉（都在 .brand 裡，會撐大標題膠囊）：
-        // 壓到保護區的卡重新找位置；保護區變小時，空出來的位置從輪播池補卡（wallFillFreed）。不整面重排
-        function wallAvoidObstacles() {
-            const R = wallState.R;
-            if (!R || !wallState.rendered || !wallState.layout || wallState.layout.isMobile || (typeof listState !== 'undefined' && listState.mode !== 'wall') || wallState.validCount === 0) return;
-            const prevFree = R.freePts ? R.freePts.length : 0;
-            const fresh = scRegion();
-            R.obstacles = fresh.obstacles; R.freePts = fresh.freePts; R.cellFree = fresh.cellFree;
-            const placed = scLivePlaced();
-            const hit = placed.filter(c => c.cx != null && !c.el._dragged && c.el !== currentFocusedCard && !scInside(c, R));
-            hit.forEach(c => {
-                const others = scLivePlaced().filter(p => p !== c);
-                scRecomputeCover(others);
-                if (scFindSpot(c, others, R, 420)) scPlace(c, 0);
-                else { c.el.remove(); wallState.hidden.push(c.m); }
-            });
-            if (hit.length) { const live = scLivePlaced(); scRecomputeCover(live); scRestack(live); }
-            if (fresh.freePts.length > prevFree + 20) wallFillFreed(R, fresh);   // 可用面積變大（約 20 個取樣點＝8,000px² 以上）才補
-        }
-        // 6.4.3（T103）：保護區變小（千光公告關閉、收起故事、謝幕關閉、面板收合）時，空出來的位置從輪播池補卡。
-        // 只往空位補、不動已經在牆上的卡（不整面重排）；張數上限照目前的可用面積重算。卓倫回報：公告開著時牆面重排過，關掉公告後中間一大片空白
-        function wallFillFreed(R, fresh) {
-            if (wallState.dealing || isFilterMeOnly || currentFocusedCard || activeDragCard || !wallState.byId) return;
-            const maxBase = parseInt(systemSettings.maxMessages) || 50;
-            const target = Math.min(fresh.N, fresh.wide ? Math.round(maxBase * fresh.N / SC_COVER_CAP) : maxBase);
-            const placed = scLivePlaced();
-            if (placed.length >= target) return;
-            wallState.safeMax = Math.max(wallState.safeMax || 0, target);
-            const onWall = new Set(placed.map(p => p.m.id));
-            const pool = wallState.hidden.filter(m => !onWall.has(m.id) && wallState.byId.has(m.id)).map(m => wallState.byId.get(m.id));
-            const t0 = performance.now();
-            while (placed.length < target && pool.length && performance.now() - t0 < 160) {
-                const m = pool.shift();
-                scRecomputeCover(placed);
-                const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
-                let ok = scFindSpot(c, placed, R, 420);
-                if (!ok) { // 和發牌一樣：放不下就縮小 10% 再試（字仍 ≥ 12px）
-                    scSizeCard(c.el, c.m, SC_DEPTH[c.depth] * R.B * .9); scMeasure(c);
-                    ok = 15 * parseFloat(c.el.style.getPropertyValue('--s')) >= 12 && scFindSpot(c, placed, R, 400);
-                }
-                if (ok) { scCommit(c, placed); scPlace(c, 0); wallState.hidden = wallState.hidden.filter(h => h.id !== m.id); }
-                else c.el.remove();
-            }
-            wallState.placed = placed; scRecomputeCover(placed); scRestack(placed); enforceFxBudget();
-        }
-        { const brand = document.querySelector('.brand');
-          if (brand && 'MutationObserver' in window) { let t = null; new MutationObserver(() => { clearTimeout(t); t = setTimeout(wallAvoidObstacles, 150); })
-            .observe(brand, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] }); } }
-
         // 牆上卡片超過上限時，把最底層的卡片收回輪播池
         function trimExcessCards() {
             if (isFilterMeOnly || (wallState.layout && wallState.layout.isMobile)) { updateMoreButton(); return; }
@@ -2912,7 +2953,6 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         function setViewMode(mode) {
             if (mode === listState.mode) return;
             listState.mode = mode;
-            if (mode === 'list' && MB.pop) { MB.pop = false; mbRender(); }   // 感謝榜浮層跟著收起
             document.querySelectorAll('.view-switch .vs-wall').forEach(b => b.setAttribute('aria-pressed', String(mode === 'wall')));
             document.querySelectorAll('.view-switch .vs-list').forEach(b => b.setAttribute('aria-pressed', String(mode === 'list')));
             document.body.classList.toggle('mode-list', mode === 'list');
@@ -2965,6 +3005,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             return escapeHtml(text.slice(0, i)) + '<mark>' + escapeHtml(text.slice(i, i + q.length)) + '</mark>' + escapeHtml(text.slice(i + q.length));
         }
         const pad2 = (n) => String(n).padStart(2, '0');
+        LIST_BAR_CLASS['theme-starnight'] = 'sn-lt';   // T101 星夜：清單色條
         function listRowHtml(m, q) {
             const theme = displayThemeOf(m);
             const author = m.author || '匿名';
@@ -2982,7 +3023,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             const pcAttr = pcUidAttr(m);
             return (avPhoto ? `<img class="lr-av" src="${escapeHtml(avPhoto)}" alt="" aria-hidden="true" decoding="async"${pcAttr}>`
                     : `<div class="lr-av${mask ? ' is-mask' : ''}" ${avColor} aria-hidden="true"${pcAttr}>${escapeHtml(mask ? '?' : (m.initials || initialsOf(author)))}</div>`)
-                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 ${pcAttr ? `<button type="button" class="pc-link"${pcAttr} aria-label="看 ${escapeHtml(author)} 的使用說明書"><b>${markFirst(author, q)}</b></button>` : `<b>${markFirst(author, q)}</b>`}${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${tier}${crown}</div>`
+                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 ${pcAttr ? `<button type="button" class="pc-link"${pcAttr} aria-label="看 ${escapeHtml(author)} 的使用說明書"><b>${markFirst(author, q)}</b></button>` : `<b>${markFirst(author, q)}</b>`}${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${SKY ? SKY.markHtml(m.src) : ''}${tier}${crown}</div>`   /* T101 */
                 + `<p class="lr-text">${markFirst(m.text || '', q)}</p>${img ? `<img class="lr-thumb" src="${escapeHtml(img)}" alt="附圖" loading="lazy">` : ''}</div>`
                 + `<div class="lr-side"><time>${time}</time><button type="button" class="like card-likes${hasLiked ? ' on liked' : ''}" aria-label="${likeWord}，目前 ${likes}" aria-pressed="${hasLiked ? 'true' : 'false'}">${icon}${likes || likeWord}</button></div>`;
         }

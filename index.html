@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://*.firebasedatabase.app https://*.firebaseio.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://*.firebasedatabase.app wss://*.firebasedatabase.app https://*.firebaseio.com wss://*.firebaseio.com https://asia-southeast1-gratitude-wall-ad184.cloudfunctions.net; frame-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
     <meta name="referrer" content="same-origin">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="static/app/admin-neon.css">
     <link rel="stylesheet" href="static/app/profile-card.css">
     <link rel="stylesheet" href="static/app/k1000.css">
+    <link rel="stylesheet" href="static/app/sky.css">
+    <link rel="stylesheet" href="static/app/thanks-board.css">
     <!-- 特效函式庫放在同一個網站（CSP 只允許同網站的程式）；沒載入時不影響主要功能 -->
     <script src="static/vendor/confetti.browser.js"></script>
 </head>
@@ -28,6 +30,8 @@
         <div class="brand header-container">
             <h1 id="mainTitle">RDTW 感謝牆</h1>
             <p id="subTitle">每個人都可以在這裡抒發內心的感謝</p>
+            <!-- 已經亮起 N 道光（卓倫 2026-11-01）：目前未刪除的全部留言數；放在 #subTitle 後面、公告之前（不放進 #subTitle，6.6 在 769～1279 和手機會隱藏副標）。數字由 app.js updateLitCount 填 -->
+            <span class="lit-count" id="litCount" role="img" aria-label="全公司累積的感謝卡" title="全公司累積的感謝卡" hidden><span class="lit-dot" aria-hidden="true"></span><span aria-hidden="true">已經亮起 <b>0</b> 道光</span></span>
             <!-- 👉 全服變身進度條（4.8：設計 R2 + 企劃階段名稱） -->
         <div class="hw-progress-row" id="hwProgressRow">
         <div class="hw-progress-wrapper" id="hwProgressBar" title="全公司變身人數｜100 人：萬聖模板延長 30 天｜150 人：延長 60 天｜200 人：永久保留（變身過的同事適用）" role="progressbar" aria-label="全公司變身進度" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0">
@@ -40,15 +44,15 @@
             <div class="hw-epilogue" id="hwEpilogue" role="note" aria-label="萬聖夜謝幕" hidden><p id="hwEpilogueText"></p><button type="button" class="hw-epilogue-close" id="hwEpilogueClose" aria-label="關閉謝幕訊息">✕</button></div>
         </div>
         <nav class="tools top-btn-group" aria-label="工具">
-            <div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div>
+            <div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true" aria-label="牆面"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false" aria-label="清單"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div>
             <button id="hwBtn" class="tool event" type="button" title="萬聖夜怎麼玩？" aria-label="萬聖夜怎麼玩？" style="display: none;"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6c-5 0-8 3-8 7s3 7 8 7 8-3 8-7-3-7-8-7z"/><path d="M12 6c0-2 1-3 3-3"/><path d="M9 12l1.5 1.5L12 12l1.5 1.5L15 12"/></svg></button>
             <button id="guideBtn" class="tool" type="button" title="使用說明" aria-label="使用說明"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7"/><path d="M12 17h.01"/></svg></button>
             <button id="rulesBtn" class="tool" type="button" title="暖心公約" aria-label="暖心公約"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9-9c-1.4-3.2.6-7 4.2-7 2 0 3.4 1.1 4.8 2.8C13.4 6.1 14.8 5 16.8 5c3.6 0 5.6 3.8 4.2 7-2 4.6-9 9-9 9z"/></svg></button>
             <button id="filterMeBtn" class="tool" type="button" title="我的回憶" aria-label="我的回憶" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M3 9h18M8 14h5"/></svg></button>
-            <button id="leaderboardBtn" class="tool" type="button" title="英雄榜" aria-label="英雄榜"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg></button>
+            <button id="leaderboardBtn" class="tool" type="button" title="感謝榜" aria-label="感謝榜" aria-haspopup="dialog" aria-controls="leaderboardOverlay"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg></button>
         </nav>
     </header>
-    <div class="switch-bar"><div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div></div>
+    <div class="switch-bar"><div class="view-switch" role="group" aria-label="顯示方式"><button type="button" class="vs-wall" aria-pressed="true" aria-label="牆面"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="8" height="7" rx="1.5"/><rect x="13" y="4" width="8" height="10" rx="1.5"/><rect x="3" y="13" width="8" height="7" rx="1.5"/><rect x="13" y="16" width="8" height="4" rx="1.5"/></svg>牆面</button><button type="button" class="vs-list" aria-pressed="false" aria-label="清單"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>清單</button></div></div>
 
     <div class="focus-overlay" id="focusOverlay"></div>
 
@@ -86,23 +90,16 @@
         </div>
     </div>
 
+    <!-- 感謝榜（卓倫 2026-11-01：英雄榜＋上月感謝榜整合）：本月／上月兩個分頁；左上小條和右上獎盃都開這個。內容由 app.js tbRender 畫 -->
     <div class="focus-overlay" id="leaderboardOverlay">
-        <div class="modal-box">
-            <button class="close-btn" id="closeLeaderboard">✖</button>
-            <h2 style="text-align: center; color: #d64966; margin-top: 0; font-size: 26px;" id="leaderboardTitle">🏆 感謝英雄榜 🏆</h2>
-            <div class="board-container">
-                <div class="board-col">
-                    <h3 id="senderColTitle">💖 暖心天使 <br><span style="font-size:12px; color:#888;">(送出最多感謝)</span></h3>
-                    <ul id="topSendersList"></ul>
-                </div>
-                <div class="board-col">
-                    <h3 id="receiverColTitle">✨ 感謝收藏家 <br><span style="font-size:12px; color:#888;">(收到最多感謝)</span></h3>
-                    <ul id="topReceiversList"></ul>
-                </div>
-            </div>
-            <!-- 「不在感謝榜上顯示我」（和上月感謝榜浮層的開關是同一個偏好 lb_hidden；app.js setBoardOptout） -->
+        <div class="modal-box tb-modal" id="tbBox" role="dialog" aria-modal="true" aria-labelledby="tbTitle" aria-busy="false">
+            <button class="close-btn" id="closeLeaderboard" aria-label="關閉">✖</button>
+            <div class="tb-head"><h2 id="tbTitle"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M17 6h3a3 3 0 0 1-3 4M7 6H4a3 3 0 0 0 3 4"/></svg>感謝榜</h2></div>
+            <div class="tb-tabs" id="tbTabs" role="tablist" aria-label="月份"></div>
+            <div id="tbPanel" role="tabpanel"></div>
+            <!-- 「不在感謝榜上顯示我」（偏好 lb_hidden；app.js setBoardOptout） -->
             <div class="mb-optout lb-optout"><label class="mb-switch"><input type="checkbox" role="switch" id="lbOptout" aria-describedby="lbOptout-hint"><span class="mb-switch-track" aria-hidden="true"></span><span class="mb-switch-text">不在感謝榜上顯示我</span></label>
-                <p class="mb-optout-hint" id="lbOptout-hint">開啟後，上月感謝榜和英雄榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span></p></div>
+                <p class="mb-optout-hint" id="lbOptout-hint">開啟後，本月和上月的感謝榜都不會出現你的名字，名次由下一位遞補。<span class="nw">你的卡片照常顯示。</span></p></div>
         </div>
     </div>
 
@@ -140,10 +137,10 @@
                 <p>歡迎來到 RDTW 感謝牆！這裡收藏的，是同事之間一句一句說出口的謝謝。</p>
                 <ul style="padding-left: 20px; margin-bottom: 15px;">
                     <li style="margin-bottom: 8px;"><b>📌 每月換新</b>：牆面每月 1 號換新，只顯示當月的感謝；之前的感謝都留在「清單」，隨時翻得到。</li>
-                    <li style="margin-bottom: 8px;"><b>🏆 感謝榜</b>：上個月最常送出和收到感謝的同事，會出現在牆上的「上月感謝榜」；右上角的「英雄榜」可以看最近的排行。</li>
+                    <li style="margin-bottom: 8px;"><b>🏆 感謝榜</b>：牆上左上角的「感謝榜」和右上角的獎盃，都可以看本月和上個月最常送出、收到感謝的同事（每月 1～7 號先看上個月，8 號起看本月）。</li>
                     <li style="margin-bottom: 8px;"><b>🤍 放心寫</b>：
                         <ul class="guide-sub">
-                            <li>不想上榜，可以在感謝榜或英雄榜下方開啟「不在感謝榜上顯示我」，你的卡片照常顯示。</li>
+                            <li>不想上榜，可以在感謝榜下方開啟「不在感謝榜上顯示我」，你的卡片照常顯示。</li>
                             <li>匿名送出時，同事看不到你是誰，管理員仍看得到發文者。</li>
                         </ul>
                     </li>
@@ -332,6 +329,10 @@
                     <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-cosmic" data-theme="theme-cosmic" id="btnCosmic" title="星際領航" role="radio" aria-checked="false" aria-label="星際領航"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="星際領航"><b>星際領航</b><br>Lv.12 ✓</span></div>
                     <div class="sw-cell swatch-item" hidden><button type="button" class="theme-btn swatch card t-r-ultimate" data-theme="theme-ultimate" id="btnUltimate" title="傳說之神" role="radio" aria-checked="false" aria-label="傳說之神"><span class="fx" aria-hidden="true"></span><span class="pips" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></span></button><span class="ring" aria-hidden="true"></span><span class="swatch-cap" data-name="傳說之神"><b>傳說之神</b><br>Lv.13 ✓</span></div>
                     </div>
+                </div>
+                <div id="pickUnlockGroup" hidden><!-- T101：全公司一起解鎖的樣式（星夜） -->
+                    <h3>大家一起解鎖 <small>全公司一起點亮才會出現</small></h3>
+                    <div class="grid" id="pickUnlock" role="radiogroup" aria-label="大家一起解鎖"></div>
                 </div>
                 <div id="pickLimitedGroup" hidden>
                     <h3>限定 <small>活動或身分專屬</small></h3>

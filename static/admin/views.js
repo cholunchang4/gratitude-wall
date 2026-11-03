@@ -262,7 +262,7 @@ export function fillSettings(force) {
 function renderSettingsInfo() {
   const d = st.data.settings || {};
   if (lastFilled !== d) fillSettings();
-  $('limitsInfo').textContent = `目前版號 ${d.appVersion || '（未設定）'}。牆上顯示上限 ${d.maxMessages ?? '—'} 則；牆面只顯示本月留言（台灣時間每月 1 號 00:00 清空，舊留言不刪除，同事在「清單」看得到全部）；英雄榜非活動期間統計最近 ${d.retentionDays ?? '—'} 天（由系統邏輯控制，不在後台修改）。`;
+  $('limitsInfo').textContent = `目前版號 ${d.appVersion || '（未設定）'}。牆上顯示上限 ${d.maxMessages ?? '—'} 則；牆面只顯示本月留言（台灣時間每月 1 號 00:00 清空，舊留言不刪除，同事在「清單」看得到全部）；英雄榜已併入「感謝榜」（本月＝台灣時間每月 1 號起算，和上月同一套算法），retentionDays（${d.retentionDays ?? '—'} 天）已不影響英雄榜。`;
   $('whoAmI').textContent = st.data.me && st.data.me.name ? `${st.data.me.name}（管理員）` : '';
   $('buildInfo').textContent = st.data.server && st.data.server.build ? `版本 ${st.data.server.build}` : '';
 }

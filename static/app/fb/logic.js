@@ -62,8 +62,11 @@ export function maxLength(level, isAdmin) {
 }
 export function emojiTier(level, isAdmin) { return isAdmin || level >= 7 ? 'full' : level >= 4 ? 'mid' : level >= 2 ? 'basic' : 'none'; }
 export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort((a, b) => a[1] - b[1]).filter(([, need]) => exp >= need).map(([t]) => t); }
-const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000]);
-export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false }) {
+// T101 星夜：全公司達到繁星（ev/stars.tier ≥ theme_tier）後人人永久可用（規則看 ev/stars/tier）
+export const THEME_STARNIGHT = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme) || 'theme-starnight';
+export const STARNIGHT_TIER = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme_tier) || 2;
+const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000, THEME_STARNIGHT]);
+export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false, starOk = false }) {
   if (!ALL_THEMES.has(theme)) return 'BAD_THEME';
   if (theme === K.THEME_MOON) return '這個主題已經結束囉，請換一個主題。';
   if (isAdmin) return null;
@@ -73,6 +76,7 @@ export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false 
   if (theme === K.THEME_ADMIN || theme === K.THEME_ADMIN_NEON) return '這個主題只有管理員可以使用。';
   if (theme === K.THEME_HW) return hwOk ? null : '萬聖卡要先變身成吸血鬼才能使用（點開一張萬聖卡就會變身）。';
   if (theme === K.THEME_K1000) return k1000Ok ? null : '千光模板只在 11/3～11/30 可以使用，請換一個樣式。';
+  if (theme === THEME_STARNIGHT) return starOk ? null : '星夜要等全公司點亮 90 位（繁星）才會解鎖，請換一個樣式。';
   return 'BAD_THEME';
 }
 
@@ -184,22 +188,6 @@ export function settingsDto(raw) {
   return out;
 }
 
-// ---------------------------------------------------------------- 英雄榜（和 5.5 compute_leaderboard 相同）
-// msgs：[{created_at, named_author, receiver_text, is_event_extra}]，新到舊。
-export function computeLeaderboard(msgs, validNames, now, retentionDays, top = 10) {
-  const retention = Math.max(Number(retentionDays) || 30, 1) * DAY_MS;
-  const ev = activeEvent(now);
-  const senders = new Map(), receivers = new Map();
-  for (const m of msgs) {
-    const count = ev ? eventContains(ev, m.created_at) : (!m.is_event_extra && now - m.created_at <= retention);
-    if (!count) continue;
-    if (m.named_author && validNames.has(m.named_author)) senders.set(m.named_author, (senders.get(m.named_author) || 0) + 1);
-    for (const r of splitReceivers(m.receiver_text)) if (validNames.has(r)) receivers.set(r, (receivers.get(r) || 0) + 1);
-  }
-  const rank = (d) => [...d.entries()].map((kv, i) => [kv, i]).sort((a, b) => b[0][1] - a[0][1] || a[1] - b[1]).slice(0, top).map(([kv]) => [kv[0], kv[1]]);
-  return { scope: ev || 'recent', senders: rank(senders), receivers: rank(receivers) };
-}
-
 // ---------------------------------------------------------------- 上月感謝榜（和 5.5 rank_top／compute_monthly_leaderboard 相同）
 const MONTHLY_TOP = 5, MONTHLY_MAX_ROWS = 7;
 function codeCmp(a, b) {   // Python 的字串排序（逐個字碼比較）
@@ -221,7 +209,9 @@ export function rankTop(counts, top = MONTHLY_TOP, maxRows = MONTHLY_MAX_ROWS) {
   }
   return [out, null];
 }
-export function computeMonthlyLeaderboard(msgs, validNames, start, end) {
+// 感謝榜（上月、本月兩個分頁）共用的計數：[start, end) 內每張卡——具名作者（在 validNames）送出 +1；
+// 收件人每張卡去重、只算 validNames、寫給自己（real_author）不算。
+export function tallyThanks(msgs, validNames, start, end) {
   const senders = new Map(), receivers = new Map();
   let counted = 0;
   for (const m of msgs) {
@@ -232,8 +222,21 @@ export function computeMonthlyLeaderboard(msgs, validNames, start, end) {
       if (validNames.has(r) && r !== m.real_author) receivers.set(r, (receivers.get(r) || 0) + 1);
     }
   }
+  return { senders, receivers, counted };
+}
+function rankBoard({ senders, receivers, counted }) {
   const [s, sMore] = rankTop(senders), [r, rMore] = rankTop(receivers);
   return { senders: s, receivers: r, senders_more: sMore, receivers_more: rMore, messages: counted };
+}
+export function computeMonthlyLeaderboard(msgs, validNames, start, end) {
+  return rankBoard(tallyThanks(msgs, validNames, start, end));
+}
+// ---------------------------------------------------------------- 感謝榜「本月」分頁（卓倫 2026-11-01：英雄榜併入感謝榜，和上月同一套算法）
+// 範圍＝台灣時間本月 1 日 00:00 起到現在；不看 retentionDays、不看活動期間，活動加碼卡也算。
+// 回傳形狀和 computeMonthlyLeaderboard 相同（前 5 名、同分同名次、最多 7 列＋*_more）。
+// msgs：[{created_at, named_author, real_author, receiver_text}]；姓名是現在通訊錄的姓名（store.js currentAuthorName）。
+export function computeLeaderboard(msgs, validNames, now) {
+  return rankBoard(tallyThanks(msgs, validNames, tpeMonthStart(now), Infinity));   // 不設上限：時鐘稍慢時，剛送出的卡也算得到
 }
 
 // 始祖：凍結名單優先；沒有就用活動開始前具名、未刪除的留言作者前 5 名（同分依第一次出現的順序）

@@ -1,0 +1,203 @@
+/* =====================================================================
+   感謝牆：感謝榜整合（英雄榜＋上月感謝榜 → 一個「感謝榜」）＋全站「已經亮起 N 道光」
+   美術總監 3　2026-11-01（卓倫 11/01 定案）
+   用法：接在 app.css 最後面（在「上月感謝榜 v2」與「英雄榜開關」段落之後），
+         並在 sky.css、shop.css 之後載入也可以（本檔不依賴載入順序以外的權重技巧）。
+   依賴：app.css 的 --font、--brand、--brand-ink、--r-*、--sh-*、v2 的 .mboard.mb-v2／.mb-*（--mb-* token）、
+         .mb-optout／.mb-switch、profile-card.css 的 .pc-link。
+   ===================================================================== */
+
+/* ---------- 0. Token ---------- */
+:root {
+  --tb-ink: #9f1239;          /* 標題、選中分頁：白底 7.6:1 */
+  --tb-muted: #615f6b;        /* 說明字：白底 6.2:1 */
+  --tb-line: rgba(159,18,57,.16);
+  --tb-wash: #fbf5f3;         /* 欄底（沿用英雄榜 .board-col） */
+  --tb-gold-wash: #fff4d6;
+  --lit-ink: #8a4b0a;         /* 「已經亮起 N 道光」：膠囊白底 6.3:1 */
+  --lit-dot: #ffc24a;
+}
+
+/* ---------- 0b. 版頭幾何（程式設計 8 實作補上）：本設計以 6.6 版頭量測（T102 複查 A），6.5 還沒有這段，
+   所以照抄一份到這裡，三處（web／6.5／6.6）一致；6.6 的 app.css 已有相同規則，重複不影響結果 ---------- */
+@media (min-width: 769px) and (max-width: 1279px) {
+  .brand { min-width: 0; max-width: none; padding: 9px 18px; }
+  #mainTitle { font-size: 22px; letter-spacing: 2px; white-space: nowrap; }
+  #mainTitle .title-emoji { display: none; }
+  #subTitle { display: none; }
+  .tools .view-switch button { font-size: 0; gap: 0; padding: 0 12px; }   /* 只留圖示；名稱在 aria-label */
+  .tools .view-switch button svg { width: 18px; height: 18px; }
+}
+@media (min-width: 769px) and (max-width: 960px) {   /* 兩列：第一列標題置中；第二列左感謝榜、右工具列 */
+  .topbar { inset: 10px 16px auto 16px; }
+  .tools { top: 58px; }
+  .mboard { top: 66px; left: 16px; }
+}
+
+/* =====================================================================
+   1. 牆面左上小條：沿用 v2 尺寸（桌機 300 寬、固定高），只改標題列
+   ===================================================================== */
+.mboard.mb-v2 .tb-month { flex: none; display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 999px;
+  background: #fde8ee; color: var(--tb-ink); font: 800 12px/1 var(--font, sans-serif); letter-spacing: .3px; white-space: nowrap; }
+.mboard.mb-v2 .tb-month.is-live { background: #fff1d6; color: var(--lit-ink); }
+.mboard.mb-v2 .tb-month.is-live::before { content: ""; width: 6px; height: 6px; margin-right: 5px; border-radius: 50%; background: var(--lit-dot); box-shadow: 0 0 0 2px rgba(255,194,74,.28); }
+/* 「看榜」按鈕：打開同一個感謝榜彈窗（箭頭朝右＝會開新視窗，不是往下展開） */
+.mboard.mb-v2 .mb-toggle .tb-chev { transform: rotate(90deg); }
+.mboard.mb-v2.is-pop .mb-toggle { background: #f6eef0; color: var(--mb-title); }   /* v2 的「浮層打開」狀態不再用 */
+
+/* =====================================================================
+   2. 全站累積「已經亮起 N 道光」：標題膠囊裡的小字（.brand 的直接子元素，放在 #subTitle 後面、公告之前）
+      ・和點亮星空進度條（深藍玻璃、有軌道、單位「顆星」、可點）在顏色、位置、單位、互動都不同
+      ・只有數字，不能點；讀屏念「全公司已經寫下 1,003 張感謝卡，已經亮起 1,003 道光」
+      ・依 6.6 版頭（T102 複查 A）的四種寬度各放一處，量過都不碰標題、感謝榜、工具列、進度條
+   ===================================================================== */
+.lit-count { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; pointer-events: auto;
+  font: 700 12.5px/1.2 var(--font, sans-serif); letter-spacing: .5px; color: var(--lit-ink); }
+.lit-count[hidden] { display: none !important; }   /* 資料到之前不顯示（程式設計 8 實作補上） */
+.lit-count b { font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .3px; }
+.lit-count .lit-dot { width: 7px; height: 7px; border-radius: 50%; flex: none; background: radial-gradient(circle at 40% 40%, #fff6d0, var(--lit-dot) 60%, #e0962a);
+  box-shadow: 0 0 0 2px rgba(255,194,74,.22), 0 0 6px rgba(255,176,60,.65); }
+.lit-count.is-bump b { animation: litBump .9s var(--ease-out, ease-out) 1; }
+@keyframes litBump { 0% { color: var(--lit-ink); } 30% { color: #c2410c; text-shadow: 0 0 8px rgba(255,176,60,.8); } 100% { color: var(--lit-ink); } }
+
+/* (a) ≥961：膠囊裡最後一行，置中在標題／副標下面（膠囊變高約 18px；.brand 是牆面保護區，卡片會自動避開） */
+@media (min-width: 961px) {
+  .brand > .lit-count { display: flex; width: fit-content; margin: 5px auto 0; font-size: 12px; line-height: 13px; }   /* 寬度只包文字（公告期間膠囊變寬也不會橫跨整列） */
+}
+/* (b) 769～960：兩列版頭，第一列只有標題、第二列是感謝榜和工具列；光數接在標題右邊，第一列高度不變 */
+@media (min-width: 769px) and (max-width: 960px) {
+  .brand:has(.lit-count:not([hidden])) { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; column-gap: 10px; }
+  .brand:has(.lit-count:not([hidden])) > :not(#mainTitle):not(.lit-count) { flex: 0 0 100%; }   /* 公告（一千道光、謝幕）換到下一行，不擠進標題列（程式設計 8 補上） */
+  .brand > .lit-count { padding-left: 10px; border-left: 1px solid rgba(159,18,57,.22); font-size: 12px; line-height: 14px; }
+}
+/* (c) 手機：版頭是兩欄 grid（.brand 是 display:contents），光數放第二列、靠左在標題下方 */
+@media (max-width: 768px) {
+  .brand > .lit-count { grid-column: 1 / -1; grid-row: 2; justify-self: start; margin-top: -4px; font-size: 12px; }
+}
+/* 點亮星空期間（body.sky）膠囊仍是淺色底，光數維持暖金棕，和深藍進度條的米白字明顯不同；手機版頭在夜空上，改亮金 */
+@media (max-width: 768px) { body.sky .brand > .lit-count { color: #ffd98a; } }
+/* 萬聖等深色主題：膠囊變深色時改成暖金 */
+body.hw .lit-count { color: #fdba74; border-left-color: rgba(253,186,116,.35); }
+@media (prefers-reduced-motion: reduce) { .lit-count.is-bump b { animation: none; } }
+
+/* =====================================================================
+   2b. 點亮星空進度條的位置修正（11/10～11/30；和光數、感謝榜小條至少相隔 8px）
+       原本 top:100 置中，在 769～1279 會壓到左上感謝榜小條（6.5／6.6 都會，實測 1024 寬重疊 27px）
+   ===================================================================== */
+@media (min-width: 1280px) { .sk-bar.is-top { top: 130px; } }                       /* 膠囊多了光數那一行（下緣 101→122），往下讓 */
+@media (min-width: 961px) and (max-width: 1279px) {                                   /* 不改高度，改成在小條右邊：left 340＝小條右緣 324＋16 */
+  .sk-bar.is-top { top: 100px; left: max(340px, calc(50% - 300px)); transform: none; width: min(600px, calc(100% - 364px)); max-width: none; min-width: 0; }
+}
+@media (min-width: 769px) and (max-width: 960px) {                                    /* 兩列版頭：放在感謝榜小條（下緣 177）下方 */
+  .sk-bar.is-top { top: 186px; width: calc(100% - 32px); max-width: 600px; min-width: 0; }
+}
+
+/* =====================================================================
+   3. 感謝榜彈窗（取代英雄榜彈窗內容；沿用 #leaderboardOverlay 的 focus-overlay／modal-box）
+   ===================================================================== */
+#leaderboardOverlay .modal-box.tb-modal { max-width: 640px; padding: 26px 28px 0; }
+.tb-modal {   /* 彈窗不在 .mboard 裡，補上名次圓章與開關用到的 token（值同 .mboard） */
+  --mb-ink: #2b2b33; --mb-muted: #615f6b; --mb-title: #9f1239; --mb-line: rgba(120,40,60,.12); --mb-switch-off: #8b8794;
+  --mb-r1-bg: #fde68a; --mb-r1-ink: #6b4500; --mb-r2-bg: #e5e7eb; --mb-r2-ink: #374151; --mb-r3-bg: #fed7aa; --mb-r3-ink: #7c2d12;
+  --mb-rn-bg: #f3eef0; --mb-rn-ink: #5b5b66; --mb-gold: #e9b949;
+}
+.tb-modal .tb-head { display: flex; align-items: center; gap: 10px; margin: 0 40px 0 0; }
+.tb-modal .tb-head h2 { margin: 0; display: inline-flex; align-items: center; gap: 8px; font: 800 24px/1.25 var(--font, sans-serif); letter-spacing: 2px; color: var(--tb-ink); }
+.tb-modal .tb-head h2 svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+
+/* 分頁：本月／上月（role=tablist；左右鍵切換） */
+.tb-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 16px 0 0; padding: 4px; border-radius: 999px; background: #f6eef0; }
+.tb-tab { position: relative; min-height: 44px; padding: 0 12px; border: 0; border-radius: 999px; background: transparent; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px; font: 700 15px/1.2 var(--font, sans-serif); color: var(--tb-muted); white-space: nowrap; }
+.tb-tab small { font-size: 12.5px; font-weight: 700; color: inherit; opacity: .85; }
+.tb-tab:hover { color: var(--tb-ink); }
+.tb-tab[aria-selected="true"] { background: #fff; color: var(--tb-ink); font-weight: 800; box-shadow: 0 1px 2px rgba(64,24,32,.08), 0 4px 10px -4px rgba(64,24,32,.18); }
+.tb-tab:focus-visible { outline: 3px solid var(--focus, #9f1239); outline-offset: 2px; }
+.tb-tab .tb-live { width: 7px; height: 7px; border-radius: 50%; background: var(--lit-dot); box-shadow: 0 0 0 2px rgba(255,194,74,.28); }
+
+.tb-period { margin: 12px 2px 0; font: 600 13.5px/1.55 var(--font, sans-serif); color: var(--tb-muted); text-align: center; }
+.tb-period b { color: #2b2b33; font-weight: 800; }
+
+/* 兩欄名單（沿用英雄榜的欄底色，名次圓章沿用 v2 的金銀銅＋數字） */
+.tb-cols { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 14px; margin: 12px 0 0; }
+.tb-col { min-width: 0; padding: 12px 12px 10px; border-radius: 16px; background: var(--tb-wash); border: 1px solid var(--tb-line); }
+.tb-col h3 { display: flex; align-items: center; justify-content: center; gap: 6px; margin: 0 0 6px; padding: 0 0 8px; border-bottom: 1px dashed rgba(159,18,57,.25);
+  font: 800 15.5px/1.3 var(--font, sans-serif); color: var(--tb-ink); white-space: nowrap; }
+.tb-col h3 svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.tb-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.tb-list .tb-row + .tb-row { border-top: 0; }
+.tb-row { display: grid; grid-template-columns: 24px 28px minmax(0,1fr); gap: 8px; align-items: center; min-height: 40px; padding: 4px 8px 4px 4px; border-radius: 10px; }
+.tb-row[data-rank="1"] { background: linear-gradient(90deg, var(--tb-gold-wash), rgba(255,244,214,0) 95%); }
+.tb-row .mb-rank { width: 24px; height: 24px; font-size: 12px; }
+.tb-row .mb-av { width: 28px; height: 28px; font-size: 12px; }
+.tb-row[data-rank="1"] .mb-av { box-shadow: 0 0 0 2px #fff, 0 0 0 3.5px var(--mb-gold, #e9b949); }
+.tb-row .tb-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font: 700 15px/1.3 var(--font, sans-serif); color: #2b2b33; text-align: left; }
+.tb-row[data-rank="1"] .tb-name { font-weight: 800; color: #4a2f00; }
+.tb-row button.tb-name { justify-self: start; max-width: 100%; padding: 4px 0; border: 0; background: none; cursor: pointer; }   /* pc-link：點名字開使用說明書 */
+.tb-row button.tb-name:hover { color: var(--tb-ink); text-decoration: underline; text-underline-offset: 3px; }
+.tb-row button.tb-name:focus-visible { outline: 3px solid var(--focus, #9f1239); outline-offset: 2px; border-radius: 4px; }
+.tb-tie { margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: #fff; border: 1px solid rgba(159,18,57,.2); font: 700 11.5px/1.4 var(--font, sans-serif); color: var(--tb-muted); }
+.tb-more { margin: 6px 4px 0; font: 600 13px/1.5 var(--font, sans-serif); color: var(--tb-muted); }
+.tb-empty { margin: 14px 6px 12px; font: 600 14px/1.65 var(--font, sans-serif); color: var(--tb-muted); text-align: center; }
+.tb-empty b { color: #2b2b33; }
+.tb-skel { display: grid; grid-template-columns: 24px 28px 1fr; gap: 8px; align-items: center; min-height: 40px; padding: 4px; }
+.tb-skel i { display: block; height: 12px; border-radius: 6px; background: #efe4e6; }
+.tb-skel i:nth-child(1), .tb-skel i:nth-child(2) { height: 24px; border-radius: 50%; }
+.tb-skel i:nth-child(2) { height: 28px; }
+.tb-skel i:nth-child(3) { width: 70%; }
+.tb-modal[aria-busy="true"] .tb-skel i { animation: mbPulse 1.6s ease-in-out infinite; }
+.tb-error { margin: 18px 0; text-align: center; font: 600 14px/1.6 var(--font, sans-serif); color: var(--tb-muted); }
+.tb-error .mb-link { margin-left: 8px; }
+
+/* 底部：說明＋開關（黏在彈窗底部，名單很長時不用捲動也看得到；沿用 6.4 的 lb-optout 位置規則） */
+.tb-foot { margin: 12px 0 0; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 4px 12px; font: 600 12.5px/1.5 var(--font, sans-serif); color: var(--tb-muted); }
+.tb-foot .mb-link { font-size: 13px; }
+#leaderboardOverlay .tb-modal .lb-optout { position: sticky; bottom: 0; z-index: 1; max-width: none; margin: 12px -28px 0; padding: 12px 28px 16px; background: var(--modal-bg, #fff); border-top: 1px solid var(--tb-line); }
+#leaderboardOverlay .tb-modal .lb-note { display: none; }   /* 舊的榜單說明行，不再顯示 */
+
+@media (max-width: 768px) {
+  #leaderboardOverlay .modal-box.tb-modal { padding: 20px 16px 0; }
+  .tb-modal .tb-head h2 { font-size: 21px; }
+  .tb-cols { grid-template-columns: 1fr; gap: 10px; }
+  .tb-col h3 { justify-content: flex-start; }
+  #leaderboardOverlay .tb-modal .lb-optout { margin: 10px -16px 0; padding: 10px 16px 14px; }
+}
+@media (max-width: 370px) { .tb-tab small { display: none; } }   /* 360 寬：分頁只寫「本月」「上月」，月份在下方期間說明裡 */
+@media (prefers-reduced-motion: reduce) { .tb-modal[aria-busy="true"] .tb-skel i { animation: none; } }
+
+/* =====================================================================
+   4. 以下照抄 design/感謝榜整合/k1000-note-fix.css（美術總監 3，2026-11-01 驗收修正 1）
+   ===================================================================== */
+/* =====================================================================
+   一千道光公告（.k1000-note）／萬聖謝幕（.hw-epilogue）在桌機的位置修正　美術總監 3　2026-11-01（6.5 一起上線）
+   問題：兩者都放在標題膠囊 .brand 裡、寬 520～540px，膠囊被撐到約 600px 寬，
+         769～1279 會壓到左上感謝榜小條，800 寬也壓到第二列工具列，1280 寬也壓到右上工具列約 60px。
+   做法：桌機（≥769）把公告拉出膠囊，固定在「點亮星空進度條」的位置（同樣避開小條和工具列）。
+         公告 11/3～11/9、進度條 11/10 起，日期不重疊，不會互相蓋到。
+   用法：接在 k1000.css 和 thanks-board.css 之後（app.css 最後面也可以）。手機（≤768）不變。
+   另需一行 JS：app.js scRegion 的 obstacles 加 rectOf('#k1000Note:not([hidden])', 12)、rectOf('#hwEpilogue:not([hidden])', 12)，
+   因為公告改成 fixed 以後不再算在 .brand 的外框裡，牆面卡片要另外避開它。
+   ===================================================================== */
+@media (min-width: 769px) {
+  /* backdrop-filter 會讓 fixed 的子元素改以膠囊為基準定位，公告出現時先關掉（膠囊底色本來就是半透明白，看起來差不多） */
+  .brand:has(> .k1000-note:not([hidden])), .brand:has(> .hw-epilogue:not([hidden])) { backdrop-filter: none; -webkit-backdrop-filter: none; }
+  .brand > .k1000-note, .brand > .hw-epilogue {
+    position: fixed; top: 130px; left: 50%; transform: translateX(-50%); z-index: 1;   /* 在 .topbar（90000）的疊放層裡，高於牆面卡片 */
+    width: min(540px, calc(100vw - 48px)); max-width: none; margin: 0;
+    max-height: calc(100vh - 130px - 150px); max-height: calc(100dvh - 130px - 150px); overflow-y: auto; overscroll-behavior: contain;   /* 150＝撰寫區 */
+  }
+}
+/* 961～1279：膠囊下緣 87；公告放在小條右邊（小條右緣 324＋16），不加高牆面上方保留區 */
+@media (min-width: 961px) and (max-width: 1279px) {
+  .brand > .k1000-note, .brand > .hw-epilogue {
+    top: 100px; left: max(340px, calc(50% - 270px)); transform: none; width: min(540px, calc(100vw - 364px));
+    max-height: calc(100vh - 100px - 150px); max-height: calc(100dvh - 100px - 150px);
+  }
+}
+/* 769～960：兩列版頭，放在第二列（感謝榜小條下緣 177、工具列下緣 114）下面 */
+@media (min-width: 769px) and (max-width: 960px) {
+  .brand > .k1000-note, .brand > .hw-epilogue {
+    top: 186px; width: min(540px, calc(100vw - 32px));
+    max-height: calc(100vh - 186px - 150px); max-height: calc(100dvh - 186px - 150px);
+  }
+}

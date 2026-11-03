@@ -38,7 +38,7 @@ export function validateNewMessage(store, { text, receiver, theme, anonymous, ha
   if (anonymous && !admin && level < 7 && !hwOn) throw locked('匿名發佈要升到 Lv.7 才能使用。');
   if (hasImage && !admin && level < 6) throw locked('附圖要升到 Lv.6 才能使用。');
   const hwOk = (hwOn && !!store.hw.inf[uid]) || store.hwRewardFor(uid, now) !== null;
-  const denied = R.themeDenied(theme, { level, exp, isAdmin: admin, hwOk, k1000Ok: R.k1000ThemeActive(now) });
+  const denied = R.themeDenied(theme, { level, exp, isAdmin: admin, hwOk, k1000Ok: R.k1000ThemeActive(now), starOk: (Number(store.skyTier) || 0) >= R.STARNIGHT_TIER });   // skyTier：T101 sky.js 從 ev/stars 填入
   if (denied === 'BAD_THEME') throw new WallError(400, 'BAD_THEME', '不認得這個卡片主題，請重新選擇。');
   if (denied) throw locked(denied);
   let bucket = 'regular';
@@ -88,6 +88,14 @@ export function buildCreateMessage(store, input, ctx) {
   if (ri.length) msg.ri = Object.fromEntries(ri.map(u => [u, true]));
   if (photo) msg.im = photo.id;
   if (d.eventId) msg.ev = d.eventId;
+  // T101 星光卡（從說明書寫的卡）：src＋sto 一起寫；條件不合（多位收件人、寫給自己、對不上通訊錄）就當一般卡，不擋發文
+  const sky = input.sky || null, skyMe = {};
+  if (sky && (sky.src === 'pc' || sky.src === 'pc0') && typeof sky.sto === 'string' && sky.sto !== me
+      && ri.length === 1 && ri[0] === sky.sto && !receiver.includes(',') && store.people[sky.sto] && store.people[sky.sto].s === 'active') {
+    msg.src = sky.src; msg.sto = sky.sto;
+    if (sky.me && sky.me.link) skyMe.link = mid;                               // 連星座（只寫一次，規則檢查）
+    if (sky.me && sky.me.lab && sky.src === 'pc') skyMe.lab = mid;               // 實驗座：只有 pc 卡算
+  }
 
   const up = {};
   const mine = { t: TS, b: d.bucket };
@@ -110,6 +118,7 @@ export function buildCreateMessage(store, input, ctx) {
     }
   }
   up[`messages/${mid}`] = msg;
+  for (const [k, v] of Object.entries(skyMe)) up[`skyme/${me}/${k}`] = v;
   // Email 通知佇列：只放收件人和時間（通知程式讀不到 messages），不通知自己。沒有要通知的人就不寫。
   const notify = ri.filter(u => u !== me);
   if (notify.length) up[`nq/${mid}`] = { t: TS, ri: Object.fromEntries(notify.map(u => [u, true])) };
@@ -125,7 +134,7 @@ export function buildCreateMessage(store, input, ctx) {
     for (const u of turnedIds) up[`hw/inf/${u}`] = { c: 'tagged', s: mid, t: TS, id: randomId('inf', now) };
     hw = { turned: turnedIds.map(u => store.nameOf(u)) };
   }
-  return { updates: up, mid, turnedIds, hw, bucket: d.bucket, text, receiver, theme, mode: d.mode };
+  return { updates: up, mid, turnedIds, hw, bucket: d.bucket, text, receiver, theme, mode: d.mode, sky: msg.src ? { src: msg.src, sto: msg.sto, me: skyMe } : null };
 }
 
 export function buildEditMessage(store, mid, newText, now) {
