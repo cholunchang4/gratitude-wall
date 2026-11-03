@@ -17,7 +17,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.4.3";
+        const CURRENT_APP_VERSION = "6.4.4";
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -2397,9 +2397,13 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
         }
         function scMeasure(c) {
             const el = c.el, w = el.offsetWidth, h = el.offsetHeight, s = parseFloat(el.style.getPropertyValue('--s')) || 1;
-            const t = el.querySelector('.card-text'), textBottom = t ? t.offsetTop + t.offsetHeight : h;
-            const px = (c.depth === 'admin' ? 20 : 14) * s * .95, top = c.depth === 'admin' ? 34 * s : 0;
-            Object.assign(c, { w, h, full: [-w / 2, -h / 2 - top, w / 2, h / 2], text: [-w / 2 + px, -h / 2 + 4 * s - 4, w / 2 - px, -h / 2 + textBottom + 4] });
+            // 6.4.4（T105 卓倫）：保護區（c.text）＝收件人列＋內文＋作者列與讚，別張卡只能壓到左右留白與四個角。原本只保護到內文，作者列常被下一張卡的上緣蓋住。
+            // 下緣多留 5px：卡片各自上下漂浮（floatY 5px），相鄰兩張會互相靠近
+            const t = el.querySelector('.card-foot') || el.querySelector('.card-text'), protBottom = t ? t.offsetTop + t.offsetHeight + 5 : h;
+            const px = (c.depth === 'admin' ? 20 : 14) * s * .95;
+            // 外框上緣：至尊卡的皇冠；人氣王、感謝大師等徽章凸出卡片上緣約 10px（.badge top:-10px），也會蓋到別張卡
+            const top = c.depth === 'admin' ? 34 * s : el.querySelector(':scope > .badge') ? 10 : 0;
+            Object.assign(c, { w, h, full: [-w / 2, -h / 2 - top, w / 2, h / 2], text: [-w / 2 + px, -h / 2 + 4 * s - 4, w / 2 - px, Math.min(h / 2, -h / 2 + protBottom)] });
             c._r = scRadius(c); c._qFull = null; c._qText = null;
         }
         // 驗收 A2：前 R.seed 張（由大到小）先平均撒開，之後才貼近已放的卡；兩個階段都避開擁擠的格子
@@ -2423,9 +2427,8 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                 const empty = placed.length && !inCell ? SC_EMPTY_BONUS : 0; // 還沒有卡的格子（例如撰寫區上方那一小塊）優先補上
                 const score = seeding
                     ? Math.min(Math.max(0, dmin), 500) / 100 - crowd * SC_SEED_CROWD + empty * 10 + Math.random() * .15   // 撒開：先選還沒有卡的格子，再選離已放的卡越遠越好
-                    : R.wide // T052：空間多時不往已放的卡靠，改成填最大的空隙；沒有空隙了（dmin ≤ 0）才由少量相疊獎勵決定
-                    ? (placed.length ? Math.min(Math.max(0, dmin), SC_WIDE_GAP) / 150 : 0) + touch * SC_WIDE_TOUCH - crowd * SC_WIDE_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0)
-                    : touch * 4 - (placed.length ? Math.max(0, dmin) : 0) / 400 - crowd * SC_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0);
+                    // T052 大螢幕、6.4.4 起一般螢幕也一樣（T105 卓倫：有空位時優先放空位）：不往已放的卡靠，先填最大的空隙；沒有空隙了（dmin ≤ 0）才由少量相疊獎勵決定
+                    : (placed.length ? Math.min(Math.max(0, dmin), SC_WIDE_GAP) / 150 : 0) + touch * SC_WIDE_TOUCH - crowd * SC_WIDE_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0);
                 if (score > bestScore) { bestScore = score; best = [c.cx, c.cy]; }
             }
             if (!best) return false;
@@ -2446,7 +2449,12 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             }
             el.style.visibility = 'visible'; el.classList.add('floating');
             el._c = c; c._qFull = null; c._qText = null;
+            if (scRO && !el._ro) { el._ro = true; scRO.observe(el); }   // 6.4.4：上牆後卡片變大小（字型、表情符號、圖片晚載入）時重新量
         }
+        // 6.4.4（T105）：牆上的卡大小變了就重新量、必要時換位置（scRefit）；卡片離開畫面時停止觀察
+        const scRO = ('ResizeObserver' in window) ? new ResizeObserver(entries => {
+            for (const e of entries) { const el = e.target; if (!el.isConnected) { scRO.unobserve(el); el._ro = false; continue; } if (el._c && !el._roQ) { el._roQ = true; requestAnimationFrame(() => { el._roQ = false; if (el.isConnected) scRefit(el); }); } }
+        }) : null;
         // 牆面區域：障礙物用實際量到的位置（撰寫區一律以登入後的高度預留，登入前後不用重排）
         function scRegion() {
             const rectOf = (sel, pad = 8) => { const e = document.querySelector(sel); if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') return null; const b = e.getBoundingClientRect(); if (!b.width) return null; return { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad }; };
@@ -2504,6 +2512,44 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
             placed.forEach(a => placed.forEach(b => { if (a !== b && +a.el.style.zIndex > +b.el.style.zIndex && scSat(scQuad(a, a.full), scQuad(b, b.text))) v++; }));
             return v;
         }
+        // 6.4.4：卡片內容變了（卡片大小可能變）：重新量；保護區被蓋或壓到別張卡時，在附近重新找位置（找不到就收回輪播池）
+        function scRefit(card) {
+            const c = card._c; if (!c || !wallState.R || !wallState.layout || wallState.layout.isMobile || card === currentFocusedCard || card === activeDragCard || card._dragged) return;
+            const oh = c.h, ow = c.w; scMeasure(c);
+            if (Math.abs(c.h - oh) < 2 && Math.abs(c.w - ow) < 2) return;
+            const others = scLivePlaced().filter(p => p !== c); scRecomputeCover(others);
+            if (scInside(c, wallState.R) && scLegal(c, others)) { scPlace(c); return; }
+            if (scFindSpot(c, others, wallState.R, 160, { x: c.cx, y: c.cy, r: 160 }) || scFindSpot(c, others, wallState.R, 420)) scPlace(c, 0);
+            else { card.remove(); wallState.hidden.push(c.m); }
+            const live = scLivePlaced(); scRecomputeCover(live); scRestack(live);
+        }
+        // 6.4.4：唯讀除錯指令（正式站也可以用，在瀏覽器 Console 輸入 __wallInspect()）。只看畫面上的卡片位置，不讀不寫資料庫、不顯示任何畫面。
+        // 用瀏覽器自己的點擊測試（elementsFromPoint，含旋轉與疊放順序）抽樣每張卡的內文、作者列，看有沒有被別張卡蓋住。只回傳留言 id，不回傳姓名與內容
+        window.__wallInspect = () => {
+            const vis = e => getComputedStyle(e).visibility !== 'hidden' && !e.classList.contains('fading') && e.getClientRects().length;
+            const cards = [...wall.querySelectorAll('.message-card')].filter(vis);
+            const covered = (card, el) => {
+                if (!el) return { pct: 0, by: [] }; const r = el.getBoundingClientRect(); let cov = 0, tot = 0; const by = new Set();
+                for (let i = 1; i <= 6; i++) for (let j = 1; j <= 3; j++) {
+                    const els = document.elementsFromPoint(r.left + r.width * i / 7, r.top + r.height * j / 4);
+                    if (!els.some(e => e === el || el.contains(e))) continue;
+                    tot++; const top = els.map(e => e.closest && e.closest('#wall .message-card')).find(Boolean);
+                    if (top && top !== card) { cov++; by.add(top.getAttribute('data-id')); }
+                }
+                return { pct: tot ? Math.round(cov / tot * 100) : 0, by: [...by] };
+            };
+            const rows = cards.map(card => {
+                const b = card.getBoundingClientRect(), c = card._c, t = covered(card, card.querySelector('.card-text')), f = covered(card, card.querySelector('.card-foot'));
+                return { id: card.getAttribute('data-id'), x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), z: +card.style.zIndex || 0,
+                    rot: c ? +c.rot.toFixed(1) : null, depth: c ? c.depth : null, measuredH: c ? Math.round(c.h) : null, actualH: card.offsetHeight,
+                    textCoveredPct: t.pct, footCoveredPct: f.pct, coveredBy: [...new Set([...t.by, ...f.by])] };
+            });
+            const boxes = cards.map(e => e.getBoundingClientRect()); let sum = 0, multi = 0; boxes.forEach(q => sum += q.width * q.height);
+            for (let y = 0; y < innerHeight; y += 8) for (let x = 0; x < innerWidth; x += 8) { let k = 0; for (const q of boxes) if (x >= q.left && x < q.right && y >= q.top && y < q.bottom) k++; if (k > 1) multi += (k - 1) * 64; }
+            const a = window.__wallAudit();
+            return { version: CURRENT_APP_VERSION, viewport: [innerWidth, innerHeight], count: rows.length, textCovered: rows.filter(r => r.textCoveredPct > 10).length, footCovered: rows.filter(r => r.footCoveredPct > 10).length,
+                overlapPct: sum ? Math.round(multi / sum * 1000) / 10 : 0, coverage: a.coverage, emptyBlocks: a.emptyBlocks, layoutViolations: a.violations, cards: rows };
+        };
         window.__avatar = { initialsOf, avatarColorOf, AVATAR_COLORS };   // 測試用
         window.__wallSwapLog = () => (wallState.swapLog || []).slice();
         window.__wallAudit = () => ({ violations: scAudit(), count: scLivePlaced().length, target: wallState.R ? wallState.R.N : 0, wide: !!(wallState.R && wallState.R.wide), layoutMs: wallState.layoutMs || 0,
@@ -2605,7 +2651,7 @@ let PROFILE = null, PUI = null, K1K = null;     // T098：startApp 裡建立
                     return;
                 }
                 known.add(id);
-                if (card._sig !== cardSignature(m, maxLikes)) applyCardContent(card, m, maxLikes);
+                if (card._sig !== cardSignature(m, maxLikes)) { applyCardContent(card, m, maxLikes); scRefit(card); }
             });
 
             wallState.queue = wallState.queue.filter(m => byId.has(m.id) && !known.has(m.id)).map(m => byId.get(m.id));
