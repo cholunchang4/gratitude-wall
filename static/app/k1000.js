@@ -3,10 +3,12 @@
 // - 千光模板：k1000_theme 期間（11/03～11/30）樣式選單「限定」區出現；不進自動預設（app.js pickAutoTheme 只挑基本款）。
 // - 動畫：k1000 期間（11/03～11/09）每次打開網站（新分頁／視窗）都播，同一個分頁重新整理不重播（sessionStorage，6.4.2 卓倫回饋）；
 //   整段約 4.5 秒（時間軸見 k1000.css B 段）；系統開了「減少動態」就不播。點畫面、按「略過」或 Esc 跳過。
-// - 公告：放在萬聖謝幕公告同一個位置（標題下方）；動畫播完（或跳過、不播）才出現；按 ✕ 後這台裝置不再顯示。B 版文字。
+// - 公告：放在萬聖謝幕公告同一個位置（標題下方）；動畫播完（或跳過、不播）才出現；按 ✕（或說明書／先去寫卡）後這台裝置「當天」不再顯示，
+//   隔天（台灣時間，看伺服器時間）再出現一次（6.5.1 卓倫 11/03：一次太少，改每天一次）。B 版文字。
 // - 和萬聖謝幕公告一次只出現一個：這次載入千光公告要出現時，謝幕留到下一次載入（app.js renderHwEpilogue 看 holdsNoticeSlot）。
 // - 第 1,000 則的作者不表揚；不做計數器、不讀任何額外資料。
-export const K1000_KEYS = { anim: 'k1000_anim_seen', closed: 'k1000_notice_closed' };   // anim 存 sessionStorage（這個分頁播過）；closed 存 localStorage（這台裝置關過公告）
+export const K1000_KEYS = { anim: 'k1000_anim_seen', closed: 'k1000_notice_closed' };   // anim 存 sessionStorage（這個分頁播過）；closed 存 localStorage（這台裝置哪一天關過公告，值＝台灣日期 YYYY-MM-DD）
+export const tpeDay = (ms) => new Date(ms + 8 * 3600 * 1000).toISOString().slice(0, 10);   // 台灣日期；6.5.1 公告每天一次（舊版留下的 '1' 不等於任何日期＝會再出現）
 export const K1000_ANIM_MS = 4500;                         // 動畫總長；要和 k1000.css 的 k1000-veil／k1000-num 動畫時間一致
 
 const ls = {
@@ -84,8 +86,9 @@ export function createK1000(deps) {
   }
 
   // ---------------------------------------------------------------- 公告（標題下方、萬聖謝幕的位置）
+  const closedToday = () => ls.get(K1000_KEYS.closed) === tpeDay(deps.nowMs());   // 6.5.1：今天（台灣）關過才不出現
   function showNotice() {
-    if (note || ls.get(K1000_KEYS.closed) === '1') return;
+    if (note || closedToday()) return;
     if (deps.canShowNotice && !deps.canShowNotice()) { setTimeout(showNotice, 1200); return; }
     note = document.createElement('section');
     note.className = 'k1000-note'; note.id = 'k1000Note';
@@ -110,7 +113,7 @@ export function createK1000(deps) {
     });
   }
   function closeNotice() {
-    ls.set(K1000_KEYS.closed, '1');
+    ls.set(K1000_KEYS.closed, tpeDay(deps.nowMs()));
     if (note) { note.remove(); note = null; }
   }
 
@@ -183,7 +186,7 @@ export function createK1000(deps) {
     syncTheme(ev.k1000_theme || null);
     if (!ev.k1000 || startedThisPage) return;
     startedThisPage = true;
-    slot = ls.get(K1000_KEYS.closed) !== '1';   // 這次載入千光公告要出現：萬聖謝幕（到 11/07）留到下一次載入，一次只跳一個
+    slot = !closedToday();   // 這次載入千光公告要出現：萬聖謝幕（到 11/07）留到下一次載入，一次只跳一個
     const play = ss.get(K1000_KEYS.anim) !== '1' && !reducedMotion();
     if (play) setTimeout(() => celebrate(showNotice), 900);              // 牆面先發牌，光點才有卡可以飄起
     else showNotice();
