@@ -20,61 +20,82 @@
 }
 
 /* ==========================================================================
-   A. 千光卡片模板
-   - 比 Lv.9 霓虹樸素：1px 淡金細框、沒有外光暈、沒有等級鑽 ◆、只有極慢的透明度閃爍。
-   - 和深色基本款「午夜」分得開：午夜是灰藍 #353d5c＋蜜桃色字；千光更深、更藍，有光點和燈籠。
-   - 和萬聖（紫底橘框）、至尊（金冠虹框）都不同色系。
+   A. 千光卡片模板　—　方向 A「滿天光」：亮底暖金，白天也看得到的滿天光點
+   美術總監 4　2026-11-03　（整段取代 k1000.css 原本的「A. 千光卡片模板」，class 名稱不變，app.js 不用改）
+   圖層：卡片底色（--c-bg）→ .fx 背景＝靜態光塵（6 層鋪滿，一般尺寸的卡約 60～70 顆，中間淡、四周密）
+         → .fx::after＝7 顆主光＋中型光點（只有每 3 張卡 1 張會慢慢呼吸）→ .fx::before＝右上三盞天燈
+   全部是 CSS 漸層與偽元素；動畫只動 opacity；prefers-reduced-motion 全部靜止。
    ========================================================================== */
 .k1000-card {
-  --c-bg: radial-gradient(120% 80% at 8% 108%, rgba(255,190,96,.16) 0%, transparent 55%),
-          linear-gradient(165deg, var(--k1000-night-a) 0%, var(--k1000-night-b) 100%);
-  --c-ink: var(--k1000-ink);
-  --c-accent: var(--k1000-light);
-  --c-muted: var(--k1000-muted);
-  --c-border: rgba(255,210,122,.30);
-  --c-like-bg: rgba(255,210,122,.14);
-  --c-like-ink: var(--k1000-light-2);
+  --kc-ink: #3a2400;      /* 內文：最亮處 14:1、最暗處 9.0:1 */
+  --kc-accent: #7a3c00;   /* 收件人（卡片上緣）：6.4:1 以上；全卡最差處 5.2:1 */
+  --kc-muted: #5e3f10;    /* 作者、日期：5.9:1 以上（多數 6.4～8.4） */
+  --c-bg: radial-gradient(70% 60% at 92% 0%, rgba(255,255,255,.78) 0%, transparent 70%),
+          radial-gradient(85% 70% at 4% 112%, rgba(255,170,40,.32) 0%, transparent 70%),
+          linear-gradient(172deg, #ffefc4 0%, #ffdc8f 58%, #ffcb66 100%);
+  --c-ink: var(--kc-ink);
+  --c-accent: var(--kc-accent);
+  --c-muted: var(--kc-muted);
+  --c-border: rgba(176,104,0,.42);
+  --c-like-bg: rgba(122,60,0,.11);
+  --c-like-ink: #5a3000;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.85), var(--sh-2);
 }
-/* 有 .fx 才有光點與燈籠（app.js：把 theme-k1000 加進 FX_THEMES） */
-.k1000-card .card-to { padding-right: calc(22px * var(--s)); }   /* 右上角留給燈籠 */
-/* 燈籠：自繪線條，右上角，低調 */
-.k1000-card .fx::before {
-  right: calc(10px * var(--s)); top: calc(8px * var(--s));
-  width: calc(14px * var(--s)); height: calc(20px * var(--s)); opacity: .62;
-  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 14 20' fill='none' stroke='%23ffd27a' stroke-width='1.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 1v2.2'/%3E%3Cpath d='M4.6 3.4h4.8'/%3E%3Cpath d='M3.6 5.2c0-1 .9-1.8 1.9-1.8h3c1 0 1.9.8 1.9 1.8v7.6c0 1-.9 1.8-1.9 1.8h-3c-1 0-1.9-.8-1.9-1.8z'/%3E%3Cpath d='M5.2 16.4h3.6'/%3E%3Cpath d='M7 16.4v2.4'/%3E%3Ccircle cx='7' cy='9' r='1.6' fill='%23ffd27a' stroke='none'/%3E%3C/svg%3E");
-  filter: drop-shadow(0 0 3px rgba(255,200,100,.55));
+.k1000-card .card-to { padding-right: calc(36px * var(--s)); }   /* 右上角留給天燈 */
+
+/* 光塵：靜態、鋪滿（不同大小的格子互相錯開，看起來是隨機散落） */
+.k1000-card .fx {
+  background:
+    radial-gradient(circle at 30% 40%, #ffffff 0 calc(1px * var(--s)), rgba(214,128,10,.34) calc(1.7px * var(--s)), transparent calc(3px * var(--s))) 0 0 / calc(37px * var(--s)) calc(31px * var(--s)),
+    radial-gradient(circle at 70% 75%, rgba(196,110,0,.5) 0 calc(0.8px * var(--s)), transparent calc(1.28px * var(--s))) 0 0 / calc(47px * var(--s)) calc(41px * var(--s)),
+    radial-gradient(circle at 15% 80%, #ffffff 0 calc(1.2px * var(--s)), rgba(214,128,10,.34) calc(2.04px * var(--s)), transparent calc(3.6px * var(--s))) 0 0 / calc(59px * var(--s)) calc(43px * var(--s)),
+    radial-gradient(circle at 85% 25%, rgba(196,110,0,.42) 0 calc(1px * var(--s)), transparent calc(1.6px * var(--s))) 0 0 / calc(71px * var(--s)) calc(61px * var(--s)),
+    radial-gradient(circle at 50% 10%, #ffffff 0 calc(1.5px * var(--s)), rgba(230,140,20,.38) calc(2.55px * var(--s)), transparent calc(4.5px * var(--s))) 0 0 / calc(83px * var(--s)) calc(67px * var(--s)),
+    radial-gradient(circle at 62% 62%, #ffffff 0 calc(1.8px * var(--s)), rgba(230,140,20,.40) calc(3.06px * var(--s)), transparent calc(5.4px * var(--s))) 0 0 / calc(113px * var(--s)) calc(89px * var(--s));
+  /* 中間（內文所在）光塵淡到 35%，四周保留滿滿的光：光點多，但不搶字 */
+  -webkit-mask-image: radial-gradient(62% 50% at 44% 52%, rgba(0,0,0,.35) 40%, #000 100%);
+          mask-image: radial-gradient(62% 50% at 44% 52%, rgba(0,0,0,.35) 40%, #000 100%);
 }
-/* 散落的細光點：9 顆，大小隨卡片縮放；避開左上收件人與左下作者的主要區 */
+/* 主光＋中型光點 */
 .k1000-card .fx::after {
   inset: 0;
   background:
-    radial-gradient(calc(1.6px * var(--s)) calc(1.6px * var(--s)) at 58% 14%, var(--k1000-core) 55%, transparent 100%),
-    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 74% 30%, var(--k1000-light-2) 55%, transparent 100%),
-    radial-gradient(calc(2px * var(--s)) calc(2px * var(--s)) at 90% 52%, var(--k1000-light) 50%, transparent 100%),
-    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 82% 70%, var(--k1000-core) 55%, transparent 100%),
-    radial-gradient(calc(1.4px * var(--s)) calc(1.4px * var(--s)) at 46% 92%, var(--k1000-light-2) 55%, transparent 100%),
-    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 32% 8%, var(--k1000-light-2) 55%, transparent 100%),
-    radial-gradient(calc(1.8px * var(--s)) calc(1.8px * var(--s)) at 96% 22%, var(--k1000-core) 55%, transparent 100%),
-    radial-gradient(calc(1.2px * var(--s)) calc(1.2px * var(--s)) at 64% 60%, var(--k1000-light) 55%, transparent 100%),
-    radial-gradient(calc(1.4px * var(--s)) calc(1.4px * var(--s)) at 6% 56%, var(--k1000-light-2) 55%, transparent 100%);
-  opacity: .85;
-  animation: k1000-twinkle 5.2s ease-in-out infinite alternate;
+    radial-gradient(circle calc(10px * var(--s)) at 92% 58%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(7px * var(--s)) at 3% 42%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(8px * var(--s)) at 62% 3%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(7px * var(--s)) at 38% 99%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(5px * var(--s)) at 78% 34%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(6px * var(--s)) at 99% 96%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle calc(4.5px * var(--s)) at 14% 97%, #ffffff 0 14%, rgba(255,166,30,.55) 34%, transparent 100%) 0 0 / 100% 100% no-repeat,
+    radial-gradient(circle at 40% 30%, #fffdf3 0 calc(1.9px * var(--s)), rgba(240,150,20,.45) calc(3.23px * var(--s)), transparent calc(5.7px * var(--s))) 0 0 / calc(97px * var(--s)) calc(79px * var(--s)),
+    radial-gradient(circle at 75% 70%, #ffffff 0 calc(2.3px * var(--s)), rgba(240,150,20,.42) calc(3.91px * var(--s)), transparent calc(6.9px * var(--s))) 0 0 / calc(151px * var(--s)) calc(113px * var(--s));
 }
-@keyframes k1000-twinkle { from { opacity: .55; } to { opacity: 1; } }
-/* 放大卡：光點跟著 --s 變大；放大時陰影沿用 .message-card.focused 的 --sh-3，不另加光暈 */
-/* 樣式選單的小色票：燈籠縮小、置中靠右 */
-.swatch.card.k1000-card .fx::before { top: 50%; margin-top: -10px; right: 10px; }
+/* 每 3 張千光卡只有 1 張在呼吸（牆上 30～40 張卡時，同時在跑的動畫很少）；放大卡也會呼吸 */
+.k1000-card:nth-child(3n) .fx::after, .message-card.focused.k1000-card .fx::after { animation: kc-breathe 5.6s ease-in-out infinite alternate; }
+.k1000-card:nth-child(6n) .fx::after { animation-delay: -2.8s; }
+@keyframes kc-breathe { from { opacity: .45; } to { opacity: 1; } }
+
+/* 右上角：三盞上升中的天燈（自繪 SVG） */
+.k1000-card .fx::before {
+  right: calc(7px * var(--s)); top: calc(5px * var(--s));
+  width: calc(34px * var(--s)); height: calc(24px * var(--s));
+  background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 24'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%23c75a00'/%3E%3Cstop offset='1' stop-color='%23ffb23a'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg transform='translate%2822 7.5%29 scale%281%29' opacity='1'%3E%3Cpath d='M0 3.2C0 1.4 1.4 0 3.2 0h4.6C9.6 0 11 1.4 11 3.2L9.6 13.4c-.1.9-.9 1.6-1.8 1.6H3.2c-.9 0-1.7-.7-1.8-1.6z' fill='url%28%23g%29' stroke='%238a4400' stroke-width='0.7'/%3E%3Cellipse cx='5.5' cy='12.6' rx='1.7' ry='1.3' fill='%23fff4cf'/%3E%3C/g%3E%3Cg transform='translate%2811.5 2.5%29 scale%280.64%29' opacity='0.9'%3E%3Cpath d='M0 3.2C0 1.4 1.4 0 3.2 0h4.6C9.6 0 11 1.4 11 3.2L9.6 13.4c-.1.9-.9 1.6-1.8 1.6H3.2c-.9 0-1.7-.7-1.8-1.6z' fill='url%28%23g%29' stroke='%238a4400' stroke-width='0.7'/%3E%3Cellipse cx='5.5' cy='12.6' rx='1.7' ry='1.3' fill='%23fff4cf'/%3E%3C/g%3E%3Cg transform='translate%283 9.5%29 scale%280.42%29' opacity='0.8'%3E%3Cpath d='M0 3.2C0 1.4 1.4 0 3.2 0h4.6C9.6 0 11 1.4 11 3.2L9.6 13.4c-.1.9-.9 1.6-1.8 1.6H3.2c-.9 0-1.7-.7-1.8-1.6z' fill='url%28%23g%29' stroke='%238a4400' stroke-width='0.7'/%3E%3Cellipse cx='5.5' cy='12.6' rx='1.7' ry='1.3' fill='%23fff4cf'/%3E%3C/g%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 3px rgba(255,170,40,.7));
+}
+
+/* 樣式選單的小色票：天燈移到右側置中 */
+.swatch.card.k1000-card .fx::before { top: 50%; margin-top: -12px; right: 6px; }
 .k1000-swatch-cap b { color: #2b2b33; }
 .k1000-swatch-cap .k1000-until { display: block; color: #8a5a00; font-weight: 700; white-space: nowrap; }   /* 白底 5.9:1 */
 /* 撰寫區「樣式」按鈕上的 26px 小樣本：只要底色 */
 .style-btn .sw.card.k1000-card .fx { display: none; }
 
-/* 清單模式：左側色條＝暖光漸入夜藍，時間軸節點是一顆暖光點 */
-.list-row.k1000-lt { --bar: linear-gradient(#ffd27a 0%, #e9a94a 35%, #24345f 75%); }
-.list-row.k1000-lt::after { background: radial-gradient(circle at 40% 40%, #fff6dc, #ffd27a 55%, #c98a2b); }
+/* 清單模式：左側色條＋時間軸節點是一顆發光的暖光點 */
+.list-row.k1000-lt { --bar: linear-gradient(#fff3cf 0%, #ffd27a 40%, #e08a12 100%); }
+.list-row.k1000-lt::after { background: radial-gradient(circle at 40% 40%, #fff, #ffd27a 50%, #c76a00); box-shadow: 0 0 0 3px #fdf0eb, 0 0 6px 1px rgba(255,170,40,.75); }
 
 @media (prefers-reduced-motion: reduce) {
-  .k1000-card .fx::after { animation: none; opacity: .85; }
+  .k1000-card .fx::after { animation: none !important; opacity: 1; }
 }
 
 /* ==========================================================================

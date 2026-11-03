@@ -685,4 +685,4 @@ body.ln-open { overflow: hidden; }
 .swatch.sn-locked + .ring + .sn-swatch-cap .sn-unlock { color: #5b5b66; }
 
 /* ---------- 17. 千光卡在夜空背景：框線加亮（美術總監 2） ---------- */
-body.sky .k1000-card { --c-border: rgba(255,210,122,.55); }
+body.sky .k1000-card { --c-border: rgba(176,104,0,.5); }   /* 6.5.2 千光 v2 亮底金卡（美術總監 4） */
