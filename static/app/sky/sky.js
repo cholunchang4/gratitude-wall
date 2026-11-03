@@ -163,7 +163,7 @@ export function createSky(deps) {
       + `<div class="sk-track" role="progressbar" data-sk="intro" aria-label="全公司被點亮的星" aria-valuemin="0" aria-valuemax="${L.SKY.tiers[2]}" aria-valuenow="${Math.min(n, L.SKY.tiers[2])}" aria-valuetext="${esc(L.barAria(n))}">`
       + `<i style="--p:${L.barPercent(n)}%"></i>${L.SKY.tiers.map((t, i) => `<span class="sk-tick${n >= t ? ' is-on' : ''}" style="--x:${(t / L.SKY.tiers[2]) * 100}%">${star4()}<em>${t} ${L.TIER_NAMES[i]}</em></span>`).join('')}</div>`
       + `<button class="sk-cta" type="button" data-sk="cta">${ic(ctas[0])}${ctas[1]}</button>`
-      + `<button class="sk-me" type="button" data-sk="me" aria-label="我的星座（只有你看得到）" title="我的星座">${ic('cst')}</button>`;
+      + `<button class="sk-me" type="button" data-sk="me" aria-label="我的星座" title="我的星座">${ic('cst')}</button>`;
     const prevN = Number(bar.dataset.n);
     if (bar.dataset.html !== html) { bar.innerHTML = html; bar.dataset.html = html; }
     if (Number.isFinite(prevN) && n > prevN && !reducedMotion()) { bar.classList.remove('is-pulse'); void bar.offsetWidth; bar.classList.add('is-pulse'); setTimeout(() => bar.classList.remove('is-pulse'), 1000); }
@@ -262,7 +262,7 @@ export function createSky(deps) {
       + '<p class="sk-tier-note">每破一道門檻，每個人都會多一把光點。</p><h3 class="sk-h">星空守則</h3><ul class="sk-rules">'
       + `<li>${ic('check')}<span>一位同事只算一顆星；每個人最多能為天空點亮 10 顆。</span></li>`
       + `<li>${ic('book')}<span>說明書寫不寫都可以，沒寫的同事一樣會被點亮。「想學的事」和「卡關時」不會出現在遊戲裡。</span></li>`
-      + `<li>${ic('moon')}<span>沒有排行、沒有名單，天上只顯示「幾顆星亮了」；你在遊戲裡讀了誰、選了誰，不會被記錄。</span></li>`
+      + `<li>${ic('moon')}<span>天上只顯示「幾顆星亮了」，沒有排行。</span></li>`
       + `<li>${ic('lock')}<span>只有登入的同事看得到說明書，隨時能改、能清空。</span></li>`
       + `<li>${dot(true)}<span>這三週存下的光點，會先放在星光存摺裡，12/1 有地方可以用。</span></li></ul></div></div>`
       + `<footer class="sk-foot"><span class="note">之後可以從上方的星空列再打開</span><button class="sk-btn light" type="button" data-x>先逛逛</button><button class="sk-btn primary" type="button" data-go data-autofocus>${ic(cta[0])}${cta[1]}</button></footer></section>`;
@@ -371,7 +371,7 @@ export function createSky(deps) {
         + `<span class="state">${it.lit ? `${ic('check')}亮了・${reward}` : notYet ? m[4] : '還在等你'}</span></li>`; }).join('');
     const fin = c.all ? `<div class="cst-final" role="status">${cstFinal()}<h3>${star4('t4')} 你的星座完成了</h3><p>謝謝你這三週，認真讀懂了身邊的人。</p><p class="reward">${bank.down || !bank.st.ledgerOk ? '小螢記下了' : `${dot()}<span class="lp-amt on-dark">＋25 光點</span>`}</p></div>` : '';
     const html = `<section class="cst-box" role="dialog" aria-modal="true" aria-labelledby="cstT"><button class="sk-close" type="button" data-x aria-label="關閉">${ic('x')}</button>`
-      + `<header><h2 id="cstT">我的星座</h2><p>${ic('lock')}只有你看得到。</p></header><ul class="cst-grid">${items}</ul>${fin}`
+      + `<header><h2 id="cstT">我的星座</h2></header><ul class="cst-grid">${items}</ul>${fin}`
       + `<div class="cst-foot"><button class="sk-btn dark" type="button" data-x>回到感謝牆</button></div></section>`;
     const o = overlay(html, { returnTo: from });
     o.el.id = 'skCst';
@@ -552,7 +552,7 @@ export function createSky(deps) {
     let body = '';
     if (list.length) {
       const card = (d) => `<li class="pm-card ${esc(deps.themeClass(d.theme))}">${markHtml(d.src)}<p class="tx">${esc(d.text)}</p><div class="ft"><span class="au">${d.author.anonymous ? '' : deps.avatar(d.author.user_id, d.author.name, 22)}${esc(d.author.name)}</span><time>${L.fmtMD(d.created_at)}</time></div></li>`;
-      body = `<section class="pm-thanks" aria-labelledby="pmH"><h3 id="pmH">${star4()}因為說明書收到的感謝</h3><p class="sub">這些光，是有人讀了你的說明書之後送來的。${ic('lock')}只有你看得到。</p>`
+      body = `<section class="pm-thanks" aria-labelledby="pmH"><h3 id="pmH">${star4()}因為說明書收到的感謝</h3><p class="sub">這些光，是有人讀了你的說明書之後送來的。</p>`
         + `<ul class="pm-list">${list.slice(0, 3).map(card).join('')}</ul>`
         + (list.length > 3 ? `<ul class="pm-list" data-sky-more hidden>${list.slice(3, 12).map(card).join('')}</ul><div class="pm-more"><button class="sk-btn light" type="button" data-sky="pm-more" aria-expanded="false" style="min-height:40px">看更多${ic('chev')}</button></div>` : '')
         + '</section>';
@@ -573,7 +573,7 @@ export function createSky(deps) {
     return `<div class="pb-pop" role="dialog" aria-label="星光存摺" id="skPb"><h4>星光存摺</h4>`
       + (down ? `<p class="big">${dot(true)}<small>小螢記下了</small></p><p class="when">小螢正在整理你的光點，12/1 一起倒進你的光瓶。</p>`
         : `<p class="big">${dot(true)}${total} <small>光點</small></p><p class="when">小螢先替你存著，12/1 會倒進你的光瓶。</p>${rows}`)
-      + `<p class="priv">${ic('lock')}只有你看得到。</p></div>`;
+      + '</div>';
   }
   function repaintPassbook() {
     for (const w of document.querySelectorAll('.pb-wrap')) {
