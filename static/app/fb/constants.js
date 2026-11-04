@@ -23,7 +23,7 @@ export const K = Object.freeze({
     },
     "k1000_theme": {
       "start": 1793635200000,
-      "end": 1796054399999
+      "end": 1798732799999
     },
     "sky2026": {
       "start": 1794240000000,
@@ -33,9 +33,9 @@ export const K = Object.freeze({
       "epilogue_end": 1796659199999,
       "twinkle_end": 1798732799999,
       "tiers": [
-        40,
-        90,
-        130
+        25,
+        50,
+        85
       ],
       "per_author_cap": 10,
       "theme": "theme-starnight",
@@ -330,9 +330,9 @@ export const K = Object.freeze({
         },
         "stars": {
           "tiers": [
-            40,
-            90,
-            130
+            25,
+            50,
+            85
           ],
           "per_author": 10,
           "src": [

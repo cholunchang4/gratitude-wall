@@ -124,7 +124,7 @@ export function createSky(deps) {
       if (wall) wall.insertAdjacentHTML('beforebegin', html); else document.body.insertAdjacentHTML('afterbegin', html);
     } else if (!on && st) { ['skStars', 'skTwinkle', 'skMeteors'].forEach(id => { const e = document.getElementById(id); if (e) e.remove(); }); }
   }
-  /** 130 顆後：星光卡送出時全牆劃過一道流星（同時最多 1 道；減少動態、分頁在背景、全螢幕看圖時不播） */
+  /** 銀河傳說（第三道門檻）後：星光卡送出時全牆劃過一道流星（同時最多 1 道；減少動態、分頁在背景、全螢幕看圖時不播） */
   function meteor() {
     if (S.tier < 3 || S.meteorBusy || reducedMotion() || document.hidden) return false;
     if (deps.isPaused && deps.isPaused()) return false;
@@ -256,9 +256,9 @@ export function createSky(deps) {
       + row(3, 'scope', '第三幕｜小撇步實驗室', '11/24 起', '照同事的小撇步真的做一次，再寫卡告訴他效果。「實驗座」亮起，<span class="lp-amt">＋15 光點</span>。')
       + '</ol><p class="sk-tier-note">三座都亮，再 <span class="lp-amt">＋25 光點</span>，還有一幅只屬於你的星圖。</p>'
       + '<h3 class="sk-h">全公司一起點亮（到 11/30 午夜）</h3><div class="sk-tiers">'
-      + `<div class="sk-tier">${star4()}<b>40 位</b><span>初星</span><small>整面牆開始閃爍</small></div>`
-      + `<div class="sk-tier">${star4()}<b>90 位</b><span>繁星</span><small>「星夜」模板送給每一個人</small></div>`
-      + `<div class="sk-tier">${star4()}<b>130 位</b><span>銀河傳說</span><small>星光卡送出時劃過流星</small></div></div>`
+      + `<div class="sk-tier">${star4()}<b>${L.SKY.tiers[0]} 位</b><span>初星</span><small>整面牆開始閃爍</small></div>`
+      + `<div class="sk-tier">${star4()}<b>${L.SKY.tiers[1]} 位</b><span>繁星</span><small>「星夜」模板送給每一個人</small></div>`
+      + `<div class="sk-tier">${star4()}<b>${L.SKY.tiers[2]} 位</b><span>銀河傳說</span><small>星光卡送出時劃過流星</small></div></div>`
       + '<p class="sk-tier-note">每破一道門檻，每個人都會多一把光點。</p><h3 class="sk-h">星空守則</h3><ul class="sk-rules">'
       + `<li>${ic('check')}<span>一位同事只算一顆星；每個人最多能為天空點亮 10 顆。</span></li>`
       + `<li>${ic('book')}<span>說明書寫不寫都可以，沒寫的同事一樣會被點亮。「想學的事」和「卡關時」不會出現在遊戲裡。</span></li>`
@@ -346,11 +346,11 @@ export function createSky(deps) {
       grid.appendChild(cell);
       snBtn = cell.querySelector('button');
       snBtn.addEventListener('click', () => {
-        if (snBtn.classList.contains('sn-locked')) { if (deps.toast) deps.toast('星夜要等全公司點亮 90 位（繁星）才會解鎖。一起讀懂身邊的人吧！'); return; }
+        if (snBtn.classList.contains('sn-locked')) { if (deps.toast) deps.toast(`星夜要等全公司點亮 ${L.STARNIGHT_AT} 位（繁星）才會解鎖。一起讀懂身邊的人吧！`); return; }
         deps.selectTheme(L.STARNIGHT);
       });
     }
-    const label = open ? '星夜（全公司點亮繁星，永久可用）' : '星夜：全公司點亮 90 位（繁星）後解鎖';
+    const label = open ? '星夜（全公司點亮繁星，永久可用）' : `星夜：全公司點亮 ${L.STARNIGHT_AT} 位（繁星）後解鎖`;
     snBtn.classList.toggle('sn-locked', !open);
     if (open) snBtn.removeAttribute('aria-disabled'); else snBtn.setAttribute('aria-disabled', 'true');
     snBtn.title = label; snBtn.setAttribute('aria-label', label);

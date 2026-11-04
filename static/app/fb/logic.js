@@ -65,6 +65,7 @@ export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort(
 // T101 星夜：全公司達到繁星（ev/stars.tier ≥ theme_tier）後人人永久可用（規則看 ev/stars/tier）
 export const THEME_STARNIGHT = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme) || 'theme-starnight';
 export const STARNIGHT_TIER = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme_tier) || 2;
+const STARNIGHT_AT = ((K.EVENTS.sky2026 && K.EVENTS.sky2026.tiers) || [25, 50, 85])[STARNIGHT_TIER - 1];   // 星夜解鎖要幾位（6.5.4 起跟著門檻常數走）
 const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000, THEME_STARNIGHT]);
 export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false, starOk = false }) {
   if (!ALL_THEMES.has(theme)) return 'BAD_THEME';
@@ -75,8 +76,8 @@ export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false,
   if (theme in K.THEMES_REWARD) return exp >= K.THEMES_REWARD[theme] ? null : '這個主題是高等級的隱藏獎勵，還沒解鎖喔。';
   if (theme === K.THEME_ADMIN || theme === K.THEME_ADMIN_NEON) return '這個主題只有管理員可以使用。';
   if (theme === K.THEME_HW) return hwOk ? null : '萬聖卡要先變身成吸血鬼才能使用（點開一張萬聖卡就會變身）。';
-  if (theme === K.THEME_K1000) return k1000Ok ? null : '千光模板只在 11/3～11/30 可以使用，請換一個樣式。';
-  if (theme === THEME_STARNIGHT) return starOk ? null : '星夜要等全公司點亮 90 位（繁星）才會解鎖，請換一個樣式。';
+  if (theme === K.THEME_K1000) return k1000Ok ? null : '千光模板只在 11/3～12/31 可以使用，請換一個樣式。';
+  if (theme === THEME_STARNIGHT) return starOk ? null : `星夜要等全公司點亮 ${STARNIGHT_AT} 位（繁星）才會解鎖，請換一個樣式。`;
   return 'BAD_THEME';
 }
 

@@ -8,7 +8,7 @@ const DEF = {
   act2: Date.UTC(2026, 10, 16, 16), act3: Date.UTC(2026, 10, 23, 16),
   end: Date.UTC(2026, 10, 30, 16) - 1,              // 11/30 23:59:59.999
   epilogue_end: Date.UTC(2026, 11, 7, 16) - 1, twinkle_end: Date.UTC(2026, 11, 31, 16) - 1,
-  tiers: [40, 90, 130], per_author_cap: 10,
+  tiers: [25, 50, 85], per_author_cap: 10,         // 6.5.4 卓倫 11/04 由 40／90／130 調整（全面審視第 13 節）
 };
 export const SKY = Object.freeze({ ...DEF, ...((K.EVENTS && K.EVENTS.sky2026) || {}) });
 const BANK = K.BANK || {};
@@ -26,6 +26,7 @@ export const POOL = EV.pool || { themes: ['care', 'proud', 'motiv', 'power', 'co
 
 export const STARNIGHT = SKY.theme || 'theme-starnight';
 export const STARNIGHT_TIER = Number(SKY.theme_tier) || 2;
+export const STARNIGHT_AT = SKY.tiers[STARNIGHT_TIER - 1];   // 星夜解鎖要幾位（畫面文字用，和門檻同一份常數）
 export const TIER_NAMES = ['初星', '繁星', '銀河'];
 export const TIER_LONG = ['初星', '繁星', '銀河傳說'];
 // 第一幕的六個主題（第 6 格 learn、第 8 格 stress 永遠不在這裡）

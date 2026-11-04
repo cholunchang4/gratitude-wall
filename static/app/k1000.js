@@ -1,6 +1,6 @@
 // T100「一千道光」：留言破千的期間限定模板、一次性慶祝動畫、站內公告（game-design/千則里程碑.md 第 3、6 節；視覺 design/千光/，美術總監 2）。
 // 要不要顯示只看伺服器時間（bootstrap.events.k1000／k1000_theme，由 fb/store.js 依規則常數算好），不看使用者電腦的時間。
-// - 千光模板：k1000_theme 期間（11/03～11/30）樣式選單「限定」區出現；不進自動預設（app.js pickAutoTheme 只挑基本款）。
+// - 千光模板：k1000_theme 期間（11/03～12/31；6.5.4 卓倫 11/04 由 11/30 延長）樣式選單「限定」區出現；不進自動預設（app.js pickAutoTheme 只挑基本款）。
 // - 動畫：k1000 期間（11/03～11/09）每次打開網站（新分頁／視窗）都播，同一個分頁重新整理不重播（sessionStorage，6.4.2 卓倫回饋）；
 //   整段約 4.5 秒（時間軸見 k1000.css B 段）；系統開了「減少動態」就不播。點畫面、按「略過」或 Esc 跳過。
 // - 公告：放在萬聖謝幕公告同一個位置（標題下方）；動畫播完（或跳過、不播）才出現；按 ✕（或說明書／先去寫卡）後這台裝置「當天」不再顯示，
@@ -37,7 +37,7 @@ const NOTICE_HTML = ICON_DEFS
   + '<button type="button" class="k1000-note-close" data-k1k="close" aria-label="關閉一千道光公告">✕</button></div>'
   + '<p class="k1000-note-lead"><span class="k1000-long">從第一張「謝謝你」開始，到今天，RDTW 感謝牆上已經亮起了 <b>一千道光</b>。每一道，都是有人回頭說：有你真好。</span><span class="k1000-short">牆上已經亮起 <b>一千道光</b>。每一道，都是有人回頭說：有你真好。</span></p>'
   + '<ul class="k1000-gifts">'
-  + `<li class="k1000-gift">${ic('lantern')}<span><b>千光模板</b>人人可用到 11/30</span></li>`
+  + `<li class="k1000-gift">${ic('lantern')}<span><b>千光模板</b>人人可用到 12/31</span></li>`
   + `<li class="k1000-gift">${ic('spark')}<span><b>千光禮</b>12/1 開店，光瓶多 30 光點</span></li>`
   + `<li class="k1000-gift">${ic('book')}<span><b>下一道光</b>從你的使用說明書開始</span></li></ul>`
   + '<div class="k1000-story" id="k1000Story" hidden>'
@@ -45,7 +45,7 @@ const NOTICE_HTML = ICON_DEFS
   + '<p>從第一張寫著「謝謝你」的卡開始——那句話也許很短，也許只是「上次真的多虧有你」——到今天，RDTW 感謝牆上已經亮起了 <b>一千道光</b>。</p>'
   + '<p>每一道，都是某個人停下手邊的事，回頭對另一個人說：有你真好。</p>'
   + '<p class="k1000-legend">傳說，當一千道光聚在一起，夜空就會慢慢醒來。<br>牆角，一隻提著燈籠的小螢火蟲——大家叫她小螢——正把這些光一顆一顆收進瓶子裡。她說，等 12/1 她的小舖開張那天，要把光還給每一個人。</p>'
-  + `<h4>${ic('lantern')}千光模板｜送給每一位同事</h4><p>從今天到 11/30，寫卡時在「樣式」裡就選得到。寫好的卡，會永遠帶著這一千道光。</p>`
+  + `<h4>${ic('lantern')}千光模板｜送給每一位同事</h4><p>從今天到 12/31，寫卡時在「樣式」裡就選得到。寫好的卡，會永遠帶著這一千道光。</p>`
   + `<h4>${ic('spark')}千光禮｜一千道光的紀念</h4><p>12/1 拾光小舖開張那天，每個人的光瓶裡都會多 30 光點。不管你寫過幾張、寫過沒有，這一千道光，都有你的一份。</p>`
   + `<h4>${ic('book')}下一道光，從你開始</h4><p>每個人的頭像裡，都藏著一本「我的使用說明書」。點一下撰寫區左邊你自己的頭像，寫下你的第一句：你的超能力是什麼？說明書每多寫一頁，小螢都會記下一點光，存進你的星光存摺。</p>`
   + '<p>11/10，夜空就會醒來。到時候，同事們會循著你寫下的那一句找到你。</p>'
@@ -73,14 +73,14 @@ export function createK1000(deps) {
     const now = deps.nowMs();
     const on = !!(win && now <= win.end);
     if (on && !swatch) {
-      swatch = deps.addSwatch('theme-k1000', 'theme-k1000-btn', '千光', '<b>千光</b><span class="k1000-until">到 11/30</span>');
+      swatch = deps.addSwatch('theme-k1000', 'theme-k1000-btn', '千光', '<b>千光</b><span class="k1000-until">到 12/31</span>');
       const cap = swatch && swatch.closest('.sw-cell') && swatch.closest('.sw-cell').querySelector('.swatch-cap');
       if (cap) cap.classList.add('k1000-swatch-cap');
     }
     if (on && swatch) {
-      swatch.title = '千光（期間限定，到 11/30）'; swatch.setAttribute('aria-label', '千光（期間限定，到 11/30）');
+      swatch.title = '千光（期間限定，到 12/31）'; swatch.setAttribute('aria-label', '千光（期間限定，到 12/31）');
       const left = win.end - now + 1000;
-      if (left < 2147483000) themeTimer = setTimeout(() => syncTheme(null), left);   // 頁面開著跨過 11/30 23:59:59：選單自動收起
+      if (left < 2147483000) themeTimer = setTimeout(() => syncTheme(null), left);   // 頁面開著跨過 12/31 23:59:59：選單自動收起
     }
     if (!on && swatch) { deps.removeSwatch(swatch); swatch = null; }
   }
