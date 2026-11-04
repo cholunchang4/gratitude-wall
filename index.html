@@ -33,7 +33,7 @@
             <!-- 已經亮起 N 道光（卓倫 2026-11-01）：目前未刪除的全部留言數；放在 #subTitle 後面、公告之前（不放進 #subTitle，6.6 在 769～1279 和手機會隱藏副標）。數字由 app.js updateLitCount 填 -->
             <span class="lit-count" id="litCount" role="img" aria-label="全公司累積的感謝卡" title="全公司累積的感謝卡" hidden><span class="lit-dot" aria-hidden="true"></span><span aria-hidden="true">已經亮起 <b>0</b> 道光</span></span>
             <!-- 👉 全服變身進度條（4.8：設計 R2 + 企劃階段名稱） -->
-        <div class="hw-progress-row" id="hwProgressRow">
+        <div class="hw-progress-row" id="hwProgressRow" hidden><!-- 預設隱藏（11/04 修讀取時閃出萬聖進度條）：資料到齊、確認活動期間才由 app.js syncRoster 打開 -->
         <div class="hw-progress-wrapper" id="hwProgressBar" title="全公司變身人數｜100 人：萬聖模板延長 30 天｜150 人：延長 60 天｜200 人：永久保留（變身過的同事適用）" role="progressbar" aria-label="全公司變身進度" aria-valuemin="0" aria-valuemax="200" aria-valuenow="0">
             <div class="hw-progress-label"><span id="hwProgressText">全公司變身進度</span><span><b id="hwProgressCount">…</b><span class="hw-bump-anchor" id="hwBump" aria-hidden="true"></span> / 200 人已變身</span></div>
             <div class="hw-progress-track"><div class="hw-progress-fill" id="hwProgressFill"></div></div>
