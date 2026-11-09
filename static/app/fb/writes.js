@@ -3,6 +3,7 @@
 // 規則（database.rules.json）會在伺服器端再檢查一次；這裡的檢查只是為了先給同事看得懂的提示。
 import { K } from './constants.js';
 import * as R from './logic.js';
+import { countWords } from './wordcount.js';
 
 export const TS = Object.freeze({ '.sv': 'timestamp' });       // 伺服器時間（規則裡的 now）
 
@@ -31,7 +32,7 @@ export function validateNewMessage(store, { text, receiver, theme, anonymous, ha
   const admin = store.isAdmin, exp = store.exp(), level = R.levelForExp(exp), uid = store.meId;
   if (!text && !hasImage) throw new WallError(400, 'EMPTY', '請先寫下感謝內容。');
   const limit = R.maxLength(level, admin);
-  if (textLength(text) > limit) throw new WallError(400, 'TOO_LONG', `內容超過 ${limit} 字的上限。`);
+  checkTextLength(text, limit);
   if (receiver.length > K.LIMITS.receiver_max) throw new WallError(400, 'TOO_LONG', '收件人名單太長了。');
   if (receiver.includes(',') && !admin && level < 5) throw locked('同時感謝多位同事要升到 Lv.5 才能使用。');
   const hwOn = R.hwActive(now);
@@ -63,9 +64,14 @@ export function validateNewMessage(store, { text, receiver, theme, anonymous, ha
   return { level: admin ? K.ADMIN_LEVEL : level, bucket, mode, mask, eventId: ev || '' };
 }
 
-// 留言文字長度：和 5.5（Python len，逐個字碼計算）相同；規則端用 JavaScript 字串長度（UTF-16），表情符號會算 2，
-// 所以前台用 UTF-16 長度檢查，避免「前台說可以、規則拒絕」。
+// 留言字數（T107）：上限用 R.countWords（中日韓每字 1、英文每個單字 1、emoji 1、空白標點不算）。
+// 規則端數不了單字，只檢查字串長度（UTF-16，emoji 多半算 2）≤ 上限 × 8；前台也檢查一次，避免「前台說可以、規則拒絕」。
 export const textLength = (s) => String(s).length;
+export const charCap = (limit) => limit * (Number(K.LIMITS.char_factor) || 8);   // 和 R.charCap 一樣；直接算是為了上線時新舊檔混用（快取）也不會出錯
+export function checkTextLength(text, limit) {
+  if (countWords(text) > limit) throw new WallError(400, 'TOO_LONG', `內容超過 ${limit} 字的上限。`);
+  if (textLength(text) > charCap(limit)) throw new WallError(400, 'TOO_LONG', `內容太長了（超過 ${charCap(limit)} 個字元的系統上限），請精簡一點。`);
+}
 
 /**
  * 發文。回傳 { updates, mid, turnedIds, hw }。
@@ -145,7 +151,7 @@ export function buildEditMessage(store, mid, newText, now) {
   const text = R.cleanText(newText);
   const limit = R.maxLength(store.level(), store.isAdmin);
   if (!text && !m.image) throw new WallError(400, 'EMPTY', '請先寫下感謝內容。');
-  if (textLength(text) > limit) throw new WallError(400, 'TOO_LONG', `內容超過 ${limit} 字的上限。`);
+  checkTextLength(text, limit);
   if (text === m.text) return null;
   return { [`messages/${mid}/x`]: text, [`messages/${mid}/ed`]: true };
 }

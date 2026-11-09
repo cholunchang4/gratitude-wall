@@ -60,6 +60,13 @@ export function maxLength(level, isAdmin) {
   if (level === 7) return 200;
   return 1000;
 }
+
+// ---------------------------------------------------------------- 字數（T107，卓倫 2026-11-09：英文以單字計）
+// 算法在 fb/wordcount.js（和 functions/src/wordcount.js 同一份）。
+// 資料庫規則數不了單字，只用「上限 × CHAR_FACTOR 個字元」當安全網（K.LIMITS.char_factor）。
+export { countWords, graphemes } from './wordcount.js';
+export const CHAR_FACTOR = Number(K.LIMITS.char_factor) || 8;
+export const charCap = (wordLimit) => wordLimit * CHAR_FACTOR;
 export function emojiTier(level, isAdmin) { return isAdmin || level >= 7 ? 'full' : level >= 4 ? 'mid' : level >= 2 ? 'basic' : 'none'; }
 export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort((a, b) => a[1] - b[1]).filter(([, need]) => exp >= need).map(([t]) => t); }
 // T101 星夜：全公司達到繁星（ev/stars.tier ≥ theme_tier）後人人永久可用（規則看 ev/stars/tier）

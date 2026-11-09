@@ -5,6 +5,7 @@ import { WallBackend } from './fb/backend.js';
 import { ProfileService } from './fb/profile.js';      // T098 個人資料卡＋頭像（Firebase 讀寫）
 import { createProfileUI } from './profile-ui.js';     // T098 個人資料卡畫面（檢視、編輯、裁切、自己的頭像選單）
 import { createK1000 } from './k1000.js';             // T100「一千道光」：千光模板、慶祝動畫、公告
+import { countWords } from './fb/wordcount.js';      // T107 字數（英文以單字計）；新檔，不會和快取裡的舊 logic.js 對不上
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
@@ -18,7 +19,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.4";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85
+        const CURRENT_APP_VERSION = "6.5.6";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -332,7 +333,40 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             this.style.height = '38px'; 
             this.style.height = Math.min(this.scrollHeight, 100) + 'px'; 
             this.style.overflowY = this.scrollHeight > 100 ? 'auto' : 'hidden';
+            syncLenHint();
         });
+
+        // ---- T107 字數上限（卓倫 11/09：英文以單字計）：中日韓每字 1、英文每個單字 1、emoji 1、空白標點不算 ----
+        // 輸入框的 maxLength 只是字元安全網（上限 × 8，和資料庫規則一樣）；平常不顯示計數，超過上限才出現提示並擋下送出。
+        const charCap = (n) => n * 8;   // 字元安全網＝上限 × 8（＝wall-constants.json limits.char_factor，wordcount.test.mjs 會檢查）
+        function wordLimit() { const U = (ME && ME.unlocks) || {}; return Number(U.max_length) || (ME && ME.is_admin ? 2000 : 20); }
+        function lenOverText(n, limit, verb = '送出') { return `超過 ${limit} 字的上限了（現在 ${n} 字，英文以單字計），請刪短一點再${verb}。`; }
+        function syncLenHint() {
+            const limit = wordLimit(), text = msgInput.value.trim(), n = text ? countWords(text) : 0;
+            const atCap = msgInput.maxLength > 0 && msgInput.value.length >= msgInput.maxLength;   // 字數還沒到、但字元安全網滿了（很長的英文字）
+            let el = document.getElementById('lenHint');
+            if (n <= limit && !atCap) { if (el) el.remove(); msgInput.removeAttribute('aria-invalid'); msgInput.removeAttribute('aria-describedby'); return; }
+            if (!el) { el = document.createElement('div'); el.id = 'lenHint'; el.className = 'len-hint'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite'); }
+            el.textContent = n > limit ? lenOverText(n, limit) : `已經到系統的長度上限（${msgInput.maxLength} 個字元），沒辦法再打字了，請精簡一點。`;
+            msgInput.setAttribute('aria-invalid', 'true'); msgInput.setAttribute('aria-describedby', 'lenHint');
+            placeLenHint(el);
+        }
+        // 和萬聖預告同一個位置：桌機在撰寫區上方；手機在展開的撰寫區裡、送出鈕正上方
+        function placeLenHint(el) {
+            el = el || document.getElementById('lenHint'); if (!el) return;
+            const composer = document.getElementById('composer'), panel = document.getElementById('inputPanel');
+            if (window.innerWidth <= 768) { const send = document.getElementById('sendBtn'); if (el.nextSibling !== send) composer.insertBefore(el, send); }
+            else if (el.nextSibling !== composer) panel.insertBefore(el, composer);
+        }
+        window.addEventListener('resize', () => placeLenHint());
+        function syncEditLenHint() {
+            const ei = document.getElementById('editMsgInput'), hint = document.getElementById('editLenHint');
+            if (!ei || !hint) return true;
+            const limit = wordLimit(), text = ei.value.trim(), n = text ? countWords(text) : 0, over = n > limit;
+            hint.hidden = !over; hint.textContent = over ? lenOverText(n, limit, '儲存') : '';
+            if (over) ei.setAttribute('aria-invalid', 'true'); else ei.removeAttribute('aria-invalid');
+            return !over;
+        }
 
         // ================= 節慶活動共用邏輯 =================
         function checkIsMidAutumn(ts) {
@@ -608,7 +642,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             try {
                 const d = JSON.parse(sessionStorage.getItem('wall_draft') || 'null'); sessionStorage.removeItem('wall_draft');
                 if (!d) return;
-                if (d.m && !msgInput.value) { msgInput.value = String(d.m).slice(0, msgInput.maxLength > 0 ? msgInput.maxLength : 2000); msgInput.dispatchEvent(new Event('input')); }
+                // T107：只用字元安全網截斷（不照字數硬切，超過字數的話會出現提示，讓本人自己刪）
+                if (d.m && !msgInput.value) { msgInput.value = String(d.m).slice(0, msgInput.maxLength > 0 ? msgInput.maxLength : charCap(2000)); msgInput.dispatchEvent(new Event('input')); }
                 if (d.r && !receiverInput.value) receiverInput.value = String(d.r).slice(0, 200);
             } catch (e) {}
         }
@@ -664,11 +699,13 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         let currentEditMsgId = null;
         document.getElementById('cancelEditBtn').addEventListener('click', () => { playSound('click'); document.getElementById('editOverlay').classList.remove('active'); currentEditMsgId = null; });
+        document.getElementById('editMsgInput').addEventListener('input', syncEditLenHint);
         document.getElementById('saveEditBtn').addEventListener('click', async () => {
             playSound('click'); if (!currentEditMsgId) return;
             const id = currentEditMsgId;
             const newText = document.getElementById('editMsgInput').value.trim();
             if (!newText) { showToast('✏️ 留言文字不能為空喔！'); return; }
+            if (!syncEditLenHint()) { showToast('✏️ ' + lenOverText(countWords(newText), wordLimit(), '儲存'), 6000); document.getElementById('editMsgInput').focus(); return; }
             const btn = document.getElementById('saveEditBtn');
             if (btn.disabled) return; btn.disabled = true;
             try {
@@ -731,7 +768,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const title = LEVEL_TITLES[userLevel] || `Lv.${userLevel}`;
             const maxLength = Number(U.max_length) || (isAdminUser ? 2000 : 20);
 
-            msgInput.maxLength = maxLength; setMsgPlaceholder(isAdminUser ? `🛡️ 系統管理員模式 (上限 ${maxLength} 字)` : `寫下感謝內容... (上限 ${maxLength} 字)`, isAdminUser ? '🛡️ 系統管理員模式' : '寫下感謝內容…');
+            msgInput.maxLength = charCap(maxLength); setMsgPlaceholder(isAdminUser ? `🛡️ 系統管理員模式（上限 ${maxLength} 字，英文以單字計）` : `寫下感謝內容…（上限 ${maxLength} 字，英文以單字計）`, isAdminUser ? '🛡️ 系統管理員模式' : '寫下感謝內容…');
+            syncLenHint();
             const statusBar = document.getElementById('levelStatusBar'); statusBar.style.display = 'flex';
             // 卓倫決定（10/17）：不強調滿級，讓大家自己探索；Lv.8 以上只顯示稱號，不顯示下一級（隱藏等級不預告）
             const NEXT_AT = [1, 5, 10, 15, 20, 30, 50];
@@ -814,7 +852,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             else if (tier === 'mid') currentList = emojiMidList;
             if (renderedEmojiList === currentList) return; // 4.8：清單沒變就不重建 300 多個表情
             renderedEmojiList = currentList; picker.innerHTML = '';
-            currentList.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; span.onclick = () => { msgInput.value += e; picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; picker.appendChild(span); });
+            currentList.forEach(e => { const span = document.createElement('span'); span.className = 'emoji-item'; span.innerText = e; span.onclick = () => { msgInput.value += e; syncLenHint(); picker.classList.remove('active'); msgInput.focus(); playSound('click'); }; picker.appendChild(span); });
         }
         document.getElementById('emojiBtn').addEventListener('click', (e) => { 
             e.stopPropagation(); if (emojiTier() === 'none') { playSound('click'); return showToast('🍀 達到「Lv.2 熱心路人 (送出1則留言)」才能解鎖表情符號喔！'); }
@@ -971,6 +1009,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
             const text = msgInput.value.trim();
             if (text === '' && !attachedImageBase64) return;
+            if (countWords(text) > wordLimit()) { syncLenHint(); playSound('click'); msgInput.focus(); return showToast('📝 ' + lenOverText(countWords(text), wordLimit()), 6000); }   // T107
             if (attachedImageBase64 && dataUrlBytes(attachedImageBase64) > MAX_IMAGE_BYTES) return showToast('🖼️ 這張圖片太大了（上限 1.5MB），請換一張小一點的，或在畫布裡縮小後再送出。', 6000);
 
             // 收件人確認（按過「照樣送出」、而且收件人欄位沒再改過就不再問）
@@ -1001,7 +1040,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 if (res && res.me) applyMe(res.me);
                 refreshNow();
 
-                msgInput.value = ''; msgInput.style.height = '38px'; msgInput.style.overflowY = 'hidden';
+                msgInput.value = ''; msgInput.style.height = '38px'; msgInput.style.overflowY = 'hidden'; syncLenHint();
                 receiverInput.value = ''; anonCheck.checked = false; acClose(); clearAllCanvas();
                 NR.pressed = null; if (NR.panel) NR.panel.querySelectorAll('.roster-write[aria-pressed]').forEach(b => b.removeAttribute('aria-pressed'));
 
@@ -1345,7 +1384,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 editBtn.addEventListener('touchstart', (e) => e.stopPropagation(), {passive: true});
                 editBtn.addEventListener('click', (e) => {
                     e.stopPropagation(); playSound('click');
-                    currentEditMsgId = card._msg.id; const ei = document.getElementById('editMsgInput'); ei.maxLength = (ME && ME.unlocks && Number(ME.unlocks.max_length)) || 1000; ei.value = card._msg.text || ''; document.getElementById('editOverlay').classList.add('active');
+                    currentEditMsgId = card._msg.id; const ei = document.getElementById('editMsgInput'); ei.maxLength = charCap(wordLimit()); ei.value = card._msg.text || ''; syncEditLenHint(); document.getElementById('editOverlay').classList.add('active');
                 });
 
                 delBtn.addEventListener('mousedown', (e) => e.stopPropagation());

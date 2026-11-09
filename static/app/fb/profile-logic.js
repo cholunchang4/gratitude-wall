@@ -3,6 +3,7 @@
 // 字數上限、頭像大小上限在 rules/wall-constants.json（profile），規則（database.rules.json）在伺服器端再檢查一次。
 import { K } from './constants.js';
 import { TS, WallError, auditEntry } from './writes.js';
+import { countWords } from './wordcount.js';
 
 export const P = K.PROFILE;
 
@@ -30,8 +31,12 @@ export function cleanField(v) {
   s = s.split('\n').map(l => l.replace(/[ \t]+$/g, '')).join('\n').replace(/\n{3,}/g, '\n\n');
   return s.trim();
 }
-// 字數：和輸入框 maxlength、資料庫規則一樣用 .length（中文 1 字算 1）
-export const countChars = (s) => String(s || '').length;
+// 字數（T107 起和留言同一套：中日韓每字 1、英文每個單字 1、emoji 1、空白標點不算）。
+// 輸入框 maxlength 與資料庫規則只擋字元數（上限 × 8），精確字數在這裡檢查。
+const charCap = (n) => n * (Number(K.LIMITS.char_factor) || 8);   // 不從 logic.js 拿：避免上線後 10 分鐘內新舊檔混用（快取）時載入失敗
+export const countChars = (s) => countWords(String(s || ''));
+export const maxChars = (max) => charCap(max);
+const tooLong = (s, max) => countChars(s) > max || s.length > charCap(max);
 
 // 從資料庫讀到的卡 → 畫面用的形狀（只留認得的欄位、型別不對的當沒填）
 export function normalizeCard(raw) {
@@ -49,19 +54,19 @@ export function isFilled(card, f) {
 }
 export const filledFields = (card) => FIELDS.filter(f => isFilled(card, f));
 
-// 編輯畫面送出的值 → 要寫進 pc/{uid} 的內容（全部空白＝null，等於刪除）。超過字數直接擋下（輸入框已用 maxlength 擋，這裡防萬一）
+// 編輯畫面送出的值 → 要寫進 pc/{uid} 的內容（全部空白＝null，等於刪除）。超過字數直接擋下（輸入框 maxlength 只擋字元數安全網，字數在這裡和畫面上檢查）
 export function buildCardValue(input) {
   const v = {};
   for (const k of P.fields) {
     const s = cleanField(input && input[k]);
-    if (countChars(s) > P.field_max) throw new WallError(400, 'TOO_LONG', `「${FIELDS.find(f => f.k === k).t}」最多 ${P.field_max} 個字。`);
+    if (tooLong(s, P.field_max)) throw new WallError(400, 'TOO_LONG', `「${FIELDS.find(f => f.k === k).t}」最多 ${P.field_max} 個字。`);
     if (s) v[k] = s;
   }
   const w = {};
   const src = (input && input.work) || {};
   for (const k of P.work_fields) {
     const s = cleanField(src[k]);
-    if (countChars(s) > P.work_max) throw new WallError(400, 'TOO_LONG', `「${FIELDS[4][k].t}」最多 ${P.work_max} 個字。`);
+    if (tooLong(s, P.work_max)) throw new WallError(400, 'TOO_LONG', `「${FIELDS[4][k].t}」最多 ${P.work_max} 個字。`);
     if (s) w[k] = s;
   }
   if (Object.keys(w).length) v.work = w;

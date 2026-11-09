@@ -160,7 +160,9 @@ export const K = Object.freeze({
   },
   "POST_INTERVAL_MS": 3000,
   "LIMITS": {
-    "text_store_max": 2000,
+    "_note": "T107（卓倫 2026-11-09：英文以單字計）：留言與資料卡的上限是「字」（中日韓每字 1、英文或數字每個單字 1、emoji 1、空白標點不算），由前台 fb/logic.js countWords 檢查；Firebase 規則數不了單字，所以規則只檢查字元數（JavaScript .length）≤ 上限 × char_factor 的寬鬆安全網（20→160、50→400、200→1600、1000→8000、管理員 2000→16000；資料卡 50→400、40→320）。取捨：改過前台、直接寫資料庫的人最多可以寫到 ×8 的字元數（例如 Lv.1 寫 160 個中文字），只影響自己的卡；text_store_max＝管理員上限 × char_factor（含 trash 的 x）。",
+    "char_factor": 8,
+    "text_store_max": 16000,
     "receiver_max": 500,
     "name_max": 100,
     "info_max": 200,

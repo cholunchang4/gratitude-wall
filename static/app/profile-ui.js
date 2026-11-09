@@ -217,18 +217,21 @@ export function createProfileUI(deps) {
       removePhoto: false, uploading: false, saving: false, alert: '',
     };
     const reassure = `<p class="pe-reassure">${ic('shield')}<span><span class="long">寫幾句話，讓同事更快認識你、知道怎麼和你合作。每一格都可以不填，想到再寫，隨時能改或清空。<small>寫工作上的你就好，健康、家庭這類私事不用寫。登入的同事都看得到你的卡。</small></span><span class="short">寫幾句話，讓同事更認識你。每格都可以不填、隨時能改。<small>登入的同事都看得到。</small></span></span></p>`;
-    const counter = (v, max) => { const n = PL.countChars(v); return `<span class="pe-count${n >= max ? ' is-full' : n >= max * 0.8 ? ' is-near' : ''}" aria-hidden="true">${n}／${max}</span>`; };
+    // 字數（T107：英文以單字計）；maxlength 只是字元安全網（上限 × 8），超過字數時計數變紅、不能儲存
+    const counter = (v, max) => { const n = PL.countChars(v); return `<span class="pe-count${n > max ? ' is-full is-over' : n >= max ? ' is-full' : n >= max * 0.8 ? ' is-near' : ''}" aria-hidden="true">${n}／${max}</span>`; };
+    const maxChars = (n) => (PL.maxChars ? PL.maxChars(n) : n * 8);   // 上線 10 分鐘內 profile-logic.js 可能還是快取的舊檔
+    const overFields = () => PL.FIELDS.flatMap(f => f.dd ? PL.P.work_fields.filter(k => PL.countChars(S.draft.work[k]) > f.max) : (PL.countChars(S.draft[f.k]) > f.max ? [f.k] : []));
     const clearBtn = (v, label, key) => `<button class="text-btn danger" type="button" data-clear="${key}" aria-label="清空「${esc(label)}」"${v ? '' : ' hidden'}>${ic('x')}清空</button>`;
     const fieldHtml = (f) => {
       const lbl = `<span class="ico-wrap">${ic(f.k)}</span>${esc(f.t)}`;
       if (f.dd) {
         const sub = (k, cls, icon) => { const v = S.draft.work[k]; return `<div class="pe-sub ${cls}"><label for="pe-work-${k}"><span class="h">${ic(icon)}${esc(f[k].t)}</span></label>`
-          + `<textarea id="pe-work-${k}" data-key="work.${k}" maxlength="${f.max}" placeholder="${esc(f[k].ph)}" rows="2">${esc(v)}</textarea><div class="pe-field-foot">${clearBtn(v, f[k].t, 'work.' + k)}${counter(v, f.max)}</div></div>`; };
+          + `<textarea id="pe-work-${k}" data-key="work.${k}" data-max="${f.max}" maxlength="${maxChars(f.max)}" placeholder="${esc(f[k].ph)}" rows="2">${esc(v)}</textarea><div class="pe-field-foot">${clearBtn(v, f[k].t, 'work.' + k)}${counter(v, f.max)}</div></div>`; };
         return `<div class="pe-field is-wide" role="group" aria-labelledby="pe-lbl-work"><span class="pe-lbl" id="pe-lbl-work">${lbl}</span><div class="pe-dd">${sub('ok', 'is-do', 'plus')}${sub('no', 'is-dont', 'minus')}</div></div>`;
       }
       const v = S.draft[f.k];
       return `<div class="pe-field${f.k === 'stress' ? ' is-wide' : ''}"><label for="pe-${f.k}">${lbl}</label>`
-        + `<textarea id="pe-${f.k}" data-key="${f.k}" maxlength="${f.max}" placeholder="${esc(f.ph)}" rows="2"${f.help ? ` aria-describedby="pe-h-${f.k}"` : ''}>${esc(v)}</textarea>`
+        + `<textarea id="pe-${f.k}" data-key="${f.k}" data-max="${f.max}" maxlength="${maxChars(f.max)}" placeholder="${esc(f.ph)}" rows="2"${f.help ? ` aria-describedby="pe-h-${f.k}"` : ''}>${esc(v)}</textarea>`
         + (f.help ? `<p class="pe-help" id="pe-h-${f.k}">${esc(f.help)}${f.k === 'stress' && X.stressHelp && X.stressHelp() ? `<br>${esc(X.stressHelp())}` : ''}</p>` : '') + `<div class="pe-field-foot">${clearBtn(v, f.t, f.k)}${counter(v, f.max)}</div></div>`;
     };
     const entry = pushOverlay({ returnTo: from, requestClose: () => tryClose(),
@@ -242,10 +245,10 @@ export function createProfileUI(deps) {
     const el = entry.el;
     const dirty = () => S.removePhoto || !PL.cardEquals(S.draft, S.orig);
     const sync = () => {
-      const st = el.querySelector('.pe-status'), d = dirty();
+      const st = el.querySelector('.pe-status'), d = dirty(), over = overFields().length > 0;
       st.classList.toggle('is-dirty', d);
-      st.textContent = d ? '有還沒儲存的修改' : (S.orig.t ? `上次儲存：${PL.tpeDate(S.orig.t, true)}` : '還沒有儲存過');
-      const save = el.querySelector('[data-pc="save"]'), can = d && !S.uploading && !S.saving;
+      st.textContent = over ? '有一格超過字數上限，改短一點才能儲存' : d ? '有還沒儲存的修改' : (S.orig.t ? `上次儲存：${PL.tpeDate(S.orig.t, true)}` : '還沒有儲存過');
+      const save = el.querySelector('[data-pc="save"]'), can = d && !over && !S.uploading && !S.saving;
       save.disabled = !can; save.setAttribute('aria-disabled', String(!can));
       save.textContent = S.saving ? '儲存中…' : '儲存';
     };
@@ -264,13 +267,14 @@ export function createProfileUI(deps) {
     if (X.onEditorChange) el.addEventListener('change', (e) => { X.onEditorChange(e); });
     el.addEventListener('input', (e) => {
       const ta = e.target.closest('textarea[data-key]'); if (!ta) return;
-      const key = ta.dataset.key, v = ta.value, max = Number(ta.maxLength);
+      const key = ta.dataset.key, v = ta.value, max = Number(ta.dataset.max);
       if (key.startsWith('work.')) S.draft.work[key.slice(5)] = v; else S.draft[key] = v;
       const foot = ta.parentElement.querySelector('.pe-field-foot') || ta.closest('.pe-field').querySelector('.pe-field-foot');
       foot.querySelector('.pe-count').outerHTML = counter(v, max);
       foot.querySelector('[data-clear]').hidden = !v;
       const n = PL.countChars(v), prev = ta._n || 0; ta._n = n;
-      if (n >= max && prev < max) announce(`已經到 ${max} 字上限`);
+      if (n > max && prev <= max) announce(`超過 ${max} 字上限了，英文以單字計`);
+      else if (n === max && prev < max) announce(`已經到 ${max} 字上限`);
       else if (n === max - 10 && prev < n) announce('還可以寫 10 個字');
       sync();
     });

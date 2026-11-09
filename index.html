@@ -106,7 +106,8 @@
     <div class="focus-overlay" id="editOverlay" style="z-index: 97000 !important;">
         <div class="modal-box" style="text-align: center; max-width: 400px; padding: 25px;">
             <h3 style="margin-top:0; color:#d64966;">✏️ 編輯留言</h3>
-            <textarea id="editMsgInput" style="width: 100%; height: 100px; padding: 10px; border-radius: 12px; border: 1px solid #e8a0ad; outline: none; font-size: 16px; resize: none; margin-bottom: 15px; box-sizing: border-box;" maxlength="1000"></textarea>
+            <textarea id="editMsgInput" style="width: 100%; height: 100px; padding: 10px; border-radius: 12px; border: 1px solid #e8a0ad; outline: none; font-size: 16px; resize: none; margin-bottom: 15px; box-sizing: border-box;" maxlength="8000" aria-describedby="editLenHint"></textarea>
+            <p class="len-hint len-hint-edit" id="editLenHint" role="status" aria-live="polite" hidden></p>
             <div class="draw-actions" style="margin-top: 5px;">
                 <button id="saveEditBtn" class="action-btn primary">💾 儲存修改</button>
                 <button id="cancelEditBtn" class="action-btn">✖ 取消</button>
@@ -294,7 +295,7 @@
                     <input type="text" id="receiverInput" class="field to input-receiver" placeholder="感謝誰？" autocomplete="off" aria-label="感謝誰">
                     <div id="autocompleteList" class="autocomplete-list" role="listbox"></div>
                 </div>
-                <textarea id="msgInput" class="field msg input-msg" placeholder="寫下感謝內容…（上限 20 字）" autocomplete="off" maxlength="20" rows="1" aria-label="感謝內容"></textarea>
+                <textarea id="msgInput" class="field msg input-msg" placeholder="寫下感謝內容…（上限 20 字，英文以單字計）" autocomplete="off" maxlength="160" rows="1" aria-label="感謝內容"></textarea>
                 <label class="anon anon-label" id="anonWrapper" title="匿名送出：同事看不到你的名字和照片，管理員仍看得到發文者。"><input type="checkbox" id="anonCheck">匿名</label>
                 <button id="sendBtn" class="send send-btn" type="button">送出</button>
             </div>

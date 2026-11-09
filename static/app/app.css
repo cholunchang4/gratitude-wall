@@ -1829,3 +1829,11 @@ body.hw #hwOverlay .modal-box :focus-visible, body.hw #onboardingOverlay .modal-
 .lm-focus .card.focused, .lm-focus .card.focused:not(.has-image) { transform: none !important; }
 @media (max-width: 480px) { .lm-focus { padding: 16px; } #lmFocus .card.focused { width: calc(100vw - 32px) !important; } }   /* 手機：清單放大卡寬度扣掉左右留白，才會置中不超出 */
 .lm-focus { grid-template-columns: minmax(0, 1fr); } .lm-focus-stage { max-width: 100%; } .lm-focus-bar { box-sizing: border-box; max-width: 100%; }   /* 清單放大卡下方的時間列不超出留白（超出會把整組往右推、卡片沒置中） */
+
+/* T107 字數超過上限的提示（英文以單字計）：平常不顯示，超過才出現。桌機在撰寫區上方，手機在送出鈕上方；編輯視窗在輸入框下方 */
+.len-hint { margin: 0 8px 8px; padding: 8px 14px; border-radius: var(--r-md); font-size: 14px; line-height: 1.55; font-weight: 600; color: #9f1239; background: #fff1f3; border: 1px solid #f4a3b4; box-shadow: var(--sh-1); }
+.len-hint::before { content: '!'; display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 8px; border-radius: 50%; background: #c9184a; color: #fff; font-size: 12px; font-weight: 800; vertical-align: 1px; }
+.len-hint-edit { margin: -6px 0 14px; text-align: left; box-shadow: none; }
+.len-hint-edit[hidden] { display: none; }
+#msgInput[aria-invalid="true"], #editMsgInput[aria-invalid="true"] { border-color: #c9184a !important; }
+@media (max-width: 768px) { .composer .len-hint { order: 4; flex-basis: 100%; margin: 2px 0 6px; } }
