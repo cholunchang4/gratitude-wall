@@ -337,3 +337,19 @@ details.archive-sub > summary .sub { margin-bottom: 0; }
   details.archive-event[open] > summary::before { top: 16px; }
   .ae-body { padding: var(--sp-3); }
 }
+
+/* T108 手心的光：封箱後補卡（yp26-admin.js） */
+.yp26-fill { margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
+.yp26-todo { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-sm); min-height: 44px; }
+.yp26-fill-list { display: flex; flex-wrap: wrap; gap: 8px 14px; margin: var(--sp-3) 0 0; padding: 0; list-style: none; }
+.yp26-fill-list li { display: inline-flex; align-items: center; gap: 6px; }
+.yp26-fill-list .btn-sm { min-height: 40px; }
+.yp26-cards { margin-top: var(--sp-4); padding: var(--sp-4); border-radius: var(--r-lg); background: var(--surface-2, #faf7f6); border: 1px solid var(--line); }
+.yp26-cards h4 { margin: 0 0 var(--sp-2); font-size: var(--fs-md, 16px); }
+.yp26-card-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.yp26-card-list li { border: 1px solid var(--line); border-radius: var(--r-md); background: #fff; }
+.yp26-card-list li.on { border-color: #c98a12; box-shadow: 0 0 0 2px rgba(245,185,66,.25); }
+.yp26-card-list label { display: grid; grid-template-columns: 24px 1fr; gap: 4px 10px; padding: 10px 12px; cursor: pointer; min-height: 44px; }
+.yp26-card-list input { grid-row: 1 / span 2; width: 20px; height: 20px; margin-top: 2px; }
+.yp26-card-meta { font-size: var(--fs-xs); color: var(--muted); }
+.yp26-card-text { white-space: pre-wrap; word-break: break-word; font-size: var(--fs-sm); }

@@ -391,5 +391,13 @@ export const K = Object.freeze({
         "x_adm": "這筆光點收回了"
       }
     }
+  },
+  "YP26": {
+    "start": 1794412800000,
+    "end": 1796054399999,
+    "cap": 6,
+    "show_until": 1797091199999,
+    "rate_per_min": 60,
+    "party": 1796918400000
   }
 });

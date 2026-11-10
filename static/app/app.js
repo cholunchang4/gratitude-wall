@@ -10,6 +10,7 @@ import { countWords } from './fb/wordcount.js';      // T107 字數（英文以�
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
 let PROFILE = null, PUI = null, K1K = null;
+let YP26 = null;                            // T108「手心的光」活動頁（yp26/yp26.js）：startApp 裡動態載入，出錯不影響主牆
 let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EXT 是給資料卡畫面的掛勾（建立後填入）     // T098：startApp 裡建立
 
         let currentUser = null;   // { uid, displayName }：由 me 轉出，維持 4.8 程式碼原本用的形狀
@@ -19,7 +20,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.6";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）
+        const CURRENT_APP_VERSION = "6.5.8";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108；6.5.7 留給牆面密度）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1036,6 +1037,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 if (SKY) { try { SKY.decorateSend(sendBody); } catch (e) { console.error('[sky]', e); delete sendBody.sky; } }   // T101：從說明書寫的卡帶上星光卡標記
                 const res = await apiWrite('api/messages', sendBody);
                 if (SKY) Promise.resolve().then(() => SKY.afterSend(res, sendBody)).catch(e => console.error('[sky]', e));   // T101：星線、星座、流星
+                if (YP26) { try { YP26.afterSend(res); } catch (e) { console.error('[yp26]', e); } }   // T108：活動期間多一句「也可以帶到年終派對 →」
                 if (res && res.message) { upsertMessage(res.message); }
                 if (res && res.me) applyMe(res.me);
                 refreshNow();
@@ -1604,6 +1606,19 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 Object.assign(SKY_EXT, SKY.ext);
                 if (USE_EMULATOR) window.__sky = SKY;
             } catch (e) { SKY = null; console.error('[sky] 點亮星空模組沒有載入，主牆照常運作', e); }
+            // T108 手心的光（yp26/yp26.js）：版頭入口、活動頁、寫卡後的連結。期間只看伺服器時間；模組載入失敗或出錯時主牆照常可用
+            try {
+                const { createYp26 } = await import('./yp26/yp26.js');
+                YP26 = createYp26({ db: SESSION.db, user: SESSION.user, meId: SESSION.meId, emulator: USE_EMULATOR, store: BACKEND.s,
+                    onBackend: (fn) => BACKEND.on(fn), nowMs: () => nowMs(), writeTo: writeThanksTo,
+                    // 實體卡預覽沿用牆面的卡片外觀（模板 class、名稱、特效層）；作者一律姓名縮寫色塊（不印頭像照片）
+                    look: { cls: (t) => themeClassOf(t), name: (t) => THEME_NAMES[t] || '', avatarColor: (u, n) => avatarColorOf(u, n), initials: (n) => initialsOf(n),
+                        decor: (t) => (t === 'theme-admin' ? '<span class="aura" aria-hidden="true"></span>' : '') + (FX_THEMES.has(t) ? '<span class="fx" aria-hidden="true"></span>' : '')
+                            + (FX2_THEMES.has(t) ? '<span class="fx2" aria-hidden="true"></span>' : '')
+                            + (t === 'theme-admin' ? '<span class="fx3" aria-hidden="true"></span><span class="sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></span>' + CREST_SVG : '')
+                            + (THEME_PIPS[t] ? '<span class="pips" aria-hidden="true">' + '<i></i>'.repeat(THEME_PIPS[t]) + '</span>' : '') } });
+                if (USE_EMULATOR) window.__yp26 = YP26;
+            } catch (e) { YP26 = null; console.error('[yp26] 手心的光模組沒有載入，主牆照常運作', e); }
             if (USE_EMULATOR) { window.__profile = PROFILE; window.__pui = PUI; }
             for (let attempt = 1; ; attempt++) {
                 try { await BACKEND.start(); applyBootstrap(await api('GET', 'api/bootstrap')); startStream(); return; }
@@ -2589,7 +2604,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const pad = 8;
             // 上月感謝榜小條也是保護區；留白 12（卡片上緣的稱號徽章「感謝大師」會凸出卡片外框，8 時旋轉後會貼到小條）
             const obstacles = [rectOf('.brand'), rectOf('.tools'), rectOf('.signature'), rectOf('.mboard', 12), rectOf('#skBar.is-top', 12),
-                rectOf('#k1000Note:not([hidden])', 12), rectOf('#hwEpilogue:not([hidden])', 12)].filter(Boolean);   // 感謝榜整合：桌機公告改成 fixed，不在 .brand 外框裡，要另外避開   // T101：桌機星空進度條也是保護區
+                rectOf('#k1000Note:not([hidden])', 12), rectOf('#hwEpilogue:not([hidden])', 12), rectOf('.yp-ent:not([hidden])', 12)].filter(Boolean);   // 感謝榜整合：桌機公告改成 fixed，不在 .brand 外框裡，要另外避開   // T101：桌機星空進度條也是保護區
             const comp = rectOf('#composerWrap');
             if (comp) obstacles.push({ left: comp.left, right: comp.right, top: Math.min(comp.top, innerHeight - 20 - 104 - pad), bottom: innerHeight });
             const R = { x: 12, y: 12, w: innerWidth - 24, h: innerHeight - 24, obstacles };
