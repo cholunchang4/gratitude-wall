@@ -142,13 +142,13 @@ body.hw .signature { color: rgba(233,213,255,.5); }
   .card:not([class*="t-r-"]):not(.t-admin):hover { box-shadow: 0 4px 8px rgba(64,24,32,.10), 0 28px 48px -14px rgba(64,24,32,.42); }   /* 獎勵款與至尊保留自己的光暈 */
 }
 .card:focus-visible { outline-offset: 3px; }
-.card-to { font-size: calc(12px * var(--s)); font-weight: 700; color: var(--c-accent); letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.card-text { flex: none; margin: calc(6px * var(--s)) 0 auto; font-size: calc(15px * var(--s)); line-height: 1.5; font-weight: 700; color: var(--c-ink); display: -webkit-box; -webkit-line-clamp: var(--lines, 3); -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
+.card-to { font-size: calc(12px * var(--tfs, var(--s))); font-weight: 700; color: var(--c-accent); letter-spacing: .2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-text { flex: none; margin: calc(6px * var(--s)) 0 auto; font-size: calc(15px * var(--tfs, var(--s))); line-height: 1.5; font-weight: 700; color: var(--c-ink); display: -webkit-box; -webkit-line-clamp: var(--lines, 3); -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
 .card-foot { flex: none; display: flex; justify-content: space-between; align-items: center; gap: 6px; margin-top: calc(8px * var(--s)); }
-.author { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: calc(12px * var(--s)); font-weight: 600; color: var(--c-muted); }
+.author { display: inline-flex; align-items: center; gap: 6px; min-width: 0; font-size: calc(12px * var(--tfs, var(--s))); font-weight: 600; color: var(--c-muted); }
 .author i { flex: none; width: calc(18px * var(--s)); height: calc(18px * var(--s)); border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: 9px; color: #fff; }
 .author span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.like { position: relative; flex: none; min-height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: var(--r-pill); background: var(--c-like-bg); color: var(--c-like-ink); font: 700 calc(12px * var(--s)) var(--font); cursor: pointer; }
+.like { position: relative; flex: none; min-height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: var(--r-pill); background: var(--c-like-bg); color: var(--c-like-ink); font: 700 calc(12px * var(--tfs, var(--s))) var(--font); cursor: pointer; }
 .like::after { content: ''; position: absolute; inset: -8px; }
 .like.on { background: var(--brand); color: #fff; }
 
@@ -158,7 +158,7 @@ body.hw .signature { color: rgba(233,213,255,.5); }
 .card-to, .author { pointer-events: none; }
 .card.dragging { cursor: grabbing !important; z-index: 1000 !important; scale: 1.04; animation: none !important; }
 .author .av { flex: none; width: calc(22px * var(--s)); height: calc(22px * var(--s)); border-radius: 50%; display: grid; place-items: center; font-style: normal; font-size: max(11px, calc(10px * var(--s))); line-height: 1; font-weight: 700; color: #fff; background: #8b5cf6; object-fit: cover; }
-.like { position: relative; flex: none; min-height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: var(--r-pill); background: var(--c-like-bg); color: var(--c-like-ink); font: 700 calc(12px * var(--s)) var(--font); cursor: pointer; }
+.like { position: relative; flex: none; min-height: 26px; padding: 0 10px; display: inline-flex; align-items: center; gap: 4px; border: 0; border-radius: var(--r-pill); background: var(--c-like-bg); color: var(--c-like-ink); font: 700 calc(12px * var(--tfs, var(--s))) var(--font); cursor: pointer; }
 .like::after { content: ''; position: absolute; inset: -8px; }
 .like svg { width: 12px; height: 12px; }
 .like .candy-ico { font-size: 18px; line-height: 1; display: inline-block; transform: rotate(-15deg); margin: -3px 0; }
@@ -173,6 +173,8 @@ body.hw .like.on { background: #fdba74; color: #3b1d00; }
 .card-owner-actions button:hover { background: #fff1f4; }
 .card-close-btn { display: none; position: absolute !important; top: -18px; right: -18px; width: 44px; height: 44px; border-radius: 50%; border: 1px solid rgba(0,0,0,.08); background: #fff; color: #3a3a3a; font-size: 18px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(0,0,0,.2); z-index: 20 !important; align-items: center; justify-content: center; padding: 0; }
 .focus-overlay#focusOverlay { z-index: 95000; }
+/* 6.5.5：牆面每張卡的字用同一個倍率 --tfs（app.js scSizeCard）；放大檢視照舊跟著 --s 放大 */
+.message-card.focused { --tfs: var(--s) !important; }
 .message-card.focused { position: fixed !important; top: 50% !important; left: 50% !important; --lines: 99; transform: translate(-50%, -50%) scale(1.3) rotate(0deg) !important; scale: 1 !important; translate: none !important; z-index: 96000 !important; animation: none !important; cursor: default; box-shadow: var(--sh-3); }
 .message-card.focused .card-date { display: block; }
 /* 放大卡：#wall 有 z-index（自成一個堆疊層），卡片的 z-index 只在牆內比較，原本整面牆（含放大卡）都在遮罩下面一起被模糊。

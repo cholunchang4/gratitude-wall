@@ -340,6 +340,10 @@ body.hw .yp-ent { background: rgba(27,20,51,.86); border-color: rgba(253,186,116
 .yp-nav button[disabled] { opacity: .4; cursor: default; }
 @media (max-width: 480px) { .yp-flip .yp-seg button { min-width: 60px; padding: 0 10px; } .yp-flip { gap: 8px; } }
 .yp-nav span { white-space: nowrap; }
+/* 11/10：手機上預覽視窗被卡片（340px）撐寬、右邊超出畫面 → 視窗內容可以縮，卡片最寬＝視窗內寬 */
+.yp-dialog > * { min-width: 0; }
+.yp-stage { grid-template-columns: minmax(0, 1fr); }
+.yp-stage .yp-pc-fit { max-width: 100%; }
 .yp-pv-note { margin: 0; font-size: 12px; color: var(--yp-dim); text-align: center; }
 /* 啟動彈窗（開站一次） */
 .yp-intro { position: relative; width: min(480px, 100%); padding: 0; overflow: hidden; border-radius: var(--r-xl); background: #fff; box-shadow: var(--sh-3); }
@@ -350,7 +354,7 @@ body.hw .yp-ent { background: rgba(27,20,51,.86); border-color: rgba(253,186,116
 .yp-intro-act { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
 
 /* ---------- 10. 實體卡（印製與預覽用同一份） ----------
-   成品 A6 直式 105×148mm；印製檔每邊加 3mm 出血（.yp-pc.is-bleed）。安全區＝裁切線內 5mm。
+   畫面以 A6 尺寸（105×148mm）繪製、和 A5 成品（148×210mm）同比例，等比放大即 A5（卓倫 11/10：A5）；印製檔每邊加 3mm 出血（.yp-pc.is-bleed）。安全區＝裁切線內 5mm。
    正面＝牆面同一張卡（.message-card.card.t-*）放在同色的底上，卡片四周留 6mm（含至尊模板外光環）。
    預覽：外層 .yp-pc-fit 量寬度，設 --k 縮放（JS：k = 寬度 / 卡片 px 寬）。 */
 .yp-pc-fit { position: relative; width: 100%; aspect-ratio: 105 / 148; }
@@ -374,7 +378,6 @@ body.hw .yp-ent { background: rgba(27,20,51,.86); border-color: rgba(253,186,116
 .yp-pc .yp-pc-card .author .av { width: calc(9mm / var(--z)); height: calc(9mm / var(--z)); font-size: calc(10pt / var(--z)); }
 .yp-pc .yp-pc-card .author .yp-mask { font-size: calc(11pt / var(--z)); margin-right: -2px; }
 .yp-pc .yp-pc-date { flex: none; font-size: calc(9pt / var(--z)); font-weight: 600; color: var(--c-muted); font-variant-numeric: tabular-nums; letter-spacing: .5px; }
-.yp-pc .yp-pc-cont { flex: none; font-size: calc(8.5pt / var(--z)); font-weight: 700; color: var(--c-muted); text-align: right; margin: -2mm 0 1mm; }
 .yp-pc .yp-pc-card .like, .yp-pc .yp-pc-card .card-close-btn, .yp-pc .yp-pc-card .card-owner-actions, .yp-pc .yp-pc-card .card-date { display: none !important; }
 
 /* 每款模板的「紙」：卡片外圍 6mm 的底色，和卡片同色系（深色模板也滿版深色，裁切偏移時不會露白） */
@@ -430,16 +433,6 @@ body.hw .yp-ent { background: rgba(27,20,51,.86); border-color: rgba(253,186,116
 .yp-pc-back .yp-pc-dots { position: absolute; inset: 0; pointer-events: none; opacity: .55;
   background: radial-gradient(1.2px 1.2px at 18% 16%, #d9a441 60%, transparent 70%), radial-gradient(1px 1px at 82% 22%, #d9a441 60%, transparent 70%), radial-gradient(1.4px 1.4px at 70% 84%, #d9a441 60%, transparent 70%), radial-gradient(1px 1px at 24% 78%, #d9a441 60%, transparent 70%), radial-gradient(1.1px 1.1px at 50% 92%, #d9a441 60%, transparent 70%); }
 /* 背面接續（正面放不下時） */
-.yp-pc-back .yp-pc-more { position: relative; padding: 10mm 10mm 0; }
-.yp-pc-back .yp-pc-more h4 { margin: 0 0 2mm; font-size: 8.5pt; font-weight: 700; letter-spacing: 1px; color: #8a6a4a; }
-.yp-pc-back .yp-pc-more p { margin: 0; font-size: var(--pc-fs, 9pt); line-height: 1.62; font-weight: 700; color: #2b2b33; white-space: pre-wrap; word-break: break-word; text-align: justify; line-break: strict; }
-.yp-pc-back.has-more .yp-pc-sign { flex: none; flex-direction: row; justify-content: flex-start; gap: 4mm; margin-top: auto; padding: 5mm 10mm 7mm; border-top: 1px solid rgba(201,138,18,.3); text-align: left; }
-.yp-pc-back.has-more .yp-pc-mark { width: 11mm; height: 11mm; margin: 0; }
-.yp-pc-back.has-more .yp-pc-name { font-size: 11pt; letter-spacing: 3px; }
-.yp-pc-back.has-more .yp-pc-org { margin: 1mm 0 0; font-size: 7.5pt; letter-spacing: 1.5px; }
-.yp-pc-back.has-more .yp-pc-rule { display: none; }
-.yp-pc-back.has-more .yp-pc-line { display: none; }
-.yp-pc-back.has-more .yp-pc-tag2 { display: block; }
 .yp-pc-back .yp-pc-tag2 { display: none; margin: 1mm 0 0; font-size: 7.5pt; color: #7a5a3a; }
 
 /* ---------- 12. 減少動態 ---------- */

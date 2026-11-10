@@ -20,7 +20,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.8";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108；6.5.7 留給牆面密度）
+        const CURRENT_APP_VERSION = "6.5.9";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1970,11 +1970,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 const m = pool.shift();
                 scRecomputeCover(placed);
                 const c = scMakeItem(m, wallState.maxLikes, false, R.B); scMeasure(c);
-                let ok = scFindSpot(c, placed, R, 420);
-                if (!ok) { // 和發牌一樣：放不下就縮小 10% 再試（字仍 ≥ 12px）
-                    scSizeCard(c.el, c.m, SC_DEPTH[c.depth] * R.B * .9); scMeasure(c);
-                    ok = 15 * parseFloat(c.el.style.getPropertyValue('--s')) >= 12 && scFindSpot(c, placed, R, 400);
-                }
+                const ok = scFindSpot(c, placed, R, 420);   // 6.5.5：放不下就不放，不縮小卡片和字
                 if (ok) { scCommit(c, placed); scPlace(c, 0); wallState.hidden = wallState.hidden.filter(h => h.id !== m.id); }
                 else c.el.remove();
             }
@@ -2304,6 +2300,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             wallState.items = items;
             wallState.dealing = true;
             let shown = 0, lastStepAt = 0, extraTries = 0, cellsFilled = false, failRun = 0;
+            const shortMax = R.wide ? 12 : SC_SHORT_TRIES, extraMax = R.wide ? 36 : SC_EXTRA_TRIES;   // 6.5.5：大螢幕（T052）照舊 12／36
             const step = () => {
                 wallState.raf = null;
                 if (myGen !== currentRenderGen) return;
@@ -2323,27 +2320,24 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                     if (n > 0 && performance.now() - now > (R.wide ? 60 : 40)) break; // T052：大螢幕每步 60ms（卡多，40ms 會多等很多個畫面）
                     const c = items.shift();
                     if (!c.el.isConnected) continue; // 排版中被刪掉的留言
-                    let ok = scFindSpot(c, placed, R, R.wide ? 280 : 420);
-                    if (!ok) { // 放不下：縮小 10% 再試（字仍 ≥ 12px）
-                        scSizeCard(c.el, c.m, SC_DEPTH[c.depth] * R.B * .9); scMeasure(c);
-                        ok = 15 * parseFloat(c.el.style.getPropertyValue('--s')) >= 12 && scFindSpot(c, placed, R, R.wide ? 260 : 400);
-                    }
+                    // 6.5.5（卓倫）：放不下就先不上牆，不再縮小卡片和字來硬塞；一般螢幕改成第一輪 420 個位置找不到時，再多找 1000 個（找回 6.4.3 縮小重試補到的張數）
+                    const ok = scFindSpot(c, placed, R, R.wide ? 280 : 420) || (!R.wide && scFindSpot(c, placed, R, SC_RETRY_TRIES));
                     if (!ok) { c.el.remove(); wallState.hidden.push(c.m); failRun++; continue; } // 先不上牆，輪播時再補
                     failRun = 0;
                     scCommit(c, placed);
                     scPlace(c, wallEntered ? undefined : (shown % 8) * 40);
                     shown++;
                 }
-                // 候選放完但還沒到目標張數：從輪播池再拿幾張較短的卡補位（最多試 12 張）
-                // 驗收 A2：張數到了但卡片小（短句）、覆蓋率不到 70%：繼續補到 70% 或 coverCap 張（標準螢幕 42；大螢幕 N＋8）（連同上面的補位，合計最多試 36 張）
+                // 候選放完但還沒到目標張數：從輪播池再拿幾張較短的卡補位（最多試 SC_SHORT_TRIES 張，6.5.5 起 30）
+                // 驗收 A2：張數到了但卡片小（短句）、覆蓋率不到 70%：繼續補到 70% 或 coverCap 張（標準螢幕 42；大螢幕 N＋8）（連同上面的補位，合計最多試 SC_EXTRA_TRIES 張，6.5.5 起 80）
                 // T052：大螢幕連續 6 張放不下＝牆面已經放滿，不再補位（每張放不下的卡都要試幾百個位置，又多等好幾個畫面）
                 const idle = !items.length && !plan.length && !wallState.queue.length && wallState.hidden.length && !(R.wide && failRun >= 6);
-                const short = idle && placed.length < N && extraTries < 12 && !(R.wide && scCoverage(placed, R) >= SC_COVER_GOAL); // T052：大螢幕張數是為了覆蓋率，覆蓋率夠了就不再硬補到 N 張（省排版時間）
-                const sparse = idle && !short && placed.length < coverCap && extraTries < 36 && scCoverage(placed, R) < SC_COVER_GOAL;
+                const short = idle && placed.length < N && extraTries < shortMax && !(R.wide && scCoverage(placed, R) >= SC_COVER_GOAL); // T052：大螢幕張數是為了覆蓋率，覆蓋率夠了就不再硬補到 N 張（省排版時間）
+                const sparse = idle && !short && placed.length < coverCap && extraTries < extraMax && scCoverage(placed, R) < SC_COVER_GOAL;
                 if (short || sparse) {
                     const pool = wallSupplementOrder(wallState.hidden.slice(0, 40), [...placed, ...items].map(p => p.m)); // 4.8.3：補位也維持新舊比例
                     const per = R.wide ? 8 : 4; // T052：大螢幕每步多補幾張，少等幾個畫面
-                    const take = short ? Math.min(per, 12 - extraTries) : Math.min(per, coverCap - placed.length, 36 - extraTries);
+                    const take = short ? Math.min(per, shortMax - extraTries) : Math.min(per, coverCap - placed.length, extraMax - extraTries);
                     for (const m of pool.slice(0, take)) {
                         extraTries++;
                         wallState.hidden = wallState.hidden.filter(x => x !== m);
@@ -2471,21 +2465,25 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const r = Math.random(); return r < .35 ? 'far' : r < .8 ? 'mid' : 'near';
         }
         // 依字數決定卡寬：50 字內完整顯示、作者名不截斷
+        // 6.5.5（T106 卓倫）：每張卡的字一樣大。--s 只管卡片外框（留白、裝飾，景深遠近、人氣王、至尊照舊不同大小）；
+        // --tfs 是卡上文字（收件人、內文、作者、讚）的倍率，同一面牆每張卡都一樣＝R.B（只跟視窗大小有關，和內容長短、景深無關）
+        const scFontScale = () => (wallState.R && wallState.R.B) || 1;
         function scSizeCard(el, m, s) {
-            el.style.setProperty('--s', s.toFixed(3));
-            const w = scCalcWidth(m, s);
+            const f = scFontScale();
+            el.style.setProperty('--s', s.toFixed(3)); el.style.setProperty('--tfs', f.toFixed(3));
+            const w = scCalcWidth(m, s, f);
             el.style.width = Math.round(w) + 'px';
             el.style.setProperty('--lines', [...String(m.text || '')].length > 50 ? 4 : 99);
         }
         // 只用 canvas 量字寬，不碰版面：用來先估卡片大小、決定放置順序
-        function scCalcWidth(m, s) {
+        function scCalcWidth(m, s, f = s) {
             const text = String(m.text || ''), L = [...text].length, theme = displayThemeOf(m);
-            const fs = 15 * s, lines = L <= 9 ? 1 : L <= 22 ? 2 : L <= 36 ? 3 : 4;
+            const fs = 15 * f, lines = L <= 9 ? 1 : L <= 22 ? 2 : L <= 36 ? 3 : 4;
             const tw = scTextW(text, fs, 700) / lines * 1.12 + 4;
-            const footW = scTextW(m.author || '匿名', 12 * s, 600) * 1.08 + 100 * s + (theme === 'theme-admin' ? scTextW('系統管理員', 11 * s, 600) + 10 : 0);
-            const toW = m.receiver ? scTextW('To: ' + m.receiver, 12 * s, 700) * 1.1 + 6 + (THEME_PIPS[theme] ? 62 * s : 0) : 0;
+            const footW = scTextW(m.author || '匿名', 12 * f, 600) * 1.08 + 100 * f + (theme === 'theme-admin' ? scTextW('系統管理員', 11 * s, 600) + 10 : 0);
+            const toW = m.receiver ? scTextW('To: ' + m.receiver, 12 * f, 700) * 1.1 + 6 + (THEME_PIPS[theme] ? 62 * s : 0) : 0;
             const pad = (ADMIN_THEMES.has(theme) ? 40 : 30) * s;
-            return Math.min(Math.max(tw, footW, toW, 140 * s, m.image ? 200 * s : 0), 300 * s) + pad;
+            return Math.min(Math.max(tw, footW, toW, 140 * s, m.image ? 200 * s : 0), 300 * Math.max(s, f)) + pad;
         }
         // 估計卡片面積只用字數（不量字、不碰版面），只拿來決定放置順序
         function scEstimateArea(m, s) {
@@ -2515,7 +2513,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         function scRadius(c) { return Math.hypot(Math.max(-c.full[0], c.full[2]), Math.max(-c.full[1], c.full[3])); }
         function scLegal(c, placed) {
             const cFull = scQuad(c, c.full), cText = scQuad(c, c.text), cr = scRadius(c);
-            let covered = 0;
+            let covered = 0, soft = 0;
             for (const p of placed) {
                 if (Math.hypot(p.cx - c.cx, p.cy - c.cy) > cr + p._r) continue;
                 const upper = c.z > p.z ? c : p, lower = upper === c ? p : c;
@@ -2526,8 +2524,42 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 if (ov > .25 * Math.min(c.w * c.h, p.w * p.h)) return false;
                 if (lower === c) covered += ov;
                 else if ((p._cov || 0) + ov > .35 * p.w * p.h) return false;
+                if (lower.soft) { const f = scSoftHit(upFull, lower); if (lower === c) soft += f; else if ((p._soft || 0) + f > SC_SOFT_MAX) return false; }
             }
-            return covered <= .35 * c.w * c.h;
+            return covered <= .35 * c.w * c.h && soft <= SC_SOFT_MAX && scStackOk(c, placed);
+        }
+        // 6.5.5：內文第 3 行以後被上層卡外框壓到的比例（8 個取樣點），每張卡合計最多 SC_SOFT_MAX
+        const SC_SOFT_MAX = .3;
+        function scSoftHit(upFull, lower) {
+            const b = lower.soft, a = lower.rot * Math.PI / 180, cs = Math.cos(a), sn = Math.sin(a);
+            let hit = 0;
+            for (let i = 0; i < 4; i++) for (let j = 0; j < 2; j++) {
+                const x = b[0] + (b[2] - b[0]) * (i + .5) / 4, y = b[1] + (b[3] - b[1]) * (j + .5) / 2, X = lower.cx + x * cs - y * sn, Y = lower.cy + x * sn + y * cs;
+                let inside = true;
+                for (let k = 0; k < 4 && inside; k++) { const [x1, y1] = upFull[k], [x2, y2] = upFull[(k + 1) % 4]; if ((x2 - x1) * (Y - y1) - (y2 - y1) * (X - x1) < 0) inside = false; }
+                if (inside) hit++;
+            }
+            return hit / 8;
+        }
+        // 6.5.5（T106 卓倫：卡片不要一欄欄疊成一串）：上下相疊、左右大致對齊（水平重疊 ≥ 窄的那張 60%）的兩張卡算「疊在一起」；
+        // 疊在一起的卡串起來最多 SC_STACK_MAX 張。左右錯開壓角、側邊相疊不算，照常允許（6.4.3 以前的散落感）
+        const SC_STACK_MAX = 2, SC_STACK_ALIGN = .6;
+        function scStacked(a, b) {
+            const ox = Math.min(a.cx + a.w / 2, b.cx + b.w / 2) - Math.max(a.cx - a.w / 2, b.cx - b.w / 2);
+            const oy = Math.min(a.cy + a.h / 2, b.cy + b.h / 2) - Math.max(a.cy - a.h / 2, b.cy - b.h / 2);
+            return oy > 0 && ox >= SC_STACK_ALIGN * Math.min(a.w, b.w);
+        }
+        function scStackOk(c, placed) {
+            const seen = new Set([c]), todo = [c];
+            while (todo.length) {
+                const x = todo.pop();
+                for (const p of placed) {
+                    if (seen.has(p) || p === c || Math.abs(p.cx - x.cx) > (p.w + x.w) / 2 || Math.abs(p.cy - x.cy) > (p.h + x.h) / 2 || !scStacked(x, p)) continue;
+                    seen.add(p); todo.push(p);
+                    if (seen.size > SC_STACK_MAX) return false;
+                }
+            }
+            return true;
         }
         function scInside(c, R) {
             const q = scQuad(c, c.full);
@@ -2540,17 +2572,22 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         }
         function scMeasure(c) {
             const el = c.el, w = el.offsetWidth, h = el.offsetHeight, s = parseFloat(el.style.getPropertyValue('--s')) || 1;
-            // 6.4.4（T105 卓倫）：保護區（c.text）＝收件人列＋內文＋作者列與讚，別張卡只能壓到左右留白與四個角。原本只保護到內文，作者列常被下一張卡的上緣蓋住。
-            // 下緣多留 5px：卡片各自上下漂浮（floatY 5px），相鄰兩張會互相靠近
-            const t = el.querySelector('.card-foot') || el.querySelector('.card-text'), protBottom = t ? t.offsetTop + t.offsetHeight + 5 : h;
+            // 6.5.5（T106 卓倫 11/04）：回到 6.4.3 的保護區（c.text＝收件人列＋內文；作者列可以被壓，同事可以自己拖開），找回原本的密度。
+            // 6.4.4 的保護區包含整條作者列＋讚，1910 寬只放得下約 30 張。「一欄欄疊成一串」改由 scStackOk 擋
+            // 內文前兩行（含收件人列）一定不能被蓋；第 3 行以後（c.soft）可以被別張卡壓到一小部分（SC_SOFT_MAX）
+            const t = el.querySelector('.card-text'), textBottom = t ? t.offsetTop + t.offsetHeight : h;
+            const lineH = 15 * (parseFloat(el.style.getPropertyValue('--tfs')) || s) * 1.5, hardBottom = t ? t.offsetTop + Math.min(t.offsetHeight, 2 * lineH) : h;
             const px = (c.depth === 'admin' ? 20 : 14) * s * .95;
             // 外框上緣：至尊卡的皇冠；人氣王、感謝大師等徽章凸出卡片上緣約 10px（.badge top:-10px），也會蓋到別張卡
             const top = c.depth === 'admin' ? 34 * s : el.querySelector(':scope > .badge') ? 10 : 0;
-            Object.assign(c, { w, h, full: [-w / 2, -h / 2 - top, w / 2, h / 2], text: [-w / 2 + px, -h / 2 + 4 * s - 4, w / 2 - px, Math.min(h / 2, -h / 2 + protBottom)] });
+            Object.assign(c, { w, h, full: [-w / 2, -h / 2 - top, w / 2, h / 2], text: [-w / 2 + px, -h / 2 + 4 * s - 4, w / 2 - px, Math.min(h / 2, -h / 2 + hardBottom + 4)],
+                soft: textBottom > hardBottom + 4 ? [-w / 2 + px, -h / 2 + hardBottom + 4, w / 2 - px, Math.min(h / 2, -h / 2 + textBottom + 4)] : null });
             c._r = scRadius(c); c._qFull = null; c._qText = null;
         }
         // 驗收 A2：前 R.seed 張（由大到小）先平均撒開，之後才貼近已放的卡；兩個階段都避開擁擠的格子
         const SC_SEED_CROWD = .5, SC_CROWD = .35, SC_EMPTY_BONUS = .6, SC_COVER_GOAL = .7, SC_COVER_CAP = 42;
+        // 6.5.5：補位從輪播池最多試幾張（原本 12／36）、放不下時第二輪找幾個位置（只有一般螢幕；大螢幕照 T052）
+        const SC_SHORT_TRIES = 30, SC_EXTRA_TRIES = 80, SC_RETRY_TRIES = 1000;   // 大螢幕照舊 12／36、不做第二輪
         // T052 大螢幕（R.wide）：張數上限 70、覆蓋率補位最多再多 8 張；排版改成「先填最大的空隙」（離最近的卡越遠越好），相疊獎勵降到 1、擁擠懲罰提高
         const SC_N_MAX = 70, SC_WIDE_EXTRA = 8, SC_WIDE_TOUCH = 1, SC_WIDE_CROWD = .8, SC_WIDE_GAP = 400;
         function scFindSpot(c, placed, R, tries, around, avoid) {
@@ -2570,14 +2607,19 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 const empty = placed.length && !inCell ? SC_EMPTY_BONUS : 0; // 還沒有卡的格子（例如撰寫區上方那一小塊）優先補上
                 const score = seeding
                     ? Math.min(Math.max(0, dmin), 500) / 100 - crowd * SC_SEED_CROWD + empty * 10 + Math.random() * .15   // 撒開：先選還沒有卡的格子，再選離已放的卡越遠越好
-                    // T052 大螢幕、6.4.4 起一般螢幕也一樣（T105 卓倫：有空位時優先放空位）：不往已放的卡靠，先填最大的空隙；沒有空隙了（dmin ≤ 0）才由少量相疊獎勵決定
-                    : (placed.length ? Math.min(Math.max(0, dmin), SC_WIDE_GAP) / 150 : 0) + touch * SC_WIDE_TOUCH - crowd * SC_WIDE_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0);
+                    : R.wide // T052：空間多時不往已放的卡靠，改成填最大的空隙；沒有空隙了（dmin ≤ 0）才由少量相疊獎勵決定
+                    ? (placed.length ? Math.min(Math.max(0, dmin), SC_WIDE_GAP) / 150 : 0) + touch * SC_WIDE_TOUCH - crowd * SC_WIDE_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0)
+                    // 6.5.5（T106 卓倫：回到 6.4.4 以前的樣子）：一般螢幕照 6.4.3 的評分，貼著已放的卡、稍微相疊；不疊成一串由 scStackOk 擋，空白格由 empty 加分補
+                    : touch * 4 - (placed.length ? Math.max(0, dmin) : 0) / 400 - crowd * SC_CROWD + (around ? 0 : empty) + Math.random() * .15 + (around ? -Math.hypot(c.cx - around.x, c.cy - around.y) / 200 : 0);
                 if (score > bestScore) { bestScore = score; best = [c.cx, c.cy]; }
             }
             if (!best) return false;
             [c.cx, c.cy] = best; c._qFull = null; c._qText = null; return true;
         }
-        function scCommit(c, placed) { for (const p of placed) { const ov = scOverlap(c, p); if (c.z > p.z) p._cov = (p._cov || 0) + ov; else c._cov = (c._cov || 0) + ov; } placed.push(c); }
+        function scCommit(c, placed) {
+            for (const p of placed) { const ov = scOverlap(c, p); if (c.z > p.z) { p._cov = (p._cov || 0) + ov; if (ov && p.soft) p._soft = (p._soft || 0) + scSoftHit(scQuad(c, c.full), p); } else { c._cov = (c._cov || 0) + ov; if (ov && c.soft) c._soft = (c._soft || 0) + scSoftHit(scQuad(p, p.full), c); } }
+            placed.push(c);
+        }
         function scRestack(placed) { placed.slice().sort((a, b) => a.z - b.z).forEach((c, i) => { c.el.style.zIndex = 100 + i; }); }
         function scPlace(c, enterDelay) {
             const el = c.el;
@@ -2646,8 +2688,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         }
         function scLivePlaced() { wallState.placed = (wallState.placed || []).filter(c => c.el.isConnected && !c.el.classList.contains('fading')); return wallState.placed; }
         function scRecomputeCover(placed) {
-            placed.forEach(p => { p._cov = 0; });
-            placed.forEach((p, i) => placed.slice(0, i).forEach(q => { const ov = scOverlap(p, q); if (p.z > q.z) q._cov += ov; else p._cov += ov; }));
+            placed.forEach(p => { p._cov = 0; p._soft = 0; });
+            placed.forEach((p, i) => placed.slice(0, i).forEach(q => { const ov = scOverlap(p, q); if (!ov) return; const [up, lo] = p.z > q.z ? [p, q] : [q, p]; lo._cov += ov; if (lo.soft) lo._soft += scSoftHit(scQuad(up, up.full), lo); }));
         }
         // 驗收用：依實際 z-index 檢查「上層外框蓋到下層文字區」的次數，應為 0（拖曳過的卡不算）
         function scAudit() {
@@ -2672,10 +2714,10 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         window.__wallInspect = () => {
             const vis = e => getComputedStyle(e).visibility !== 'hidden' && !e.classList.contains('fading') && e.getClientRects().length;
             const cards = [...wall.querySelectorAll('.message-card')].filter(vis);
-            const covered = (card, el) => {
-                if (!el) return { pct: 0, by: [] }; const r = el.getBoundingClientRect(); let cov = 0, tot = 0; const by = new Set();
-                for (let i = 1; i <= 6; i++) for (let j = 1; j <= 3; j++) {
-                    const els = document.elementsFromPoint(r.left + r.width * i / 7, r.top + r.height * j / 4);
+            const covered = (card, el, nx = 6, ny = 3, maxH = Infinity) => {
+                if (!el) return { pct: 0, by: [] }; const b0 = el.getBoundingClientRect(), r = { left: b0.left, top: b0.top, width: b0.width, height: Math.min(b0.height, maxH) }; let cov = 0, tot = 0; const by = new Set();
+                for (let i = 1; i <= nx; i++) for (let j = 1; j <= ny; j++) {
+                    const els = document.elementsFromPoint(r.left + r.width * i / (nx + 1), r.top + r.height * j / (ny + 1));
                     if (!els.some(e => e === el || el.contains(e))) continue;
                     tot++; const top = els.map(e => e.closest && e.closest('#wall .message-card')).find(Boolean);
                     if (top && top !== card) { cov++; by.add(top.getAttribute('data-id')); }
@@ -2683,22 +2725,43 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 return { pct: tot ? Math.round(cov / tot * 100) : 0, by: [...by] };
             };
             const rows = cards.map(card => {
-                const b = card.getBoundingClientRect(), c = card._c, t = covered(card, card.querySelector('.card-text')), f = covered(card, card.querySelector('.card-foot'));
+                // 6.5.5：作者（頭像＋名字）、讚分開量；whole＝整張卡被別張卡壓住的比例（8×5 個點）
+                // 6.5.5：textCovered 只看收件人列＋內文前兩行（一定不能被蓋）；softCoveredPct＝整段內文被壓的比例（第 3 行以後可以被壓一點）
+                const te = card.querySelector('.card-text'), lh = te ? parseFloat(getComputedStyle(te).lineHeight) || 22 : 22;
+                const b = card.getBoundingClientRect(), c = card._c, t = covered(card, te, 6, 3, 2 * lh), all = covered(card, te), f = covered(card, card.querySelector('.card-foot'));
+                const au = covered(card, card.querySelector('.card-foot .author'), 6, 2), lk = covered(card, card.querySelector('.card-foot .like'), 3, 2), wh = covered(card, card, 8, 5);
                 return { id: card.getAttribute('data-id'), x: Math.round(b.left), y: Math.round(b.top), w: Math.round(b.width), h: Math.round(b.height), z: +card.style.zIndex || 0,
                     rot: c ? +c.rot.toFixed(1) : null, depth: c ? c.depth : null, measuredH: c ? Math.round(c.h) : null, actualH: card.offsetHeight,
-                    textCoveredPct: t.pct, footCoveredPct: f.pct, coveredBy: [...new Set([...t.by, ...f.by])] };
+                    textPx: parseFloat(getComputedStyle(card.querySelector('.card-text') || card).fontSize),
+                    textCoveredPct: t.pct, softCoveredPct: all.pct, footCoveredPct: f.pct, authorCoveredPct: au.pct, likeCoveredPct: lk.pct, cardCoveredPct: wh.pct, coveredBy: [...new Set([...t.by, ...au.by, ...lk.by])] };
             });
             const boxes = cards.map(e => e.getBoundingClientRect()); let sum = 0, multi = 0; boxes.forEach(q => sum += q.width * q.height);
             for (let y = 0; y < innerHeight; y += 8) for (let x = 0; x < innerWidth; x += 8) { let k = 0; for (const q of boxes) if (x >= q.left && x < q.right && y >= q.top && y < q.bottom) k++; if (k > 1) multi += (k - 1) * 64; }
             const a = window.__wallAudit();
-            return { version: CURRENT_APP_VERSION, viewport: [innerWidth, innerHeight], count: rows.length, textCovered: rows.filter(r => r.textCoveredPct > 10).length, footCovered: rows.filter(r => r.footCoveredPct > 10).length,
+            // 最大空隙：牆面可用區（R.freePts）裡離最近一張卡最遠的距離（px，約等於能放進去的最大圓半徑）
+            let maxGap = 0; const R = wallState.R;
+            if (R && R.freePts) for (let i = 0; i < R.freePts.length; i += 2) {
+                const x = R.freePts[i], y = R.freePts[i + 1]; let d = Infinity;
+                for (const q of boxes) { const dx = Math.max(q.left - x, 0, x - q.right), dy = Math.max(q.top - y, 0, y - q.bottom); d = Math.min(d, Math.hypot(dx, dy)); if (!d) break; }
+                if (d < Infinity && d > maxGap) maxGap = d;
+            }
+            const px = [...new Set(rows.map(r => r.textPx))];
+            // 疊成一串：用畫面上的實際外框，照 scStacked 的定義找最長的一串（張數）
+            const rc = cards.map((e, i) => e._c ? { cx: e._c.cx, cy: e._c.cy, w: e._c.w, h: e._c.h } : { cx: (boxes[i].left + boxes[i].right) / 2, cy: (boxes[i].top + boxes[i].bottom) / 2, w: boxes[i].width, h: boxes[i].height });
+            let maxStack = rc.length ? 1 : 0; const done = new Set();
+            rc.forEach((r0, i) => { if (done.has(i)) return; const comp = [i]; done.add(i);
+                for (let k = 0; k < comp.length; k++) rc.forEach((r1, j) => { if (!done.has(j) && scStacked(rc[comp[k]], r1)) { done.add(j); comp.push(j); } });
+                maxStack = Math.max(maxStack, comp.length); });
+            return { version: CURRENT_APP_VERSION, viewport: [innerWidth, innerHeight], count: rows.length, textCovered: rows.filter(r => r.textCoveredPct > 10).length,
+                authorCovered: rows.filter(r => r.authorCoveredPct > 10).length, likeCovered: rows.filter(r => r.likeCoveredPct > 10).length, footCovered: rows.filter(r => r.footCoveredPct > 10).length,
+                maxStack, maxCardCoveredPct: rows.reduce((m, r) => Math.max(m, r.cardCoveredPct), 0), maxGap: Math.round(maxGap), textPx: px,
                 overlapPct: sum ? Math.round(multi / sum * 1000) / 10 : 0, coverage: a.coverage, emptyBlocks: a.emptyBlocks, layoutViolations: a.violations, cards: rows };
         };
         window.__avatar = { initialsOf, avatarColorOf, AVATAR_COLORS };   // 測試用
         window.__wallSwapLog = () => (wallState.swapLog || []).slice();
         window.__wallAudit = () => ({ violations: scAudit(), count: scLivePlaced().length, target: wallState.R ? wallState.R.N : 0, wide: !!(wallState.R && wallState.R.wide), layoutMs: wallState.layoutMs || 0,
             coverage: wallState.R ? Math.round(scCoverage(scLivePlaced(), wallState.R) * 100) / 100 : 0,
-            minTextPx: Math.min(...scLivePlaced().map(c => 15 * (parseFloat(c.el.style.getPropertyValue('--s')) || 1))),
+            minTextPx: Math.min(...scLivePlaced().map(c => 15 * (parseFloat(c.el.style.getPropertyValue('--tfs')) || parseFloat(c.el.style.getPropertyValue('--s')) || 1))),
             // 九宮格每格卡數（左上→右下）；幾乎被障礙物占滿的格子（可用面積 < 2%）記為 null，不列入驗收
             cells: wallState.R && wallState.R.cellFree ? (() => { const R = wallState.R, n = new Array(9).fill(0); scLivePlaced().forEach(c => n[scCell(c.cx, c.cy, R)]++); return n.map((v, k) => R.cellFree[k] < .02 ? null : v); })() : [],
             emptyBlocks: wallState.R ? scEmptyBlocks(scLivePlaced(), wallState.R) : 0 });

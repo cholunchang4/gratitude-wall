@@ -39,7 +39,7 @@ export const TEXT = Object.freeze({           // GDD 5.4＋設計規格（文字
   noneH: '這次的信封已經封好了', noneP: '牆上的光還在，下一張卡，一樣會被看見。',
   saveFail: '剛剛沒存到，再點一次試試', sealed: '信封已經封好了', notStarted: '手心的光還沒開始，到時候再來挑。',
   loadFail: '讀不到你挑的卡，請重新整理頁面再試一次。', rate: '點得有點快，休息一下再試。', notOk: '這張不能挑',
-  deleted: '這張卡已經刪除，不會印出來', textOnly: '印出時只有文字', imgNote: '這張的照片不會印出來，只印文字。', contNote: '字比較多，後半段會接到背面。',
+  deleted: '這張卡已經刪除，不會印出來', textOnly: '印出時只有文字', imgNote: '這張的照片不會印出來，只印文字。',
   emptyH: '你還沒有寫過卡', emptyP: '第一張，就從現在開始吧。寫好回到這裡，就能把它帶去派對。', emptyBtn: '去寫第一張',
   coach: '點名字就能挑', moreHint: '往下捲，會再載入更早的卡',
   story: [
@@ -116,25 +116,19 @@ export function starSvg(n, cls = '') {
 }
 
 // ---------------------------------------------------------------- 實體卡（預覽與之後的印製檔用同一份）
-const PT_MAX = 20, PT_MIN = 9, PT_STEP = 0.5;
-/** 字級：從 20pt 每次減 0.5pt，放得下就停；下限 9pt。9pt 還放不下 → 正面切到放得下的字數（退到最近的句讀），其餘接背面 */
+const PT_MAX = 20, PT_MIN = 6, PT_STEP = 0.5;
+/**
+ * 字級：從 20pt 每次減 0.5pt，整段放得下就停（預覽版面以 A6 尺寸繪製，等比放大到 A5，所以 6pt 實際約 8.5pt）。
+ * 卓倫 11/10：實體卡印牆上卡片原樣、不考慮超長卡 → 不再把後半段接到背面。6pt 還放不下（極少數）就照樣縮在正面，標 data-overflow。
+ * back 參數保留（呼叫端不用改），背面不放內文。
+ */
 export function fitPair(front, back, text) {
+  void back; void text;
   const card = front.querySelector('.yp-pc-card'), p = card.querySelector('.card-text');
   const over = () => p.scrollHeight > p.clientHeight + 1;
-  for (let pt = PT_MAX; pt >= PT_MIN; pt -= PT_STEP) { card.style.setProperty('--pc-fs', pt + 'pt'); card.classList.toggle('is-long', pt <= 12); if (!over()) return { pt, rest: '' }; }
-  const pt = PT_MIN; card.style.setProperty('--pc-fs', pt + 'pt'); card.classList.add('is-long');
-  front.querySelector('.yp-pc-cont').hidden = false;
-  const chars = [...text]; let lo = 0, hi = chars.length;
-  while (lo < hi) { const mid = (lo + hi + 1) >> 1; p.textContent = chars.slice(0, mid).join(''); if (over()) hi = mid - 1; else lo = mid; }
-  let cut = lo; const brk = /[。！？；，、\n…）」』!?;,. ]/;
-  for (let i = lo; i > lo - 40 && i > 0; i--) if (brk.test(chars[i - 1])) { cut = i; break; }
-  p.textContent = chars.slice(0, cut).join('');
-  const rest = chars.slice(cut).join('').replace(/^\s+/, '');
-  if (back) {
-    back.classList.add('has-more'); const m = back.querySelector('.yp-pc-more'); m.hidden = false; m.querySelector('p').textContent = rest; back.style.setProperty('--pc-fs', pt + 'pt');
-    const mp = m.querySelector('p'); if (mp.scrollHeight > back.querySelector('.yp-pc-sign').offsetTop - mp.offsetTop) back.dataset.overflow = '1';
-  }
-  return { pt, rest };
+  for (let pt = PT_MAX; pt >= PT_MIN; pt -= PT_STEP) { card.style.setProperty('--pc-fs', pt + 'pt'); card.classList.toggle('is-long', pt <= 12); if (!over()) return { pt, overflow: false }; }
+  card.dataset.overflow = '1';
+  return { pt: PT_MIN, overflow: true };
 }
 export function scaleFits(scope) {
   scope.querySelectorAll('.yp-pc-fit').forEach(f => { const pc = f.firstElementChild; if (pc && pc.offsetWidth) f.style.setProperty('--k', f.clientWidth / pc.offsetWidth); });
@@ -222,7 +216,7 @@ export function createYp26(o) {
       <div class="yp-tray-head">${progHtml('is-l')}</div>
       <div class="yp-tray-body"><p class="yp-tray-note" aria-live="polite"></p><ol class="yp-slots"></ol>
         <button type="button" class="yp-pv-btn" disabled>${ICON.card}看實體卡預覽</button>
-        <p class="yp-tray-foot">A6 卡片（105×148mm）· 年終派對 ${esc(PARTY_MD)} 交到對方手上</p></div></div></aside></main>
+        <p class="yp-tray-foot">A5 卡片（148×210mm）· 年終派對 ${esc(PARTY_MD)} 交到對方手上</p></div></div></aside></main>
     <main class="yp-main yp-main-sealed" hidden style="grid-template-columns:minmax(0,1fr)"><section class="yp-sealed" aria-labelledby="sealH">${ENV_ART}
       <h2 id="sealH"></h2><p class="yp-sealed-p"></p><button type="button" class="yp-btn is-ghost yp26-sealed-back" hidden>回到感謝牆</button><ul class="yp-sealed-grid"></ul></section></main>
     <div class="yp-toast" hidden></div>
@@ -513,13 +507,12 @@ export function createYp26(o) {
     const cls = L.cls(m.theme), t = m.theme;
     const badge = t === 'theme-admin-neon' ? '<span class="badge admin-neon admin-badge">🛡️ 系統管理員</span>' : t === 'theme-admin' ? '<span class="badge supreme admin-badge">至尊</span>' : '';
     return `<div class="yp-pc" data-t="${esc(cls)}" data-side="front"><article class="message-card card ${esc(cls)} yp-pc-card" aria-label="實體卡正面">${L.decor(t)}${badge}
-      <div class="card-to">To: ${toLine(m, rid)}</div><p class="card-text">${esc(m.text || '')}</p><div class="yp-pc-cont" hidden>接背面</div>
+      <div class="card-to">To: ${toLine(m, rid)}</div><p class="card-text">${esc(m.text || '')}</p>
       <div class="card-foot"><span class="author">${authorHtml(m)}</span><time class="yp-pc-date">${ymd(m.created_at)}</time></div></article></div>`;
   }
   function backHtml(m) {
     const cls = L.cls(m.theme);
     return `<div class="yp-pc yp-pc-back" data-t="${esc(cls)}" data-side="back" style="--bar:${BAR[cls] || BAR['t-classic']}"><span class="yp-pc-dots" aria-hidden="true"></span>
-      <div class="yp-pc-more" hidden><h4>接正面</h4><p></p></div>
       <div class="yp-pc-sign">${MARK}<div><p class="yp-pc-name">手心的光</p><p class="yp-pc-org">RDTW 感謝牆 2026</p><p class="yp-pc-tag2">每一個微小的感謝，都是照亮團隊的光</p></div>
         <span class="yp-pc-rule" aria-hidden="true"></span><p class="yp-pc-line">每一個微小的感謝，<br>都是照亮團隊的光</p></div></div>`;
   }
@@ -555,7 +548,7 @@ export function createYp26(o) {
     if (!m) return say(TEXT.deleted, 'err');
     const name = p.rid ? o.store.nameOf(p.rid) : '';
     const el = openModal(`<div class="yp-modal" id="yp26Preview" role="dialog" aria-modal="true" aria-labelledby="pvT"><div class="yp-dialog">
-      <div class="yp-dialog-head"><div><h2 id="pvT">${name ? `給 ${esc(name)} 的實體卡` : '印出來的樣子'}</h2><p>A6（105×148mm）· 印出來就是這個樣子</p></div></div>
+      <div class="yp-dialog-head"><div><h2 id="pvT">${name ? `給 ${esc(name)} 的實體卡` : '印出來的樣子'}</h2><p>A5（148×210mm）· 卡片內容預覽，正式版面以實際印製為準</p></div></div>
       <button type="button" class="yp-x" aria-label="關閉預覽">${ICON.x}</button>
       <div class="yp-stage"><div class="yp-pc-fit" id="pvF" style="width:min(340px, 62vh * 105 / 148)"></div><div class="yp-pc-fit" id="pvB" style="width:min(340px, 62vh * 105 / 148);position:absolute;visibility:hidden"></div></div>
       <p class="yp-pv-note" id="pvNote" hidden></p>
@@ -566,7 +559,8 @@ export function createYp26(o) {
     F.innerHTML = frontHtml(m, p.rid); B.innerHTML = backHtml(m);
     const r = fitPair(F.firstElementChild, B.firstElementChild, m.text || '');
     const note = el.querySelector('#pvNote');
-    note.textContent = [m.image ? TEXT.imgNote : '', r.rest ? TEXT.contNote : ''].join('');
+    void r;
+    note.textContent = m.image ? TEXT.imgNote : '';
     note.hidden = !note.textContent;
     const show = (s) => {
       F.style.visibility = s === 'front' ? 'visible' : 'hidden'; B.style.visibility = s === 'back' ? 'visible' : 'hidden';
