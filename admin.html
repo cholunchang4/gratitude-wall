@@ -38,6 +38,7 @@
     <div id="googleBanner" class="gbanner"></div>
     <nav class="tabs" role="tablist" aria-label="後台分頁">
       <button class="tab" role="tab" id="tab-overview" aria-controls="panel-overview" data-tab="overview">總覽</button>
+      <button class="tab" role="tab" id="tab-live" aria-controls="panel-live" data-tab="live">進行中活動</button>
       <button class="tab" role="tab" id="tab-messages" aria-controls="panel-messages" data-tab="messages">留言管理</button>
       <button class="tab" role="tab" id="tab-contacts" aria-controls="panel-contacts" data-tab="contacts">通訊錄</button>
       <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" data-tab="settings">設定</button>
@@ -53,6 +54,7 @@
     <!-- 總覽 -->
     <section id="panel-overview" role="tabpanel" aria-labelledby="tab-overview" data-panel="overview">
       <div class="panel-head"><div><h2>總覽</h2><p>全部留言的累積數字、使用者等級與發文狀態。</p></div></div>
+      <div id="ovLive" hidden></div>
       <div class="grid grid-kpi" id="ovKpis"></div>
       <div class="card">
         <div class="card-head"><div><h3>特定時段留言數</h3><p class="sub">以台灣時間計算，含當天整天。</p></div></div>
@@ -141,6 +143,12 @@
         <span class="hint" id="auditCount"></span>
       </div>
       <div class="table-wrap"><table><thead><tr><th>時間</th><th>操作者</th><th>動作</th><th>對象</th><th>內容</th></tr></thead><tbody id="auditList"></tbody></table></div>
+    </section>
+
+    <!-- 進行中活動（內容由 static/admin/live-events.js 依 LIVE_EVENTS 產生；以後有新活動照那裡的說明加一筆） -->
+    <section id="panel-live" role="tabpanel" aria-labelledby="tab-live" data-panel="live" hidden>
+      <div class="panel-head"><div><h2>進行中活動</h2><p>活動期間的進度、名單與每日趨勢。活動結束後會移到「已結束活動」。</p></div></div>
+      <div id="liveList"></div>
     </section>
 
     <!-- 已結束活動（內容由 static/admin/archive.js 依 ENDED_EVENTS 產生；以後活動結束照那裡的說明加一筆） -->

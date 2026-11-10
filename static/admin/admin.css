@@ -364,3 +364,38 @@ details.archive-sub > summary .sub { margin-bottom: 0; }
 .yp26-stats .chart.yp26-wide { grid-column: 1 / -1; }
 .yp26-stats .chart svg { max-height: 260px; }
 @media (max-width: 700px) { .yp26-stats .charts { grid-template-columns: 1fr; } }
+
+/* 進行中活動（live-events.js）：總覽摘要一行、各活動區塊 */
+.live-summary { display: flex; align-items: center; gap: var(--sp-3); flex-wrap: wrap; margin-bottom: var(--sp-4); padding: var(--sp-3) var(--sp-4);
+  background: var(--surface-solid); border: 1px solid var(--line); border-left: 4px solid var(--brand); border-radius: var(--r-md); box-shadow: var(--sh-1); }
+.live-summary-label { font-weight: 800; }
+.live-summary-items { flex: 1 1 240px; color: var(--ink); }
+.live-event + .live-event { margin-top: var(--sp-5); }
+.live-event > .card { margin-bottom: 0; }
+
+/* 點亮星空（sky-admin.js） */
+.sky-admin .card-head { margin-bottom: var(--sp-4); }
+.sky-admin .card-head .split { gap: var(--sp-3); }
+#skyKpiTier .k-num { font-size: 26px; line-height: 1.4; }
+.sky-tier { margin: 0 0 var(--sp-5); padding: 0 var(--sp-2); }
+.sky-track { position: relative; height: 12px; border-radius: var(--r-pill); background: #ece7f1; }
+.sky-fill { position: absolute; inset: 0 auto 0 0; border-radius: var(--r-pill); background: linear-gradient(90deg, #3b3f8f, #7c5cc4); min-width: 0; }
+.sky-mark { position: absolute; top: -4px; width: 4px; height: 20px; margin-left: -2px; border-radius: 2px; background: #b8b0c6; }
+.sky-mark.on { background: #2b2f74; }
+.sky-ticks { position: relative; height: 22px; margin-top: 6px; font-size: var(--fs-xs); color: var(--muted); }
+.sky-tick { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.sky-tick:last-child { transform: translateX(-100%); }
+.sky-tick.on { color: #2b2f74; font-weight: 700; }
+.sky-block { margin-top: var(--sp-5); padding-top: var(--sp-4); border-top: 1px solid var(--line); }
+.sky-block > h4 { margin: 0 0 var(--sp-2); font-size: var(--fs-md); }
+.sky-note { color: var(--muted); font-size: var(--fs-xs); margin: 0 0 var(--sp-3); }
+.sky-block .grid-kpi { margin-bottom: 0; }
+.sky-block .charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.sky-block .chart svg { max-height: 240px; }
+#skyList td { vertical-align: top; }
+.sky-by { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 8px; }
+.sky-by li { display: inline-flex; align-items: baseline; gap: 6px; padding: 2px 10px; border-radius: var(--r-pill); background: #f3f0f8; border: 1px solid #e3ddef; }
+.sky-by-time { color: var(--muted); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; }
+.sky-left { color: var(--bad); font-size: var(--fs-xs); font-weight: 700; margin-left: 2px; }
+@media (max-width: 700px) { .sky-block .charts { grid-template-columns: 1fr; } }
+

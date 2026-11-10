@@ -120,7 +120,7 @@ $('retryBtn').addEventListener('click', () => start());
 
 // ---------- 啟動 ----------
 let started = false;
-let YP26A = null;
+let LIVE = null;
 async function start() {
   showGate('正在確認管理員身分…', null);
   if (!BACKEND) {
@@ -138,9 +138,9 @@ async function start() {
   fillSettings(true);
   selectTab(location.hash.replace('#', '') || 'overview', false);
   renderAll();
-  // T108 手心的光：活動期間總覽最上面的數字（模組出錯不影響後台）
-  if (!YP26A) import('./yp26-admin.js').then(m => { YP26A = m.mountYp26Admin({ session: BACKEND.session, now: () => BACKEND.now(), emulator: USE_EMULATOR }) || true; })
-    .catch(e => console.error('[yp26] 後台數字沒有載入', e));
+  // 進行中活動（點亮星空、手心的光…；模組出錯不影響後台）
+  if (!LIVE) import('./live-events.js').then(m => { LIVE = m.mountLiveEvents({ session: BACKEND.session, now: () => BACKEND.now(), emulator: USE_EMULATOR }) || true; })
+    .catch(e => console.error('[live] 進行中活動沒有載入', e));
   if (started) return;
   started = true;
   loadHealth();

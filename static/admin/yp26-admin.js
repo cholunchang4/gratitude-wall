@@ -1,4 +1,4 @@
-// T108「手心的光」後台（總覽最上面）。
+// T108「手心的光」後台（「進行中活動」分頁；admin-sky 起從總覽移過來）。
 // - 活動期間：只有數字（參加人數、總張數、收到 ≥1 張的人數），不顯示名單（避免管理員提前看到自己或別人會收到什麼）。
 // - 封箱後：多一區「還沒有卡的收件人」——沒有被任何同事挑到的人；點一位列出寫給他的卡（任何作者），勾選＝補卡。
 //   補卡存 yp26/admin（只有 Functions 寫得進去、每次留稽核），不算進任何作者的 6 張、不改同事看得到的總數。
@@ -8,8 +8,9 @@
 import { K } from '../app/fb/constants.js';
 import { phaseOf } from '../app/yp26/yp26-logic.js';
 import { createYp26Api } from '../app/yp26/yp26-api.js';
-import { h, s as svgEl } from './util.js';
+import { h } from './util.js';
 import { kpi } from './views.js';
+import { simpleBars as bars } from './charts.js';
 
 const TPE = 8 * 3_600_000;
 const ymd = (ms) => { const d = new Date(ms + TPE); return `${d.getUTCFullYear()}/${d.getUTCMonth() + 1}/${d.getUTCDate()}`; };
@@ -18,13 +19,13 @@ const ERR = { NOT_DEPLOYED: '手心的光的伺服器功能還沒部署。', NOT
 const updatedAt = (ms) => { const d = new Date(ms + TPE); return `${d.getUTCMonth() + 1}/${d.getUTCDate()} ${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}（伺服器時間）`; };
 const errText = (e) => ERR[e && e.code] || '讀不到資料（網路或伺服器忙碌），請稍後再試。';
 
-/** o = { session, now(), emulator } */
+/** o = { session, now(), emulator, container（「進行中活動」分頁裡的位置；沒給就放總覽最上面，舊做法） } */
 export function mountYp26Admin(o) {
-  const anchor = document.getElementById('ovKpis');
+  const anchor = o.container || document.getElementById('ovKpis');
   if (!anchor) return null;
   const api = createYp26Api({ db: o.session.db, user: o.session.user, meId: null, emulator: o.emulator });
   const box = h('section', { class: 'card yp26-admin', id: 'yp26Admin', hidden: true, 'aria-labelledby': 'yp26AdminTitle' });
-  anchor.parentNode.insertBefore(box, anchor);
+  if (o.container) o.container.append(box); else anchor.parentNode.insertBefore(box, anchor);
   const S = { stats: null, err: '', busy: false, list: null, listErr: '', onlyTodo: true, sel: null, cards: null, cardsErr: '', saving: new Set(), msg: '' };
 
   function render() {
@@ -78,32 +79,6 @@ export function mountYp26Admin(o) {
           kpi('來自寫給多人的卡', P.multi, `一篇寫給 2 人以上、展開成每人一張；占 ${pct(P.multi, P.total)}`, { id: 'yp26KpiMulti', unit: '張' }),
           kpi('收件人已離開通訊錄', P.goneRecipient, P.goneRecipient ? '印之前要確認還要不要印' : '沒有', { id: 'yp26KpiGone', unit: '張', danger: P.goneRecipient > 0 }))),
       st.drift ? h('p', { class: 'yp26-note', role: 'status' }, `同事畫面上的總張數（${st.n}）和實際（${st.total}）不同，可以用校正功能修正。`) : null);
-  }
-
-  /** 簡單長條圖（SVG）：items = [{ label, v, tip }]；every＝每幾格標一次日期 */
-  function bars(title, items, o2) {
-    const wide = o2.wide && window.innerWidth >= 700;   // 手機：寬圖也用窄的畫布，字才不會縮太小
-    const fs = window.innerWidth < 700 ? 15 : 11;          // 手機上 SVG 會縮小，字放大一點
-    const n = Math.max(1, items.length), W = wide ? 900 : 360, H = wide ? 170 : 180, padL = fs * 2.6, padB = fs * 2.2, padT = fs * 1.7;
-    const max = Math.max(1, ...items.map(x => x.v)), top = max <= 5 ? max : Math.ceil(max / 5) * 5;
-    const bw = (W - padL) / n, barW = Math.max(4, Math.min(wide ? 28 : 40, bw - 6));
-    const y = (v) => padT + (H - padT - padB) * (1 - v / top);
-    const svg = svgEl('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': `${title}：` + items.map(x => x.tip).join('；') });
-    [0, top / 2, top].forEach(v => {
-      svg.append(svgEl('line', { x1: padL, x2: W, y1: y(v), y2: y(v), stroke: 'rgba(120,40,60,.12)', 'stroke-width': 1 }));
-      svg.append(svgEl('text', { x: padL - 4, y: y(v) + 4, 'text-anchor': 'end', 'font-size': fs, fill: '#5c5c68' }, Number.isInteger(v) ? v : v.toFixed(1)));
-    });
-    items.forEach((it, i) => {
-      const x = padL + i * bw + (bw - barW) / 2, t = y(it.v);
-      const g = svgEl('g', { 'data-label': it.label, 'data-value': it.v });
-      if (it.v > 0) g.append(svgEl('rect', { x, y: t, width: barW, height: H - padB - t, rx: Math.min(4, barW / 2), fill: '#c9184a', opacity: 0.85 }));
-      if (it.v > 0 && (n <= 10 || it.v === max)) g.append(svgEl('text', { x: x + barW / 2, y: t - 4, 'text-anchor': 'middle', 'font-size': fs, 'font-weight': 700, fill: '#2b2b33' }, it.v));
-      if (i % (wide ? 1 : (o2.every || 1)) === 0 || i === n - 1) g.append(svgEl('text', { x: x + barW / 2, y: H - fs * .6, 'text-anchor': 'middle', 'font-size': fs, fill: '#5c5c68' }, it.label));
-      g.append(svgEl('title', {}, it.tip));
-      svg.append(g);
-    });
-    svg.append(svgEl('line', { x1: padL, x2: W, y1: H - padB, y2: H - padB, stroke: '#b9b0b3', 'stroke-width': 1 }));
-    return h('div', { class: 'chart' + (o2.wide ? ' yp26-wide' : ''), id: o2.id }, h('h4', null, title), h('div', { class: 'c-total' }, o2.foot || ''), svg);
   }
 
   function fillSection() {
