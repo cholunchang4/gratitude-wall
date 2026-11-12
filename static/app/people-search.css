@@ -1,0 +1,100 @@
+/* 6.6 版頭「找同事」（people-search.js）。
+   沿用網站既有語言：圓形工具鈕（.tool）、撰寫區／清單搜尋框（.list-search）、自己的頭像選單（.me-menu）的白卡＋品牌紅。
+   面板一律白底深字（不跟著萬聖、夜空等深色主題變色），對比 ≥ 4.5:1。
+   桌機（≥769）：版頭放大鏡下方的浮動面板（寬 360）；手機（≤768）：全螢幕搜尋頁，鍵盤彈出時跟著可見區域縮。 */
+
+.ps-sr { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+
+/* ---------- 入口 ---------- */
+.ps-btn svg, .ps-btn-m svg, .ps-field > svg, .ps-back svg, .ps-clear svg, .ps-write svg, .me-menu .ps-menu-item svg {
+  fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; pointer-events: none; }
+.ps-btn[aria-expanded="true"] { background: #fff1f4; color: #9f1239; border-color: #f3c4cf; }
+.ps-btn-m { display: none; }
+@media (max-width: 768px) {
+  .tools .ps-btn { display: none; }
+  .switch-bar.has-ps { display: flex; align-items: center; gap: 8px; }
+  .switch-bar.has-ps .view-switch { flex: 1; width: auto; min-width: 0; }
+  .ps-btn-m { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.9);
+    background: rgba(255,255,255,.94); box-shadow: var(--sh-1); color: #2b2b33; cursor: pointer; }
+  .ps-btn-m svg { width: 20px; height: 20px; }
+  .ps-btn-m[aria-expanded="true"] { color: #9f1239; }
+}
+/* 版頭多了放大鏡（44px＋間距 8px）後，標題框和工具列之間要維持 ≥ 8px（T102 複查 A 的規則）：
+   961～1099：工具列間距 8→4（961 寬時標題框右緣 577，原本只剩 2px）；
+   1280～1459 且小舖光瓶出現（12/1 開店後）：「牆面／清單」只留圖示（和 769～1279 一樣，名稱在 aria-label），否則光瓶會壓到標題框 */
+@media (min-width: 961px) and (max-width: 1099px) { .tools:has(.ps-btn) { gap: 4px; } }
+@media (min-width: 1280px) and (max-width: 1459px) {
+  .tools:has(.ps-btn):has(.bt[data-sh-own]:not([hidden])) .view-switch button { font-size: 0; gap: 0; padding: 0 12px; }
+  .tools:has(.ps-btn):has(.bt[data-sh-own]:not([hidden])) .view-switch button svg { width: 18px; height: 18px; }
+}
+.me-menu .ps-menu-item svg { width: 20px; height: 20px; color: var(--pc-icon, #6b6b76); flex: none; }
+
+/* ---------- 面板 ---------- */
+.ps-layer { position: fixed; inset: 0; z-index: 90030; pointer-events: none; }
+.ps-panel { position: fixed; pointer-events: auto; display: flex; flex-direction: column; max-height: calc(100vh - 96px); max-height: calc(100dvh - 96px);
+  background: #fff; color: #2b2b33; border: 1px solid rgba(120,40,60,.14); border-radius: var(--r-lg, 16px); box-shadow: var(--sh-3); overflow: hidden;
+  font-family: var(--font); animation: psIn var(--dur-1, 150ms) var(--ease-out, ease-out) both; }
+@keyframes psIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+.ps-head { flex: none; display: flex; align-items: center; gap: 6px; padding: 12px 12px 8px; }
+.ps-back { display: none; }
+.ps-field { position: relative; flex: 1; min-width: 0; }
+.ps-field > svg { position: absolute; left: 13px; top: 50%; width: 18px; height: 18px; margin-top: -9px; color: #6b6b76; }
+.ps-field input { width: 100%; height: 44px; padding: 0 44px 0 40px; border: 1px solid rgba(120,40,60,.18); border-radius: var(--r-md, 12px); background: #fff;
+  font: 500 15px var(--font); color: #2b2b33; -webkit-appearance: none; appearance: none; }
+.ps-field input::placeholder { color: #81666d; }
+.ps-field input:focus { outline: none; border-color: #c9184a; box-shadow: 0 0 0 3px rgba(201,24,74,.2); }
+.ps-field input::-webkit-search-cancel-button { display: none; }
+.ps-clear { position: absolute; right: 2px; top: 50%; width: 40px; height: 40px; margin-top: -20px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: none; color: #5b5b66; cursor: pointer; }
+.ps-clear svg { width: 16px; height: 16px; }
+.ps-clear:hover { background: rgba(0,0,0,.05); }
+
+.ps-body { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 0 8px 10px; }
+.ps-hint, .ps-more, .ps-dym { margin: 0; padding: 10px 8px 12px; font-size: 14px; line-height: 1.6; color: #5b5b66; }
+.ps-more { padding: 6px 8px 4px; font-size: 13px; }
+.ps-dym { padding: 2px 8px 4px; font-weight: 700; color: #2b2b33; }
+.ps-none { padding: 4px 0 0; }
+.ps-none-msg { margin: 0; padding: 8px 8px 6px; font-size: 14px; line-height: 1.6; color: #5b5b66; }
+.ps-text-btn { margin: 2px 4px 4px; min-height: 36px; padding: 0 12px; border: 0; border-radius: var(--r-pill, 999px); background: rgba(201,24,74,.08); color: #9f1239;
+  font: 700 14px var(--font); cursor: pointer; }
+.ps-text-btn:hover { background: rgba(201,24,74,.14); }
+
+.ps-list { list-style: none; margin: 0; padding: 0; }
+.ps-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; }
+.ps-open { flex: 1; min-width: 0; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 4px 8px; border: 0; border-radius: var(--r-md, 12px);
+  background: none; font: 600 15px var(--font); color: #2b2b33; text-align: left; cursor: pointer; }
+.ps-open:hover { background: rgba(201,24,74,.07); }
+.ps-open:hover .ps-name { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1.5px; }
+.ps-open:focus-visible, .ps-write:focus-visible, .ps-clear:focus-visible, .ps-back:focus-visible, .ps-text-btn:focus-visible { outline: 3px solid #9f1239; outline-offset: 1px; }
+.ps-av { flex: none; display: inline-grid; }
+.ps-av .pav { --pc-ring: #fff; }
+.ps-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ps-name mark { background: #ffe1e8; color: inherit; border-radius: 3px; padding: 0 1px; }
+.ps-you { flex: none; padding: 1px 8px; border-radius: var(--r-pill, 999px); background: #f1ecee; color: #5b5b66; font-size: 12px; font-weight: 700; }
+.ps-slot { flex: none; display: inline-flex; }   /* 6.7 小燈盒星形燈按鈕 */
+.ps-write { flex: none; display: inline-flex; align-items: center; gap: 4px; height: 36px; padding: 0 12px 0 10px; border: 1px solid #f0c3ce; border-radius: var(--r-pill, 999px);
+  background: #fff; color: #9f1239; font: 700 13px var(--font); cursor: pointer; white-space: nowrap; }
+.ps-write svg { width: 15px; height: 15px; }
+.ps-write:hover { background: #fff1f4; border-color: #e7a3b4; }
+.ps-fav:empty { display: none; }
+
+/* ---------- 手機：全螢幕搜尋頁 ---------- */
+.ps-layer.is-mobile { pointer-events: auto; background: #fffaf8; height: 100vh; height: 100dvh; bottom: auto; }
+.ps-layer.is-mobile .ps-panel { position: absolute; inset: 0; width: auto !important; max-height: none; border: 0; border-radius: 0; box-shadow: none; background: #fffaf8;
+  animation-name: psInM; }
+@keyframes psInM { from { opacity: 0; } to { opacity: 1; } }
+.ps-layer.is-mobile .ps-head { padding: calc(8px + env(safe-area-inset-top)) 10px 8px 4px; border-bottom: 1px solid rgba(120,40,60,.1); background: #fffaf8; }
+.ps-layer.is-mobile .ps-back { flex: none; display: grid; place-items: center; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 50%; background: none; color: #2b2b33; cursor: pointer; }
+.ps-layer.is-mobile .ps-back svg { width: 22px; height: 22px; }
+.ps-layer.is-mobile .ps-field input { font-size: 16px; }   /* iOS：16px 以下聚焦會自動放大 */
+.ps-layer.is-mobile .ps-body { padding: 6px 8px calc(16px + env(safe-area-inset-bottom)); }
+.ps-layer.is-mobile .ps-open { min-height: 52px; font-size: 16px; }
+.ps-layer.is-mobile .ps-write { height: 44px; padding: 0 14px 0 12px; font-size: 14px; }
+@media (max-width: 768px) { body.ps-lock { overflow: hidden; } }
+
+/* ---------- 減少動態 ---------- */
+@media (prefers-reduced-motion: reduce) { .ps-panel, .ps-layer.is-mobile .ps-panel { animation: none; } }
+body.lx-rm .ps-panel { animation: none; }
+
+/* ---------- 6.7 小燈盒預留：資料卡右上角（關閉鈕左邊）的按鈕位置；profile-ui.js 只在 ext.viewerAction 有設定時才輸出 .pc-top-act ---------- */
+.pc-top-act { position: absolute; top: 12px; right: 64px; z-index: 3; display: flex; align-items: center; gap: 6px; }

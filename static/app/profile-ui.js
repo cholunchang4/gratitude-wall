@@ -482,8 +482,10 @@ export function createProfileUI(deps) {
     menu.innerHTML = `<div class="me-head">${pav(uid, name, 36, photo).replace('role="img"', 'aria-hidden="true"').replace(/ alt="[^"]*"/, ' alt=""')}<div><b>${esc(name)}</b><span>我的帳號</span></div></div>`
       + `<button type="button" role="menuitem" data-pc="me-card">${ic('book')}我的使用說明書</button>`
       + `<button type="button" role="menuitem" data-pc="me-photo">${ic('camera')}${photo ? '更換頭像' : '上傳頭像'}</button>`
+      + (X.menuExtra ? '<div data-pc-ext></div>' : '')   // T102：別人的光效（只看靜態）
       + `<hr><button type="button" role="menuitem" class="is-quiet" data-pc="me-logout">${ic('logout')}登出</button>`;
     document.body.appendChild(menu);
+    if (X.menuExtra) { const slot = menu.querySelector('[data-pc-ext]'); if (slot) slot.replaceWith(X.menuExtra()); }   // T102
     const r = btn.getBoundingClientRect();
     menu.style.left = Math.max(8, Math.min(r.left, window.innerWidth - 256)) + 'px';
     menu.style.bottom = Math.round(window.innerHeight - r.top + 12) + 'px';

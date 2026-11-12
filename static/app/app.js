@@ -4,6 +4,7 @@ import { requireMember, USE_EMULATOR } from './fb/session.js';
 import { WallBackend } from './fb/backend.js';
 import { ProfileService } from './fb/profile.js';      // T098 個人資料卡＋頭像（Firebase 讀寫）
 import { createProfileUI } from './profile-ui.js';     // T098 個人資料卡畫面（檢視、編輯、裁切、自己的頭像選單）
+import { createPeopleSearch } from './people-search.js';   // 6.6 版頭「找同事」
 import { createK1000 } from './k1000.js';             // T100「一千道光」：千光模板、慶祝動畫、公告
 import { countWords } from './fb/wordcount.js';      // T107 字數（英文以單字計）；新檔，不會和快取裡的舊 logic.js 對不上
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
@@ -20,7 +21,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.9";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）
+        const CURRENT_APP_VERSION = "6.5.11";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -1620,6 +1621,15 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 if (USE_EMULATOR) window.__yp26 = YP26;
             } catch (e) { YP26 = null; console.error('[yp26] 手心的光模組沒有載入，主牆照常運作', e); }
             if (USE_EMULATOR) { window.__profile = PROFILE; window.__pui = PUI; }
+            // 6.6 版頭「找同事」（people-search.js）：只用已載入的通訊錄姓名，不讀新資料；打開資料卡、寫卡沿用既有流程。載入失敗時主牆照常
+            try {
+                const PS = createPeopleSearch({ people: () => BACKEND.s.activeUsers(), meId: SESSION.meId,
+                    avatar: (u, n, size) => skyAvatar(u, n, size), onAvatar: (fn) => PROFILE.on(fn),
+                    openViewer: (u, from) => PUI.openViewer(u, from), writeTo: (name) => writeThanksTo(name),
+                    tools: document.querySelector('.tools'), mobileBar: document.querySelector('.switch-bar'), ext: SKY_EXT,
+                    isBlocked: () => !!document.querySelector('#yp26Page:not([hidden]), .yp-modal, .pc-overlay, .me-menu, .focus-overlay.active, .message-card.focused, .lm-focus:not([hidden]), .sh-overlay, .tr-ov, .sk-overlay, .k1000-sky, .lxp, #luScrim, #imgViewer:not([hidden]), #themePicker:not([hidden])') });
+                if (USE_EMULATOR) window.__ps = PS;
+            } catch (e) { console.error('[ps] 找同事沒有載入，主牆照常運作', e); }
             for (let attempt = 1; ; attempt++) {
                 try { await BACKEND.start(); applyBootstrap(await api('GET', 'api/bootstrap')); startStream(); return; }
                 catch (e) {
