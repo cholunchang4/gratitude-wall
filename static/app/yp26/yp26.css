@@ -42,6 +42,7 @@
 body.hw .yp-ent { background: rgba(27,20,51,.86); border-color: rgba(253,186,116,.45); color: #fde7c4; }   /* 保險：萬聖已過，萬一主題還在 */
 @media (min-width: 769px) and (max-width: 1279px) { .yp-ent .yp-meta-long { display: none; } }          /* 只留「手心的光｜N 道光」 */
 @media (min-width: 769px) and (max-width: 960px) { .yp-ent { top: 112px; } }                            /* 兩列版頭：工具列在第二列 */
+@media (min-width: 961px) and (max-width: 1279px) { body:has(#yp26Entry:not([hidden])) .sk-bar.is-top { top: 128px; } }   /* 入口下緣 120：點亮星空進度條往下讓（卓倫 2026-11-14） */
 @media (max-width: 768px) { .yp-ent { display: none; } }
 
 .yp-ent-m { display: none; }
