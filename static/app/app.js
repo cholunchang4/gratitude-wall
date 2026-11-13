@@ -1603,7 +1603,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                     selectTheme: (t) => { playSound('click'); themeManuallySelected = true; currentTheme = t; onThemeChosen(); },
                     currentTheme: () => currentTheme,
                     resetTheme: () => { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); syncPickerState(); updateStyleButton(); },
-                    onLayout: () => { if (messagesLoaded && window.innerWidth > 768) renderWall(); } });
+                    onLayout: () => { if (document.body.classList.contains('mode-list')) positionListView(); if (messagesLoaded && window.innerWidth > 768) renderWall(); } });
                 Object.assign(SKY_EXT, SKY.ext);
                 if (USE_EMULATOR) window.__sky = SKY;
             } catch (e) { SKY = null; console.error('[sky] 點亮星空模組沒有載入，主牆照常運作', e); }
@@ -3107,7 +3107,11 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             }
             const brand = document.querySelector('.brand').getBoundingClientRect();
             const comp = document.getElementById('composerWrap').getBoundingClientRect();
-            listView.style.top = Math.round(brand.bottom + 14) + 'px';
+            // 點亮星空進度條（桌機固定在膠囊下方）在的時候，清單從進度條下緣開始，不被蓋住（卓倫 2026-11-13）
+            let top = brand.bottom;
+            const sk = document.getElementById('skBar');
+            if (sk && sk.classList.contains('is-top')) { const r = sk.getBoundingClientRect(); if (r.height) top = Math.max(top, r.bottom); }
+            listView.style.top = Math.round(top + 14) + 'px';
             listView.style.bottom = Math.round(window.innerHeight - comp.top + 12) + 'px';
         }
         window.addEventListener('resize', () => { if (listState.mode === 'list') positionListView(); });
