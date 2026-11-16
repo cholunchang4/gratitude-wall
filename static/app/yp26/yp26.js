@@ -12,7 +12,7 @@ import { createYp26Api } from './yp26-api.js';
 const CFG = K.YP26;
 const PAGE = 30;
 const DAY = 86_400_000, TPE = 8 * 3_600_000;
-const LS = { story: 'yp26_story_seen', coach: 'yp26_coach_done', intro: 'yp26_intro_seen', entry: 'yp26_entry_seen' };
+const LS = { story: 'yp26_story_seen', coach: 'yp26_coach_done', intro: 'yp26_intro_seen', entry: 'yp26_entry_seen', invite: 'yp26_invite_day' };
 const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
 const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) { /* 無痕模式 */ } };
 
@@ -22,6 +22,10 @@ const END = tpe(CFG.end), PARTY = tpe(CFG.party || CFG.show_until - DAY);
 const DUE = `${END.mo}/${END.d}（${WD[END.wd]}）${String(END.h).padStart(2, '0')}:${String(END.mi).padStart(2, '0')}`;   // 11/30（一）23:59
 const PARTY_MD = `${PARTY.mo}/${PARTY.d}`;                                                                          // 12/11
 const SOON = CFG.end + 1 - 2 * DAY;          // 最後兩天（11/29～11/30）入口改成封箱倒數
+const dayNo = (ms) => Math.floor((ms + TPE) / DAY);                                                                 // 台灣日期的流水號
+const dayKey = (ms) => { const t = tpe(ms); return `${t.y}-${String(t.mo).padStart(2, '0')}-${String(t.d).padStart(2, '0')}`; };   // 2026-11-16
+const DAYS_FROM = 7;                         // 6.5.13：封箱前 7 天（11/24～11/28）入口多一行「還有 N 天封箱」
+const NAME_MAX = 12;
 
 export const TEXT = Object.freeze({           // GDD 5.4＋設計規格（文字美學官潤飾後在這裡改）
   entry: '手心的光', title: '手心的光', sub: '把六道光，帶到年終派對上', kicker: `Year-end Party · ${PARTY_MD}`,
@@ -51,6 +55,22 @@ export const TEXT = Object.freeze({           // GDD 5.4＋設計規格（文字
   how: [['點名字就挑好', '寫給三個人的卡，會分成三張，各自可以挑。'], ['一共六張', '給六個人，或都給同一個人，都可以。11/30 前隨時換。'],
         ['還想帶一張', '想謝謝的人還沒寫過？現在寫，回來就挑得到。'], ['匿名的卡', '當初匿名寫的，印出來也一樣匿名。']],
   intro: '這一季牆上的光，一直待在螢幕裡。11/30 以前，從你寫過的卡裡挑六張，我們會印成實體卡，在年終派對那天交到收件人手上。',
+  // 6.5.13 推廣加強（design/手心的光/推廣加強/設計規格.md 第 4 節；浮卡頁尾全公司總數依卓倫 11/16 拿掉）
+  entryLoading: '挑六道光，帶到年終派對上',
+  entryLeft: (m) => `還有 ${m} 道光可以帶`, entryFull: '六道光都亮了', entryNoCard: '寫一張，就能帶去派對',
+  entryDays: (n) => `還有 ${n} 天封箱`, entryAction: '打開挑卡',
+  invKicker: `手心的光 · ${PARTY_MD} 年終派對`, invLater: '晚點再說', invClose: '關閉，今天不再顯示',
+  invB: { t: '第一道光，從一句謝謝開始', d: `這一年，有沒有誰幫過你一把？寫一張卡給他，回來就能挑起來。${PARTY_MD} 年終派對那天，我們幫你把這份謝謝交到他手上。`,
+    steps: ['寫一張卡', '回來挑起來', '派對交到他手上'], go: '去寫一張' },
+  invShort: { t: '寫過的卡，都帶上了', d: (m) => `還有 ${m} 道光的位置。想謝謝的人還沒寫過？現在寫一張，回來就挑得到。`, go: '去寫一張' },
+  inv0: { t: '你寫過的謝謝，可以帶去派對了', dN: (names) => `寫給 ${names} 的那些話，還在螢幕裡。從寫過的卡挑六張，${PARTY_MD} 年終派對那天，我們幫你交到他們手上。`,
+    d: `這幾個月你寫下的話，還在螢幕裡。從寫過的卡挑六張，${PARTY_MD} 年終派對那天，我們幫你交到對方手上。`, go: '去挑六道光' },
+  inv5: { t: '只差最後一道光', dN: (name) => `寫給 ${name} 的謝謝，要不要當作第六道？挑好了，六道光就都亮了。`, d: '這一年，還有誰值得當面收到你的謝謝？挑好了，六道光就都亮了。', go: '去挑最後一道' },
+  invN: { t: (n) => `你的光，已經亮了 ${n} 道`, dN: (names) => `寫給 ${names} 的謝謝，要不要也一起帶去？${PARTY_MD} 那天，它們會被交到對方手心。`,
+    d: `這一年，還有誰值得當面收到你的謝謝？${PARTY_MD} 那天，它們會被交到對方手心。`, go: (m) => `去挑剩下 ${m} 道` },
+  statWrote: ['你寫過', '張卡'], statLeft: ['還有', '道光可以帶'], statCan: ['還可以帶', '道光'],
+  take: '帶到派對', takePart: (k, t) => `已帶 ${k}／${t}`, taken: '已帶到派對',
+  takeAria: '帶到派對：打開手心的光，標出這張卡', takePartAria: (k, t) => `帶到派對：這張寫給 ${t} 位，已帶 ${k} 位，打開手心的光`, takenAria: '已帶到派對，打開手心的光看這張',
 });
 
 /** 錯誤代碼 → 給同事看的話 */
@@ -146,41 +166,274 @@ export function createYp26(o) {
     shown: PAGE, q: '', filter: 'all', highlight: null, fromPage: false, lastFocus: null, listening: false, modal: null,
   };
   const api = createYp26Api({ db: o.db, user: o.user, meId: o.meId, emulator: o.emulator,
-    onPicks: (v, err) => { st.picks = v; st.picksErr = err || null; render(); },
-    onCount: (n) => { st.count = n; renderEntry(); } });
+    onPicks: (v, err) => { st.picks = v; st.picksErr = err || null; render(); refreshMine(); },
+    onCount: (n) => { st.count = n; } });                       // 6.5.13：全公司總數不再顯示在入口（卓倫 11/16：浮卡也不放數字）
 
   // ---------------------------------------------------------------- 樣式、漸層、入口
   if (!document.getElementById('yp26Css')) document.head.append(Object.assign(document.createElement('link'), { rel: 'stylesheet', id: 'yp26Css', href: o.cssHref || new URL('./yp26.css', import.meta.url).href }));
+  // 6.5.13 推廣加強（版頭入口、每日邀請浮卡、放大卡「帶到派對」）：接在 yp26.css 後面
+  if (!document.getElementById('yp26BoostCss')) document.getElementById('yp26Css').after(Object.assign(document.createElement('link'), { rel: 'stylesheet', id: 'yp26BoostCss', href: o.boostCssHref || new URL('./yp26-boost.css', import.meta.url).href }));
   const defs = document.querySelector('#sharedDefs defs');
   if (defs && !document.getElementById('ypRayG')) defs.insertAdjacentHTML('beforeend', DEFS);
   else if (!defs && !document.getElementById('ypRayG')) document.body.insertAdjacentHTML('afterbegin', `<svg width="0" height="0" style="position:absolute;width:0;height:0;overflow:hidden" aria-hidden="true" focusable="false"><defs>${DEFS}</defs></svg>`);
 
   const tpl = (html) => { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content.firstElementChild; };
-  const dotNew = lsGet(LS.entry) ? '' : '<i class="dot-new" aria-hidden="true"></i>';
-  const entry = tpl(`<button type="button" class="yp-ent" id="yp26Entry" hidden aria-haspopup="dialog" aria-label="手心的光：挑卡印成實體卡">${dotNew}<span class="yp-ico">${ICON.yp}</span><b>手心的光</b><span class="yp-sep" aria-hidden="true"></span><span class="yp-meta"></span></button>`);
-  const entryM = tpl(`<button type="button" class="yp-ent-m" id="yp26EntryM" hidden aria-haspopup="dialog" aria-label="手心的光：挑卡印成實體卡">${dotNew}<span class="yp-ico">${ICON.yp}</span><b>手心的光</b><span class="yp-meta"></span>${ICON.go}</button>`);
+  const dotNew = () => (lsGet(LS.entry) ? '' : '<i class="dot-new" aria-hidden="true"></i>');
+  const entry = tpl('<button type="button" class="yp-ent" id="yp26Entry" hidden aria-haspopup="dialog" aria-label="手心的光：挑卡印成實體卡"></button>');
+  const entryM = tpl('<button type="button" class="yp-ent-m" id="yp26EntryM" hidden aria-haspopup="dialog" aria-label="手心的光：挑卡印成實體卡"></button>');
   const topbar = document.querySelector('header.topbar'), tools = topbar && topbar.querySelector('.tools');
   if (tools) tools.after(entry); else if (topbar) topbar.append(entry);
   const sbar = document.querySelector('.switch-bar');
   if (sbar) sbar.append(entryM);
   for (const b of [entry, entryM]) b.addEventListener('click', () => { lsSet(LS.entry, '1'); document.querySelectorAll('.yp-ent .dot-new, .yp-ent-m .dot-new').forEach(d => d.remove()); open(); });
+  const isMobile = () => window.innerWidth <= 768;
+  const visibleEntry = () => (isMobile() ? entryM : entry);
+
+  /** 入口和浮卡共用的「我的進度」：n＝已挑、left＝還能帶幾道、cards＝寫過的卡（myCards）、free＝還沒挑、可以挑的收件人膠囊 */
+  function myStatus() {
+    if (st.picks == null) return null;
+    const cards = myCards(), set = pickedSet(), n = Math.min(set.size, CFG.cap);
+    const free = [];
+    for (const c of cards) for (const x of c.chips) if (x.state === 'ok' && x.key && !set.has(x.key)) free.push({ x, c });
+    return { cards, n, left: CFG.cap - n, free, set };
+  }
+  /** 封箱倒數（台灣日期）：最後兩天（now ≥ SOON）＝ 'soon'；封箱前 7 天＝天數；其他 0 */
+  function dueInfo(now) {
+    if (now >= SOON) return { soon: true, days: 0 };
+    const days = dayNo(CFG.end) - dayNo(now) + 1;
+    return { soon: false, days: days >= 1 && days <= DAYS_FROM ? days : 0 };
+  }
 
   function renderEntry() {
     const show = st.phase === 'open' || st.phase === 'closed';
     entry.hidden = entryM.hidden = !show;
     if (sbar) sbar.classList.toggle('has-yp', show);
     if (!show) return;
-    const now = o.nowMs(), n = st.count;
-    let d = '', m = '', cls = '';
-    if (st.phase === 'closed') { d = `信封封好了<span class="yp-meta-long">，派對見</span>`; m = esc(TEXT.sealedEntryM); cls = 'is-sealed'; }
-    else if (now >= SOON) { d = `<span>${esc(TEXT.soon)}</span>`; m = esc(TEXT.soon); cls = 'is-soon'; }
-    else if (n > 0) { d = `已經有 <em>${n}</em> 道光，<span class="yp-meta-long">等著被帶到派對上</span>`; m = `已經有 <em>${n}</em> 道光，等著被帶到派對上`; }
-    else { d = '挑六道光，<span class="yp-meta-long">帶到年終派對上</span>'; m = '挑六道光，帶到年終派對上'; }
-    for (const [b, html] of [[entry, d], [entryM, m]]) {
-      b.classList.toggle('is-soon', cls === 'is-soon'); b.classList.toggle('is-sealed', cls === 'is-sealed');
-      const meta = b.querySelector('.yp-meta'); if (meta.innerHTML !== html) meta.innerHTML = html;
+    if (st.phase === 'closed') {          // 封箱後：照 6.5.12 原樣（信封封好了，派對見）
+      const d = `信封封好了<span class="yp-meta-long">，派對見</span>`, m = esc(TEXT.sealedEntryM);
+      for (const [b, html] of [[entry, `${dotNew()}<span class="yp-ico">${ICON.yp}</span><b>手心的光</b><span class="yp-sep" aria-hidden="true"></span><span class="yp-meta">${d}</span>`],
+        [entryM, `${dotNew()}<span class="yp-ico">${ICON.yp}</span><b>手心的光</b><span class="yp-meta">${m}</span>${ICON.go}`]]) {
+        b.className = b === entry ? 'yp-ent is-sealed' : 'yp-ent-m is-sealed';
+        b.setAttribute('aria-label', '手心的光：挑卡印成實體卡');
+        if (b.dataset.sig !== html) { b.dataset.sig = html; b.innerHTML = html; }
+      }
+      return;
+    }
+    const S = myStatus(), due = dueInfo(o.nowMs());
+    let meta, plain, n = 0, cls = ['is-boost'];
+    if (!S) { plain = TEXT.entryLoading; meta = esc(plain); cls.push('is-glow'); }
+    else if (!S.cards.length) { plain = TEXT.entryNoCard; meta = esc(plain); cls.push('is-glow'); }
+    else if (S.left <= 0) { plain = TEXT.entryFull; meta = esc(plain); n = CFG.cap; cls.push('is-full'); }
+    else { plain = TEXT.entryLeft(S.left); meta = `還有 <em>${S.left}</em> 道光可以帶`; n = S.n; cls.push('is-glow'); }
+    let k = esc(TEXT.entry), aria = `${TEXT.entry}：${plain}`;
+    if (due.soon) { k += `<span class="yp-ent-due">${esc(TEXT.soon)}</span>`; aria += `，${TEXT.soon}`; cls.push('is-soon'); }
+    else if (due.days && !(S && S.cards.length && S.left <= 0)) { k += `<span class="yp-ent-due">${esc(TEXT.entryDays(due.days))}</span>`; aria += `，${TEXT.entryDays(due.days)}`; }
+    aria += `。${TEXT.entryAction}`;
+    const inner = `<span class="yp-ent-star">${starSvg(n)}</span><span class="yp-ent-txt"><span class="yp-ent-k">${k}</span><span class="yp-meta">${meta}</span></span>${ICON.go}`;
+    for (const b of [entry, entryM]) {
+      b.className = (b === entry ? 'yp-ent ' : 'yp-ent-m ') + cls.join(' ');
+      b.setAttribute('aria-label', aria);
+      if (b.dataset.sig !== inner) { b.dataset.sig = inner; b.innerHTML = inner; }   // 沒變就不換（光芒動畫不重播）
     }
   }
+
+  // ---------------------------------------------------------------- 6.5.13 每日邀請浮卡（設計規格第 1 節）
+  // 每台裝置每天最多一次（localStorage yp26_invite_day＝台灣日期，用伺服器時間算）；非強制、沒有遮罩、不鎖 Tab。
+  const inv = tpl(`<section class="yp-inv" id="yp26Invite" hidden role="dialog" aria-modal="false" aria-labelledby="ypInvT" aria-describedby="ypInvD" tabindex="-1"></section>`);
+  const INV_BUSY = '#skIntro, #skAct, .sk-overlay, .ln-scene, .pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim, #onboardingOverlay.active, .message-card.focused, '
+    + '#yp26Page:not([hidden]), #yp26Preview, #yp26Intro, #themePicker:not([hidden]), .sh-overlay, #psLayer:not([hidden]), #imgViewer:not([hidden])';
+  const invT = { prev: null, gone: false, retry: null, introShown: false, introSettled: false, sig: '' };
+  const invOpen = () => !inv.hidden && !inv.classList.contains('is-out');
+  const composerFocused = () => !!(document.activeElement && document.activeElement.closest && document.activeElement.closest('#composerWrap'));
+  /** 畫面被別的東西佔住（彈窗、放大卡、活動頁…）；手機上正在打字（鍵盤彈出）也算 */
+  const screenBusy = () => !!(st.modal || st.open || document.querySelector(INV_BUSY) || (isMobile() && composerFocused()));
+  function nameList(S, max) {
+    const out = [], seen = new Set();
+    for (const { x, c } of S.free) {                          // free 已是新到舊
+      const m = c.m;
+      if (m.mode === 'anonymous' || m.mode === 'mask' || m.anonymous === true) continue;   // 匿名、假面卡的收件人不拿來用（免得螢幕上露出「寫給 X」）
+      if (!x.rid || seen.has(x.rid)) continue;
+      seen.add(x.rid);
+      const cp = [...String(x.name || '').trim()]; if (!cp.length) continue;
+      out.push(`<b>${esc(cp.length > NAME_MAX ? cp.slice(0, NAME_MAX).join('') + '…' : cp.join(''))}</b>`);
+      if (out.length >= max) break;
+    }
+    return out.join('、');
+  }
+  /** 版本與文字（設計規格 1.3，由上往下符合就停） */
+  function inviteContent(S) {
+    const stats = (left, can) => [[TEXT.statWrote, S.cards.length, false], [can ? TEXT.statCan : TEXT.statLeft, left, true]];
+    if (!S.cards.length) return { v: 'b', n: 0, t: TEXT.invB.t, d: esc(TEXT.invB.d), steps: TEXT.invB.steps, go: TEXT.invB.go, act: 'write' };
+    if (!S.free.length) return { v: 'ashort', n: S.n, t: TEXT.invShort.t, d: esc(TEXT.invShort.d(S.left)), stats: stats(S.left, true), go: TEXT.invShort.go, act: 'write' };
+    if (S.n === 0) { const nm = nameList(S, 2); return { v: 'a0', n: 0, t: TEXT.inv0.t, d: nm ? TEXT.inv0.dN(nm) : esc(TEXT.inv0.d), stats: stats(S.left), go: TEXT.inv0.go, act: 'pick' }; }
+    if (S.left === 1) { const nm = nameList(S, 1); return { v: 'a5', n: S.n, t: TEXT.inv5.t, d: nm ? TEXT.inv5.dN(nm) : esc(TEXT.inv5.d), stats: stats(1), go: TEXT.inv5.go, act: 'pick' }; }
+    const nm = nameList(S, 2);
+    return { v: 'a', n: S.n, t: TEXT.invN.t(S.n), d: nm ? TEXT.invN.dN(nm) : esc(TEXT.invN.d), stats: stats(S.left), go: TEXT.invN.go(S.left), act: 'pick' };
+  }
+  function inviteHtml(c) {
+    const count = c.v === 'b' ? '' : `<span class="yp-inv-count" aria-hidden="true">${c.n}／${CFG.cap}</span>`;
+    const stats = c.stats ? `<ul class="yp-inv-stats">${c.stats.map(([[a, u], num, gold]) => `<li${gold ? ' class="is-gold"' : ''}>${esc(a)} <b>${num}</b> ${esc(u)}</li>`).join('')}</ul>` : '';
+    const steps = c.steps ? `<ol class="yp-inv-steps" aria-label="怎麼做">${c.steps.map((x, i) => `${i ? '<li class="sep" aria-hidden="true"></li>' : ''}<li><i>${i + 1}</i>${esc(x)}</li>`).join('')}</ol>` : '';
+    return `<span class="yp-inv-notch" aria-hidden="true"></span>
+      <button type="button" class="yp-inv-x" aria-label="${esc(TEXT.invClose)}">${ICON.x}</button>
+      <p class="yp-inv-kicker">${esc(TEXT.invKicker)}</p>
+      <div class="yp-inv-body"><div class="yp-inv-star">${starSvg(c.n)}${count}</div>
+        <div><h2 id="ypInvT">${esc(c.t)}</h2><p class="yp-inv-d" id="ypInvD">${c.d}</p></div></div>
+      ${stats}${steps}
+      <div class="yp-inv-act"><button type="button" class="yp-inv-later">${esc(TEXT.invLater)}</button><button type="button" class="yp-inv-go" data-act="${c.act}">${esc(c.go)}${ICON.go}</button></div>`;
+  }
+  inv.addEventListener('click', (e) => {
+    if (e.target.closest('.yp-inv-x')) return hideInvite('x');
+    if (e.target.closest('.yp-inv-later')) return hideInvite('later');
+    const go = e.target.closest('.yp-inv-go'); if (!go) return;
+    hideInvite('go');
+    if (go.dataset.act === 'write') goWrite(''); else open();
+  });
+  /** 浮卡放在看得到的入口後面（Tab 順序＝入口 → 浮卡） */
+  function mountInvite() { const host = visibleEntry(); if (host.nextElementSibling !== inv) host.after(inv); }
+  /** 位置（照設計稿 placeInvite）：桌機錨在入口下方、尖角對準星星；會蓋到點亮星空進度條就放進度條下方、拿掉尖角。手機：撰寫區上方 */
+  function placeInvite() {
+    if (inv.hidden) return;
+    mountInvite();
+    if (isMobile()) {
+      const cw = document.getElementById('composerWrap'), r = cw && cw.getBoundingClientRect();
+      inv.style.left = inv.style.right = inv.style.top = '';
+      if (r && r.height) inv.style.setProperty('--yp-inv-bottom', Math.max(12, Math.round(window.innerHeight - r.top + 12)) + 'px'); else inv.style.removeProperty('--yp-inv-bottom');
+      return;
+    }
+    inv.style.removeProperty('--yp-inv-bottom');
+    const ent = entry.getBoundingClientRect(), starEl = entry.querySelector('.yp-ent-star'), star = starEl ? starEl.getBoundingClientRect() : ent;
+    const w = inv.offsetWidth || 372, right = Math.max(16, window.innerWidth - ent.right), left = window.innerWidth - right - w;
+    let top = ent.bottom + 14, notch = true;
+    const sky = [...document.querySelectorAll('.sk-bar.is-top')].find(b => b.getClientRects().length), sr = sky && sky.getBoundingClientRect();
+    if (sr && left < sr.right + 12 && top < sr.bottom + 12) { top = sr.bottom + 14; notch = false; }
+    inv.style.top = Math.round(top) + 'px'; inv.style.right = Math.round(right) + 'px'; inv.style.left = 'auto';
+    inv.classList.toggle('no-notch', !notch);
+    const nt = inv.querySelector('.yp-inv-notch'); if (nt) nt.style.left = Math.round(star.left + star.width / 2 - left) + 'px';
+  }
+  /** 現在可以出現嗎（1.1 的 1～5；6「畫面被佔住」另外判斷，被佔住時稍後再試） */
+  function inviteEligible() {
+    if (invT.gone || invT.introShown || st.phase !== 'open' || st.picks == null || st.picksErr) return false;
+    if (pickedSet().size >= CFG.cap) return false;
+    return lsGet(LS.invite) !== dayKey(o.nowMs());
+  }
+  function showInvite() {
+    const S = myStatus(); if (!S) return;
+    const c = inviteContent(S), html = inviteHtml(c);
+    lsSet(LS.invite, dayKey(o.nowMs())); invT.gone = true;       // 出現的當下就記今天（重新整理也不會再跳）
+    inv.dataset.v = c.v; inv.innerHTML = html; invT.sig = html;
+    invT.prev = document.activeElement;
+    inv.classList.remove('is-out', 'is-in'); inv.hidden = false;
+    placeInvite();
+    void inv.offsetWidth; inv.classList.add('is-in');
+    setTimeout(placeInvite, 600);                                   // 字型、牆面排完後再量一次
+    if (!invT.prev || invT.prev === document.body || invT.prev === document.documentElement) { try { inv.focus({ preventScroll: true }); } catch (e) { inv.focus(); } }   // 使用者還沒開始操作才移焦點
+  }
+  function hideInvite(why) {
+    clearTimeout(invT.retry); invT.gone = true;
+    if (inv.hidden) return;
+    const hadFocus = inv.contains(document.activeElement);
+    const done = () => { inv.hidden = true; inv.classList.remove('is-out', 'is-in'); };
+    if (reduced()) done(); else { inv.classList.remove('is-in'); inv.classList.add('is-out'); setTimeout(() => { if (inv.classList.contains('is-out')) done(); }, 220); }
+    if (hadFocus && why !== 'go' && why !== 'entry') {
+      const p = invT.prev, back = p && p.isConnected && p !== document.body && p !== document.documentElement && !inv.contains(p) ? p : visibleEntry();
+      try { back.focus({ preventScroll: true }); } catch (e) { /* 已移除 */ }
+    }
+  }
+  /** 牆面就緒＋資料到齊後 2.5 秒；被佔住每 2 秒再試，60 秒內都沒空就這次放棄（不記日期） */
+  function scheduleInvite() {
+    let waited = 0;
+    const ready = () => document.body.classList.contains('wall-ready') && st.picks != null;
+    const poll = () => {                                         // 等主牆第一次載入完（mine、messages 第一次到不會發事件）
+      if (!ready()) { if ((waited += 500) < 120_000) setTimeout(poll, 500); return; }
+      update(); refreshMine(); setTimeout(update, 3000);         // 入口改成個人進度（伺服器時間這時才確定：階段、倒數也重算）
+      if (!invT.gone) invT.retry = setTimeout(() => attempt(Date.now()), 2500);
+    };
+    const attempt = (t0) => {
+      update();                                                   // 階段用現在的伺服器時間重算（update 每 30 秒才跑一次）
+      if (!inviteEligible()) return;
+      const introPending = !lsGet(LS.intro) && !invT.introSettled;   // 開站說明還可能跳：等它先決定
+      if (introPending || screenBusy()) { if (Date.now() - t0 < 60_000) invT.retry = setTimeout(() => attempt(t0), 2000); return; }
+      showInvite();
+    };
+    poll();
+  }
+  /** 資料變了：挑滿或不在挑卡期就收起；內容不同就重畫（焦點留在同一顆按鈕） */
+  function refreshInvite() {
+    if (!invOpen()) return;
+    const S = myStatus();
+    if (st.phase !== 'open' || !S || S.left <= 0) return hideInvite('data');
+    const c = inviteContent(S), html = inviteHtml(c);
+    if (html === invT.sig) return;
+    const fc = inv.contains(document.activeElement) && document.activeElement !== inv ? document.activeElement.className : '';
+    inv.dataset.v = c.v; inv.innerHTML = html; invT.sig = html; placeInvite();
+    if (fc) { const b = inv.querySelector('.' + String(fc).split(' ')[0]); if (b) b.focus({ preventScroll: true }); }
+  }
+  // 撰寫區高度變了（展開、等級列換行、照片預覽）：浮卡跟著重新定位（手機錨在撰寫區上方）
+  if (typeof ResizeObserver === 'function') { const cw = document.getElementById('composerWrap'); if (cw) new ResizeObserver(() => placeInvite()).observe(cw); }
+  // 手機：撰寫區取得焦點（鍵盤彈出）就收起（算今天看過）
+  document.addEventListener('focusin', (e) => { if (invOpen() && isMobile() && e.target && e.target.closest && e.target.closest('#composerWrap')) hideInvite('composer'); });
+
+  // ---------------------------------------------------------------- 6.5.13 放大自己的卡：「帶到派對」（設計規格第 3 節；只做牆面放大）
+  const TAKE_ICO = '<svg viewBox="0 0 24 24" aria-hidden="true"><g class="yp-take-ico"><path d="M3.5 12.5c.7 4.4 4 7.5 8.5 7.5s7.8-3.1 8.5-7.5"/><path d="M7 12.5c.6 2.3 2.6 3.9 5 3.9s4.4-1.6 5-3.9"/><path class="yp-star" d="M12 2.6l1.15 3.15L16.3 6.9l-3.15 1.15L12 11.2l-1.15-3.15L7.7 6.9l3.15-1.15z"/></g></svg>';
+  const TAKE_OK = '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="yp-take-ok" d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  const deco = { card: null, mid: null, mo: null };
+  /** 這張卡的按鈕狀態；null＝不出現（不是自己的、不在挑卡期、寫給大家或只寫給自己） */
+  function takeState(mid) {
+    if (st.phase !== 'open' || !mid || !(o.store.mine || {})[mid]) return null;
+    myCards();
+    const c = cardsByMid.get(mid); if (!c) return null;
+    const set = pickedSet();
+    const can = c.chips.filter(x => x.key && (x.state === 'ok' || set.has(x.key)));
+    const k = can.filter(x => set.has(x.key)).length, t = can.length;
+    if (t && k >= t) return { s: 'taken', k, t };
+    if (k > 0 && t > 1) return { s: 'partial', k, t };
+    return { s: 'take', k, t };
+  }
+  function takeHtml(T) {
+    if (T.s === 'taken') return { cls: 'yp-take is-taken', aria: TEXT.takenAria, html: `${TAKE_OK}${esc(TEXT.taken)}` };
+    if (T.s === 'partial') return { cls: 'yp-take', aria: TEXT.takePartAria(T.k, T.t), html: `${TAKE_ICO}${esc(TEXT.take)} <small>${esc(TEXT.takePart(T.k, T.t))}</small>` };
+    return { cls: 'yp-take', aria: TEXT.takeAria, html: `${TAKE_ICO}${esc(TEXT.take)}` };
+  }
+  function syncTake() {
+    const card = deco.card;
+    if (!card || !card.isConnected || !card.classList.contains('focused') || card.closest('#lmFocus, .lm-focus')) return undecorate(card);
+    const T = takeState(deco.mid), bar = card.querySelector('.card-owner-actions');
+    let b = card.querySelector('.yp-take');
+    if (!T || !bar) { if (b) b.remove(); return; }
+    const v = takeHtml(T);
+    if (!b) {
+      b = document.createElement('button'); b.type = 'button';
+      for (const ev of ['mousedown', 'touchstart']) b.addEventListener(ev, (e) => e.stopPropagation(), { passive: true });   // 不觸發卡片拖曳
+      b.addEventListener('click', (e) => { e.stopPropagation(); const mid = deco.mid; if (o.closeFocus) o.closeFocus(); else undecorate(deco.card); open({ highlight: mid }); });
+      bar.prepend(b);
+    } else if (bar.firstElementChild !== b) bar.prepend(b);
+    if (b.className !== v.cls) b.className = v.cls;
+    if (b.getAttribute('aria-label') !== v.aria) b.setAttribute('aria-label', v.aria);
+    if (b.dataset.sig !== v.html) { b.dataset.sig = v.html; b.innerHTML = v.html; }
+  }
+  /** app.js：牆面卡放大的當下呼叫（card＝放大的 .message-card、mid＝留言 ID） */
+  function decorateFocused(card, mid) {
+    try {
+      if (deco.card && deco.card !== card) undecorate(deco.card);
+      if (!card) return;
+      deco.card = card; deco.mid = mid || card.getAttribute('data-id');
+      if (!deco.mo && typeof MutationObserver === 'function') {   // 卡片內容重畫（例如有人按讚）會換掉按鈕列：還放大著就補回去
+        deco.mo = new MutationObserver(() => { if (deco.card && !deco.card.querySelector('.yp-take')) syncTake(); });
+        deco.mo.observe(card, { childList: true });
+      }
+      syncTake();
+    } catch (e) { console.error('[yp26] 帶到派對', e); }
+  }
+  /** app.js：放大的卡關閉時呼叫 */
+  function undecorate(card) {
+    if (deco.mo) { deco.mo.disconnect(); deco.mo = null; }
+    const c = card || deco.card;
+    if (c) { const b = c.querySelector('.yp-take'); if (b) b.remove(); }
+    deco.card = null; deco.mid = null;
+  }
+  /** 我的資料（挑的卡、寫的卡）變了：入口、浮卡、放大卡按鈕一起更新 */
+  function refreshMine() { renderEntry(); refreshInvite(); if (deco.card) syncTake(); }
 
   const hint = tpl(`<div class="yp26-hint" id="yp26Hint" hidden role="status"><button type="button" class="yp26-hint-go">${ICON.yp}<span>${esc(TEXT.afterSend)}</span></button><button type="button" class="yp26-hint-x" aria-label="關閉">${ICON.x}</button></div>`);
   document.body.append(hint);
@@ -266,6 +519,7 @@ export function createYp26(o) {
   // Esc：先關預覽／彈窗，再關活動頁（capture，不讓主牆的 Esc 同時作用）
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Escape' && (st.modal || st.open)) { e.stopPropagation(); e.preventDefault(); if (st.modal) closeModal(); else close(); }
+    else if (e.key === 'Escape' && invOpen() && !document.querySelector(INV_BUSY)) { e.stopPropagation(); e.preventDefault(); hideInvite('esc'); }   // 6.5.13 浮卡：上層沒有別的彈窗、放大卡時才由它接
     else if (e.key === 'Tab' && st.modal) trapFocus(e, st.modal.el);
     else if (e.key === 'Tab' && st.open) trapFocus(e, layer);
   }, true);
@@ -579,8 +833,9 @@ export function createYp26(o) {
     if (st.phase !== 'open' || lsGet(LS.intro) || st.open) return;
     const busy = document.querySelector('#skIntro, #skAct, .pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim, #onboardingOverlay.active');
     if (busy) { if (busy.matches('#skIntro, #skAct')) skySeen = true; return; }
-    if (skySeen) return;
+    if (skySeen || invOpen()) return;
     lsSet(LS.intro, '1');
+    invT.introShown = true; lsSet(LS.invite, dayKey(o.nowMs())); hideInvite('intro');   // 6.5.13：說明跳出的那天，浮卡不再跳
     const el = openModal(`<div class="yp-modal" id="yp26Intro" role="dialog" aria-modal="true" aria-labelledby="ypIntroT"><div class="yp-intro">
       <div class="yp-hero"><div class="yp-hero-in" style="grid-template-columns:1fr 96px"><div><p class="yp-kicker">${esc(TEXT.kicker)}</p><h2 class="yp-title" id="ypIntroT">${esc(TEXT.title)}</h2><p class="yp-sub">${esc(TEXT.sub)}</p></div><div class="yp-art" style="width:96px;height:100px">${ART}</div></div></div>
       <div class="yp-intro-body"><p>${esc(TEXT.intro)}</p><div class="yp-intro-act"><button type="button" class="yp-btn is-ghost" data-act="later">先看看牆</button><button type="button" class="yp-btn" data-act="go">去挑卡</button></div></div>
@@ -594,6 +849,7 @@ export function createYp26(o) {
   function open(opts = {}) {
     update();
     if (st.phase === 'over' || st.phase === 'before') return;
+    hideInvite('entry');                                        // 6.5.13：任何方式開了活動頁，浮卡就收起
     api.listen(); st.listening = true;
     if (opts.highlight) st.highlight = opts.highlight;
     st.open = true; st.shown = PAGE;
@@ -626,7 +882,7 @@ export function createYp26(o) {
     if ((ph === 'open' || ph === 'closed') && !st.listening) { api.listen(); st.listening = true; }
     if (ph === 'over' && st.open) close();
     renderEntry();
-    if (changed) { E.rows.dataset.sig = ''; render(); }
+    if (changed) { E.rows.dataset.sig = ''; render(); refreshInvite(); if (deco.card) syncTake(); }
   }
 
   /** 寫卡成功之後（app.js 呼叫）：活動期間多一句連結；從活動頁出去寫的，直接回到活動頁並讓新卡亮一下 */
@@ -647,14 +903,14 @@ export function createYp26(o) {
   // 資料變動時重畫：只管和「我寫的卡」有關的變動（別人發文、按讚不重畫）
   let rerender = null;
   if (o.onBackend) o.onBackend((type, d) => {
-    if (!st.open) return;
     if (/^message\./.test(type)) { const id = (d && (d.id || (d.message && d.message.id))) || ''; if (!id || !(o.store.mine || {})[id]) return; }
     else if (!/^resync|^me\./.test(type)) return;
-    clearTimeout(rerender); rerender = setTimeout(render, 150);
+    clearTimeout(rerender); rerender = setTimeout(() => { render(); refreshMine(); }, 150);   // 6.5.13：活動頁沒開也要更新入口、浮卡、放大卡按鈕
   });
-  window.addEventListener('resize', () => { if (st.modal) scaleFits(st.modal.el); if (st.open && st.phase !== 'open') scaleFits(E.sealGrid); });
+  window.addEventListener('resize', () => { if (st.modal) scaleFits(st.modal.el); if (st.open && st.phase !== 'open') scaleFits(E.sealGrid); placeInvite(); });
   update();
   const timer = setInterval(update, 30_000);
-  setTimeout(maybeIntro, 2500); setTimeout(maybeIntro, 7000);
-  return { open, close, update, afterSend, openPreview, stop: () => { clearInterval(timer); api.stop(); }, state: st, TEXT };
+  setTimeout(maybeIntro, 2500); setTimeout(() => { maybeIntro(); invT.introSettled = true; }, 7000);
+  scheduleInvite();
+  return { open, close, update, afterSend, openPreview, decorateFocused, undecorate, stop: () => { clearInterval(timer); clearTimeout(invT.retry); api.stop(); }, state: st, TEXT };
 }

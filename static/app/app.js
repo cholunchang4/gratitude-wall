@@ -21,7 +21,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.12";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）
+        const CURRENT_APP_VERSION = "6.5.13";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -723,7 +723,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
-        function closeFocus() { if (currentFocusedCard) { disarmImage(currentFocusedCard); currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); } }
+        function closeFocus() { if (currentFocusedCard) { disarmImage(currentFocusedCard); if (YP26 && YP26.undecorate) YP26.undecorate(currentFocusedCard); /* 6.5.13 */ currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); } }
         focusOverlay.addEventListener('click', closeFocus);
 
         const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon'];
@@ -1285,6 +1285,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             if (currentFocusedCard === card) { closeFocus(); return; }
             if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
             playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); document.body.classList.add('card-open'); currentFocusedCard = card;
+            if (YP26 && YP26.decorateFocused) YP26.decorateFocused(card, msg && msg.id);   // 6.5.13：自己的卡多一顆「帶到派對」（yp26 插入，不進卡片指紋）
             armFocusedImage(card);
         }
 
@@ -1611,7 +1612,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             try {
                 const { createYp26 } = await import('./yp26/yp26.js');
                 YP26 = createYp26({ db: SESSION.db, user: SESSION.user, meId: SESSION.meId, emulator: USE_EMULATOR, store: BACKEND.s,
-                    onBackend: (fn) => BACKEND.on(fn), nowMs: () => nowMs(), writeTo: writeThanksTo,
+                    onBackend: (fn) => BACKEND.on(fn), nowMs: () => nowMs(), writeTo: writeThanksTo, closeFocus: () => closeFocus(),   // 6.5.13 closeFocus：放大卡「帶到派對」
                     // 實體卡預覽沿用牆面的卡片外觀（模板 class、名稱、特效層）；作者一律姓名縮寫色塊（不印頭像照片）
                     look: { cls: (t) => themeClassOf(t), name: (t) => THEME_NAMES[t] || '', avatarColor: (u, n) => avatarColorOf(u, n), initials: (n) => initialsOf(n),
                         decor: (t) => (t === 'theme-admin' ? '<span class="aura" aria-hidden="true"></span>' : '') + (FX_THEMES.has(t) ? '<span class="fx" aria-hidden="true"></span>' : '')

@@ -1,0 +1,206 @@
+/* =====================================================================
+   手心的光・推廣加強（設計稿 v1，美術總監 2026-11-16）— 6.5.13
+   由 design/手心的光/推廣加強/yp26-boost.css 複製；改設計時兩邊一起改。最後面「程式加的」一段是程式設計補的。
+   載入順序：yp26.js 在 yp26.css 後面插入這份（覆寫 .yp-ent／.yp-ent-m，新增 .yp-inv、.yp-take）。
+   沿用 yp26.css 的 token：--yp-night / --yp-gold / --yp-gold-ink / --yp-gold-line …
+   ===================================================================== */
+:root {
+  --yp-rose-ink: #9f1239;            /* 倒數字色（白／金底上 ≥ 7:1） */
+  --yp-inv-w: 372px;
+  --yp-glow: rgba(245,185,66,.55);
+}
+
+/* ---------------------------------------------------------------------
+   1. 版頭入口（桌機 .yp-ent）：迷你六道光＋兩行文字
+   ------------------------------------------------------------------- */
+.yp-ent.is-boost { top: 56px; min-height: 50px; gap: 10px; padding: 0 14px 0 6px; align-items: center; isolation: isolate;
+  background: linear-gradient(100deg, #fffbf2 0%, #fff0c7 100%); border-color: #a8700a; }
+.yp-ent.is-boost .yp-ent-star { flex: none; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 50% 50%, #2d2a5e 0 58%, #171c3f 100%); box-shadow: inset 0 0 0 1px rgba(255,214,120,.35); }
+.yp-ent.is-boost .yp-ent-star .yp-star6 { width: 32px; height: 32px; }
+.yp-ent.is-boost .yp-ent-txt { display: grid; gap: 1px; text-align: left; line-height: 1.25; }
+.yp-ent.is-boost .yp-ent-k { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #7a4d00; white-space: nowrap; }
+.yp-ent.is-boost .yp-ent-k .yp-ent-due { letter-spacing: .3px; color: var(--yp-rose-ink); }
+.yp-ent.is-boost .yp-ent-k .yp-ent-due::before { content: '・'; color: rgba(92,58,0,.45); margin: 0 1px; }
+.yp-ent.is-boost .yp-meta { font-size: 15px; font-weight: 800; color: #4a2c00; white-space: nowrap; }
+.yp-ent.is-boost .yp-meta em { font-style: normal; font-variant-numeric: tabular-nums; color: #8a5400; }
+.yp-ent.is-boost .yp-go { flex: none; width: 16px; height: 16px; stroke: #8a5400; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; margin-left: -2px; transition: transform var(--dur-2) var(--ease-out); }
+.yp-ent.is-boost:hover .yp-go { transform: translateX(2px); }
+.yp-ent.is-boost:focus-visible { outline: 3px solid var(--yp-gold-line); outline-offset: 3px; }
+.yp-ent.is-boost .dot-new { display: none; }                       /* 光暈取代小紅點 */
+
+/* 呼吸光暈：還沒挑滿才有；用 ::after 的 opacity 做（不重算陰影，省電） */
+.yp-ent.is-boost::after { content: ''; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+  box-shadow: 0 0 0 4px rgba(245,185,66,.22), 0 0 22px 6px var(--yp-glow); }
+.yp-ent.is-boost.is-glow::after { animation: ypBreath 3.6s ease-in-out infinite; }
+@keyframes ypBreath { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+.yp-ent.is-boost.is-glow .yp-ray.on { animation: none; }
+/* 挑滿：靜止、溫暖，不再招手 */
+.yp-ent.is-boost.is-full { background: linear-gradient(100deg, #fffdf6 0%, #fff6dc 100%); }
+.yp-ent.is-boost.is-full .yp-meta { color: #5c3a00; }
+/* 最後兩天（照舊的封箱倒數）：第一行換成「11/30（一）23:59 封箱」 */
+.yp-ent.is-boost.is-soon .yp-meta { color: #4a2c00; }
+
+/* 版頭避讓（以現行規則為底，入口高 52、下緣 110）
+   ≥1280：入口在進度條右側，不重疊（實測見規格書第 5 節）
+   961～1279：進度條改 top 128（現行規則，不變）
+   769～960：入口在第二列（top 112），進度條本來就在 flow 裡 */
+/* ≥1440：進度條右緣離入口還很遠（1440 時 1020 vs 1150），入口放大一級，更有存在感 */
+@media (min-width: 1440px) {
+  .yp-ent.is-boost { min-height: 58px; gap: 12px; padding: 0 16px 0 7px; }
+  .yp-ent.is-boost .yp-ent-star { width: 44px; height: 44px; }
+  .yp-ent.is-boost .yp-ent-star .yp-star6 { width: 38px; height: 38px; }
+  .yp-ent.is-boost .yp-ent-k { font-size: 13px; }
+  .yp-ent.is-boost .yp-meta { font-size: 17px; }
+  .yp-ent.is-boost .yp-go { width: 18px; height: 18px; }
+}
+@media (min-width: 769px) and (max-width: 960px) { .yp-ent.is-boost { top: 110px; } }
+
+/* ---------------------------------------------------------------------
+   1b. 手機入口（切換列整列 .yp-ent-m）
+   ------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .yp-ent-m.is-boost { min-height: 56px; margin-bottom: 6px; gap: 12px; padding: 6px 14px 6px 8px; isolation: isolate; border-color: #a8700a; }
+  .yp-ent-m.is-boost .yp-ent-star { flex: none; width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center;
+    background: radial-gradient(circle at 50% 50%, #2d2a5e 0 58%, #171c3f 100%); box-shadow: inset 0 0 0 1px rgba(255,214,120,.35); }
+  .yp-ent-m.is-boost .yp-ent-star .yp-star6 { width: 34px; height: 34px; }
+  .yp-ent-m.is-boost .yp-ent-txt { flex: 1; min-width: 0; display: grid; gap: 1px; line-height: 1.25; }
+  .yp-ent-m.is-boost .yp-ent-k { font-size: 12px; font-weight: 700; letter-spacing: 1px; color: #7a4d00; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .yp-ent-m.is-boost .yp-ent-k .yp-ent-due { letter-spacing: .3px; color: var(--yp-rose-ink); }
+  .yp-ent-m.is-boost .yp-ent-k .yp-ent-due::before { content: '・'; color: rgba(92,58,0,.45); margin: 0 1px; }
+  .yp-ent-m.is-boost .yp-meta { flex: none; font-size: 15px; font-weight: 800; color: #4a2c00; }
+  .yp-ent-m.is-boost .yp-meta em { font-style: normal; color: #8a5400; }
+  .yp-ent-m.is-boost .yp-go { stroke: #8a5400; }
+  .yp-ent-m.is-boost .dot-new { display: none; }
+  .yp-ent-m.is-boost::after { content: ''; position: absolute; inset: -1px; z-index: -1; border-radius: inherit; pointer-events: none; opacity: 0;
+    box-shadow: 0 0 0 3px rgba(245,185,66,.22), 0 0 18px 4px var(--yp-glow); }
+  .yp-ent-m.is-boost.is-glow::after { animation: ypBreath 3.6s ease-in-out infinite; }
+}
+
+/* ---------------------------------------------------------------------
+   2. 每日邀請浮卡 .yp-inv（非強制、無遮罩）
+   ------------------------------------------------------------------- */
+.yp-inv { position: fixed; z-index: 90010; width: var(--yp-inv-w); box-sizing: border-box; padding: 18px 18px 14px; border-radius: 22px;
+  color: #fff7e6; font-family: var(--font); -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(120% 70% at 85% 0%, rgba(255,214,120,.20), transparent 60%),
+    radial-gradient(1.2px 1.2px at 18% 22%, rgba(255,255,255,.9), transparent 60%),
+    radial-gradient(1px 1px at 62% 12%, rgba(255,255,255,.7), transparent 60%),
+    radial-gradient(1.4px 1.4px at 90% 46%, rgba(255,243,207,.8), transparent 60%),
+    radial-gradient(1px 1px at 8% 70%, rgba(255,255,255,.55), transparent 60%),
+    linear-gradient(165deg, var(--yp-night) 0%, var(--yp-night-2) 62%, #4a3468 100%);
+  border: 1px solid rgba(255,214,120,.38);
+  box-shadow: 0 2px 4px rgba(20,8,16,.18), 0 26px 56px -16px rgba(20,8,40,.62), 0 0 0 6px rgba(255,214,120,.08); }
+.yp-inv[hidden] { display: none; }
+.yp-inv * { box-sizing: border-box; }
+.yp-inv:focus { outline: none; }
+/* 指向入口的小尖角（桌機錨在入口下方時才顯示；left 由程式算成入口星星的中心） */
+.yp-inv-notch { position: absolute; top: -8px; width: 16px; height: 16px; transform: translateX(-50%) rotate(45deg); border-radius: 3px 0 0 0;
+  background: var(--yp-night); border-left: 1px solid rgba(255,214,120,.38); border-top: 1px solid rgba(255,214,120,.38); }
+.yp-inv.no-notch .yp-inv-notch { display: none; }
+
+.yp-inv-x { position: absolute; top: 8px; right: 8px; width: 44px; height: 44px; display: grid; place-items: center; border: 0; border-radius: 50%;
+  background: transparent; color: #e9dcc8; cursor: pointer; }
+.yp-inv-x:hover { background: rgba(255,255,255,.1); color: #fff; }
+.yp-inv-x svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; }
+.yp-inv-kicker { margin: 0 44px 10px 0; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; color: #ffd98a; }
+.yp-inv-body { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 14px; align-items: start; }
+.yp-inv-star { position: relative; width: 76px; height: 76px; }
+.yp-inv-star .yp-star6 { width: 76px; height: 76px; }
+.yp-inv-star .yp-star6 .yp-ray { fill: rgba(255,255,255,.10); stroke: rgba(255,228,170,.75); }
+.yp-inv-star .yp-star6 .yp-ray.on { fill: var(--g); stroke: #ffd36b; }
+.yp-inv-star .yp-star6 .yp-core { fill: rgba(255,255,255,.12); stroke: rgba(255,228,170,.6); }
+.yp-inv-count { position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); padding: 1px 8px; border-radius: 999px; background: #fff1cc; color: #5c3a00;
+  font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+.yp-inv h2 { margin: 2px 0 6px; font-size: 19px; line-height: 1.35; font-weight: 800; letter-spacing: .5px; color: #fff; text-wrap: balance; }
+.yp-inv p.yp-inv-d { margin: 0; font-size: 14px; line-height: 1.65; color: #efe3d2; text-wrap: pretty; }
+.yp-inv p.yp-inv-d b { color: #ffe39a; font-weight: 700; }
+.yp-inv-stats { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 0; padding: 0; list-style: none; }
+.yp-inv-stats li { display: inline-flex; align-items: baseline; gap: 4px; padding: 5px 12px; border-radius: 999px; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+  font-size: 13px; font-weight: 600; color: #e9dcc8; }
+.yp-inv-stats li b { font-size: 15px; font-weight: 800; color: #fff; font-variant-numeric: tabular-nums; }
+.yp-inv-stats li.is-gold { background: rgba(255,214,120,.14); border-color: rgba(255,214,120,.42); color: #ffe7b0; }
+.yp-inv-stats li.is-gold b { color: #ffd36b; }
+/* 版本 b：三步小流程 */
+.yp-inv-steps { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; align-items: center; gap: 6px; margin: 16px 0 0; padding: 0; list-style: none; }
+.yp-inv-steps li { text-align: center; font-size: 12px; font-weight: 700; line-height: 1.35; color: #e9dcc8; }
+.yp-inv-steps li i { display: grid; place-items: center; width: 28px; height: 28px; margin: 0 auto 4px; border-radius: 50%; font-style: normal; font-size: 13px; font-weight: 800;
+  background: rgba(255,214,120,.16); color: #ffd98a; border: 1px solid rgba(255,214,120,.4); }
+.yp-inv-steps li.sep { width: 14px; height: 1px; background: rgba(255,228,170,.4); align-self: center; margin-bottom: 18px; }
+.yp-inv-act { display: flex; gap: 10px; margin-top: 18px; }
+.yp-inv-act button { min-height: 44px; border-radius: 12px; font: 700 15px var(--font); cursor: pointer; }
+.yp-inv-later { flex: 0 0 auto; padding: 0 16px; border: 1px solid rgba(255,255,255,.28); background: transparent; color: #f3e8d8; }
+.yp-inv-later:hover { background: rgba(255,255,255,.08); }
+.yp-inv-go { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 0 16px; border: 0; color: #3d2600;
+  background: linear-gradient(135deg, #ffe7a8 0%, #f5b942 55%, #e9a21c 100%); box-shadow: 0 8px 20px -6px rgba(245,185,66,.65), inset 0 1px 0 rgba(255,255,255,.6); }
+.yp-inv-go:hover { filter: brightness(1.05); }
+.yp-inv-go svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.yp-inv-foot { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.1); font-size: 12px; line-height: 1.5; color: #cdbfd9; text-align: center; }
+.yp-inv-foot b { color: #ffe39a; font-variant-numeric: tabular-nums; }
+.yp-inv :focus-visible { outline: 3px solid #ffd98a; outline-offset: 2px; }
+
+/* 進場：浮起＋淡入；六道光依序亮（沿用 ypRayOn） */
+.yp-inv.is-in { animation: ypInvIn .48s var(--ease-out) both; }
+.yp-inv.is-out { animation: ypInvOut .22s ease-in both; }
+@keyframes ypInvIn { from { opacity: 0; transform: translateY(-10px) scale(.97); } to { opacity: 1; transform: none; } }
+@keyframes ypInvOut { to { opacity: 0; transform: translateY(-6px) scale(.98); } }
+.yp-inv.is-in .yp-ray.on { animation: ypRayOn .45s var(--ease-out) both; animation-delay: calc(.35s + var(--i) * .09s); }
+
+/* 手機：底部浮卡（在撰寫區上方），從下方滑入 */
+@media (max-width: 768px) {
+  .yp-inv { left: 12px; right: 12px; width: auto; max-width: 440px; margin: 0 auto; bottom: calc(var(--yp-inv-bottom, 112px) + env(safe-area-inset-bottom, 0px)); top: auto !important;
+    padding: 16px 16px 12px; border-radius: 20px; }
+  .yp-inv-notch { display: none; }
+  .yp-inv-body { grid-template-columns: 60px minmax(0, 1fr); gap: 12px; }
+  .yp-inv-star, .yp-inv-star .yp-star6 { width: 60px; height: 60px; }
+  .yp-inv h2 { font-size: 17px; }
+  .yp-inv p.yp-inv-d { font-size: 14px; line-height: 1.6; }
+  .yp-inv-stats { margin-top: 14px; }
+  .yp-inv-act { margin-top: 14px; }
+  .yp-inv-foot { margin-top: 10px; padding-top: 8px; }
+  @keyframes ypInvIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+}
+@media (max-width: 360px) { .yp-inv-stats li { padding: 4px 10px; font-size: 12px; } .yp-inv-later { padding: 0 12px; } }
+
+/* ---------------------------------------------------------------------
+   3. 放大自己的卡：「帶到派對」
+   ------------------------------------------------------------------- */
+.card-owner-actions .yp-take { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 16px 6px 10px;
+  background: linear-gradient(100deg, #fffaf0 0%, #fff0c7 100%); color: #4a2c00; border: 1px solid var(--yp-gold-line, #c98a12); }
+.card-owner-actions .yp-take:hover { background: linear-gradient(100deg, #fff6e0 0%, #ffe7a8 100%); }
+.card-owner-actions .yp-take svg { width: 18px; height: 18px; flex: none; }
+.card-owner-actions .yp-take .yp-take-ico { fill: none; stroke: #8a5400; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }   /* 沿用活動圖示 ICON.yp（雙手捧光） */
+.card-owner-actions .yp-take .yp-take-ico .yp-star { fill: #f5b942; stroke: #a8700a; stroke-width: 1; }
+.card-owner-actions .yp-take small { font-size: 12px; font-weight: 700; color: #7a4d00; }
+.card-owner-actions .yp-take.is-taken { background: #fff; color: #5c3a00; border-color: rgba(201,138,18,.6); }
+.card-owner-actions .yp-take.is-taken .yp-take-ok { fill: none; stroke: #a8700a; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 768px) {   /* 手機：三顆放不下一列 → 「帶到派對」自己一列、置中 */
+  .message-card.focused .card-owner-actions:has(.yp-take) { bottom: auto; top: calc(100% + 12px); flex-wrap: wrap; justify-content: center; width: min(360px, calc(100vw - 24px)); gap: 10px; }
+  .card-owner-actions .yp-take { flex: 1 0 100%; justify-content: center; min-height: 44px; }
+}
+.card-owner-actions .yp-take:focus-visible { outline: 3px solid var(--yp-gold-line, #c98a12); outline-offset: 2px; }
+
+/* ---------------------------------------------------------------------
+   4. 減少動態
+   ------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .yp-ent.is-boost.is-glow::after, .yp-ent-m.is-boost.is-glow::after { animation: none; opacity: .6; }
+  .yp-inv.is-in { animation: ypFade .2s linear both; }
+  .yp-inv.is-in .yp-ray.on { animation: none; }
+  .yp-inv.is-out { animation: none; }
+  .yp-ent.is-boost .yp-go { transition: none; }
+}
+@keyframes ypFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* 版本 b（還沒寫過卡）：第一道光芒「等著被點亮」——半亮、緩慢呼吸 */
+.yp-inv[data-v="b"] .yp-inv-star .yp-ray:first-child { fill: rgba(255,214,120,.32); stroke: #ffd36b; stroke-dasharray: none; animation: ypAwait 2.6s ease-in-out infinite; }
+@keyframes ypAwait { 0%, 100% { fill-opacity: .5; } 50% { fill-opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .yp-inv[data-v="b"] .yp-inv-star .yp-ray:first-child { animation: none; } }
+
+/* ---------------------------------------------------------------------
+   程式加的（6.5.13 實作）
+   ------------------------------------------------------------------- */
+/* 浮卡放在版頭入口後面（Tab 順序），桌機版頭 .topbar 是 pointer-events:none，要打開 */
+.yp-inv { pointer-events: auto; text-align: left; }
+.yp-inv h2, .yp-inv p { font-family: var(--font); }
+/* 封箱後入口照 6.5.12 原樣：沒有 is-boost，不受上面規則影響 */
