@@ -166,7 +166,7 @@ body.hw .signature { color: rgba(233,213,255,.5); }
 @media (max-width: 768px) { #hwStoryTitle { font-size: 20px !important; } }
 .like.on { background: var(--brand); color: #fff; }
 body.hw .like.on { background: #fdba74; color: #3b1d00; }
-.card-image { display: block; max-width: 100%; max-height: calc(150px * var(--s)); object-fit: contain; border-radius: 10px; margin: 6px 0 2px; background: #fff; pointer-events: none; }
+.card-image { display: block; max-width: 100%; max-height: calc(150px * var(--s)); object-fit: contain; border-radius: 10px; margin: 6px auto 2px; background: #fff; pointer-events: none; }   /* 6.5.14：照片依原比例後，直式照片比卡窄 → 置中 */
 .card-date { display: none; font-size: 11px; color: var(--c-muted); margin-top: 6px; pointer-events: none; }
 .card-owner-actions { display: none; position: absolute !important; bottom: -50px; left: 50%; transform: translateX(-50%); gap: 12px; z-index: 5 !important; width: max-content; }
 .card-owner-actions button { background: #fff; color: #9f1239; border: 1px solid #e7b9c6; border-radius: var(--r-pill); padding: 6px 16px; cursor: pointer; box-shadow: var(--sh-2); font: 700 14px var(--font); }

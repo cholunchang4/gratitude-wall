@@ -21,7 +21,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.13";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）
+        const CURRENT_APP_VERSION = "6.5.14";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）；6.5.14 管理員卡縮小、照片依原比例不留白邊
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -865,13 +865,14 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         const bgCanvas = document.getElementById('bgCanvas'); const bgCtx = bgCanvas.getContext('2d');
         const drawCanvas = document.getElementById('drawCanvas'); const ctx = drawCanvas.getContext('2d');
         let isDrawing = false, penColor = '#d64966', penWidth = 4, isEraser = false;
+        let drawPhoto = null;   // 6.5.14：上傳的照片 { img, x, y, w, h }（畫布座標）；完成時依照片原比例輸出，不再把 800×500 的白邊燒進圖檔
 
         document.getElementById('penColor').addEventListener('input', (e) => { penColor = e.target.value; isEraser = false; updateToolUI('modePenBtn'); });
         document.getElementById('penWidth').addEventListener('input', (e) => { penWidth = e.target.value; });
         document.getElementById('modePenBtn').addEventListener('click', () => { isEraser = false; updateToolUI('modePenBtn'); playSound('click'); });
         document.getElementById('modeEraserBtn').addEventListener('click', () => { isEraser = true; updateToolUI('modeEraserBtn'); playSound('click'); });
         function updateToolUI(id) { document.getElementById('modePenBtn').classList.remove('active'); document.getElementById('modeEraserBtn').classList.remove('active'); document.getElementById(id).classList.add('active'); }
-        function clearAllCanvas() { ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); attachedImageBase64 = null; document.getElementById('imgCheck').style.display = 'none'; }
+        function clearAllCanvas() { ctx.clearRect(0, 0, drawCanvas.width, drawCanvas.height); bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height); drawPhoto = null; attachedImageBase64 = null; document.getElementById('imgCheck').style.display = 'none'; }
         
         document.getElementById('openDrawBtn').addEventListener('click', function() { 
             if (this.classList.contains('locked')) { playSound('click'); return showToast('🎨 手繪塗鴉需要達到「Lv.6 塗鴉畫家 (20則留言)」才能解鎖喔！\n快去多寫幾張感謝卡吧！'); }
@@ -893,16 +894,50 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         document.getElementById('uploadImgInput').addEventListener('click', function(e) { if (document.getElementById('uploadImgLabel').classList.contains('locked')) { e.preventDefault(); playSound('click'); return showToast('📷 照片上傳需要達到「Lv.8 感謝大師 (50則留言)」才能解鎖喔！'); } });
         document.getElementById('uploadImgInput').addEventListener('change', function(e){
-            const file = e.target.files[0]; if(!file) return;
-            const reader = new FileReader(); reader.onload = function(event){ const img = new Image(); img.onload = function(){ clearAllCanvas(); const scale = Math.min(bgCanvas.width / img.width, bgCanvas.height / img.height); const w = img.width * scale; const h = img.height * scale; bgCtx.drawImage(img, (bgCanvas.width - w)/2, (bgCanvas.height - h)/2, w, h); }; img.src = event.target.result; }
+            const file = e.target.files[0]; this.value = ''; if(!file) return;   // 清掉選取：清除後再選同一張照片也會觸發
+            const reader = new FileReader(); reader.onload = function(event){ const img = new Image(); img.onload = function(){ clearAllCanvas(); const scale = Math.min(bgCanvas.width / img.width, bgCanvas.height / img.height); const w = img.width * scale; const h = img.height * scale; const x = (bgCanvas.width - w)/2, y = (bgCanvas.height - h)/2; bgCtx.drawImage(img, x, y, w, h); drawPhoto = { img, x, y, w, h }; }; img.onerror = () => showToast('🖼️ 看不懂這張圖片，請換一張 PNG、JPG 或 WebP 試試。', 5000); img.src = event.target.result; }
             reader.readAsDataURL(file);
         });
 
         document.getElementById('saveDrawBtn').addEventListener('click', () => {
-            playSound('click'); const tCan = document.createElement('canvas'); tCan.width = drawCanvas.width; tCan.height = drawCanvas.height; const tCtx = tCan.getContext('2d');
-            tCtx.fillStyle = '#ffffff'; tCtx.fillRect(0, 0, tCan.width, tCan.height); tCtx.drawImage(bgCanvas, 0, 0); tCtx.drawImage(drawCanvas, 0, 0);
-            attachedImageBase64 = tCan.toDataURL('image/webp', 0.6); document.getElementById('imgCheck').style.display = 'flex'; drawOverlay.classList.remove('active');
+            playSound('click');
+            attachedImageBase64 = exportDrawing(); document.getElementById('imgCheck').style.display = 'flex'; drawOverlay.classList.remove('active');
         });
+        // 6.5.14（卓倫 11/16「圖片沒有滿版」）：有照片時輸出＝「照片範圍 ∪ 筆畫範圍」（畫在照片外的塗鴉也留著，那一塊是白底），長邊 800；
+        // 純塗鴉照舊 800×500 白底。WebP 0.6（舊版 Safari 不會輸出 WebP → JPEG）；送出時 compressImage 還會再檢查大小。
+        const DRAW_OUT_MAX = 800;
+        function inkBounds() {   // 畫布上有筆畫（不透明）的範圍；橡皮擦擦掉的地方不算
+            const W = drawCanvas.width, H = drawCanvas.height, d = ctx.getImageData(0, 0, W, H).data;
+            let x0 = W, y0 = H, x1 = -1, y1 = -1;
+            for (let y = 0; y < H; y++) for (let x = 0, i = y * W * 4 + 3; x < W; x++, i += 4) if (d[i] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+            return x1 < 0 ? null : { x0, y0, x1: x1 + 1, y1: y1 + 1 };
+        }
+        function encodeDrawing(c) {
+            for (const q of [0.6, 0.45, 0.3]) {
+                let out = c.toDataURL('image/webp', q);
+                if (!out.startsWith('data:image/webp')) out = c.toDataURL('image/jpeg', q + 0.2);
+                if (dataUrlBytes(out) <= MAX_IMAGE_BYTES) return out;
+            }
+            return c.toDataURL('image/jpeg', 0.4);   // 長邊 800 實際上不會走到這裡；真的太大時送出前會提示
+        }
+        function exportDrawing() {
+            const W = drawCanvas.width, H = drawCanvas.height, t = document.createElement('canvas'), g = t.getContext('2d');
+            if (!drawPhoto) {
+                t.width = W; t.height = H; g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H); g.drawImage(drawCanvas, 0, 0);
+                return encodeDrawing(t);
+            }
+            const p = drawPhoto, ink = inkBounds();
+            let x0 = p.x, y0 = p.y, x1 = p.x + p.w, y1 = p.y + p.h;
+            if (ink) { x0 = Math.min(x0, ink.x0); y0 = Math.min(y0, ink.y0); x1 = Math.max(x1, ink.x1); y1 = Math.max(y1, ink.y1); }
+            x0 = Math.max(0, x0); y0 = Math.max(0, y0); x1 = Math.min(W, x1); y1 = Math.min(H, y1);   // 不取整數：只有照片時，輸出剛好是照片、邊上沒有半個白像素
+            const bw = Math.max(1, x1 - x0), bh = Math.max(1, y1 - y0), k = DRAW_OUT_MAX / Math.max(bw, bh);
+            t.width = Math.max(1, Math.round(bw * k)); t.height = Math.max(1, Math.round(bh * k));
+            const kx = t.width / bw, ky = t.height / bh;
+            g.fillStyle = '#ffffff'; g.fillRect(0, 0, t.width, t.height); g.imageSmoothingQuality = 'high';
+            g.drawImage(p.img, (p.x - x0) * kx, (p.y - y0) * ky, p.w * kx, p.h * ky);   // 照片從原檔重畫，直式照片不會因為畫布只有 500 高而變糊
+            g.drawImage(drawCanvas, x0, y0, bw, bh, 0, 0, t.width, t.height);
+            return encodeDrawing(t);
+        }
 
         const receiverInput = document.getElementById('receiverInput'); const autocompleteList = document.getElementById('autocompleteList');
         // 「感謝誰」：輸入停 150 毫秒才向伺服器查（最多回 6 個姓名，不含 Email）；通訊錄不再放在網頁裡
@@ -1290,7 +1325,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         }
 
         // ================= T068（卓倫 2026-10-28）：放大卡的照片／塗鴉跟著放大；點圖再開全螢幕檢視 =================
-        // 牆面、清單上的縮圖大小不變（CSS 只改 .focused 裡的 .card-image）。圖片本身是送出時存的 800×500 webp（塗鴉是白底）。
+        // 牆面、清單上的縮圖大小不變（CSS 只改 .focused 裡的 .card-image）。圖片本身：純塗鴉是 800×500 白底；6.5.14 起照片依原比例（長邊 800），之前的照片是 800×500 含白邊。
         function armFocusedImage(card) {
             armFocusedAuthor(card);
             const img = card && card.querySelector('.card-image'); if (!img) return;
@@ -2461,7 +2496,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         // 規則：牆面＝整個視窗（四邊 12px），標題、工具列、撰寫區、簽名是障礙物；張數 N = round(32 × (可用面積 / 1.105M)^0.75)，限制 20～42；
         // T052：可用面積 ÷ 卡片面積換算超過 42 張的大螢幕（R.wide）改用等比例張數，上限 70，並改用「填空隙」的撒開排版。
         // 卡片可以互壓邊角，但上層卡的外框不能蓋到下層卡的「收件人＋內文」；單一對重疊 ≤ 1/4、每張被壓 ≤ 35%。
-        const SC_DEPTH = { far: .9, mid: .96, near: 1.06, star: 1.18, admin: 1.4 };
+        const SC_DEPTH = { far: .9, mid: .96, near: 1.06, star: 1.18, admin: 1.2 };   // 6.5.14（卓倫 11/16 管理員卡太大）：admin 1.4 → 1.2，仍是最上層、比星卡稍大
         const SC_ROT = { far: 8, mid: 7, near: 7, star: 4, admin: 2 };
         const SC_Z = { far: 20, mid: 22, near: 24, star: 30, admin: 32 };
         const scMeas = document.createElement('canvas').getContext('2d');
@@ -2717,8 +2752,27 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const others = scLivePlaced().filter(p => p !== c); scRecomputeCover(others);
             if (scInside(c, wallState.R) && scLegal(c, others)) { scPlace(c); return; }
             if (scFindSpot(c, others, wallState.R, 160, { x: c.cx, y: c.cy, r: 160 }) || scFindSpot(c, others, wallState.R, 420)) scPlace(c, 0);
-            else { card.remove(); wallState.hidden.push(c.m); }
+            else if (!scKeepAdmin(c, others)) { card.remove(); wallState.hidden.push(c.m); }
             const live = scLivePlaced(); scRecomputeCover(live); scRestack(live);
+        }
+        // 6.5.14：管理員模板卡是固定上牆的那一張。附圖晚載入、卡片變高後放不下時，以前會把管理員卡拿下牆（卓倫的卡有時候不見）；
+        // 改成管理員卡留在原處附近，被它壓到的卡先換到別的空位；找不到空位才先下牆（之後輪播補回來）。
+        // 拖曳過、放大中、滑鼠停著的卡，和自己 5 分鐘內剛寫的卡不會被拿下牆（找不到空位就維持原位）。
+        function scKeepAdmin(c, others) {
+            if (c.depth !== 'admin') return false;
+            const R = wallState.R, old = [c.cx, c.cy];
+            if (!scInside(c, R) && !scFindSpot(c, [], R, 200, { x: c.cx, y: c.cy, r: 260 })) { [c.cx, c.cy] = old; c._qFull = null; c._qText = null; return false; }
+            const hit = others.filter(p => !p.el._dragged && p.el !== currentFocusedCard && !p.el.matches(':hover') && !scLegal(c, [p]));
+            let rest = others.filter(p => !hit.includes(p)).concat(c);
+            for (const p of hit) {
+                const at = [p.cx, p.cy];
+                if (scFindSpot(p, rest, R, 160, { x: p.cx, y: p.cy, r: 220 }) || scFindSpot(p, rest, R, 300)) { scPlace(p, 0); rest.push(p); continue; }
+                [p.cx, p.cy] = at; p._qFull = null; p._qText = null;
+                if (p.m && p.m.isMine && nowMs() - (p.m.timestamp || 0) < 300000) { rest.push(p); continue; }
+                p.el.remove(); wallState.hidden.push(p.m);
+            }
+            scPlace(c, 0);
+            return true;
         }
         // 6.4.4：唯讀除錯指令（正式站也可以用，在瀏覽器 Console 輸入 __wallInspect()）。只看畫面上的卡片位置，不讀不寫資料庫、不顯示任何畫面。
         // 用瀏覽器自己的點擊測試（elementsFromPoint，含旋轉與疊放順序）抽樣每張卡的內文、作者列，看有沒有被別張卡蓋住。只回傳留言 id，不回傳姓名與內容

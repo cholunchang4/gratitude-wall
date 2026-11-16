@@ -78,7 +78,10 @@ export class WallBackend {
       if (!m) continue;
       if (!old) { this.emit('message.created', { message: this.s.messageDto(m) }); if (m.image) this.wantPhoto(m.image, true); continue; }
       const { lk: lkNew, ...restNew } = raw, { lk: lkOld, ...restOld } = old;
-      if (JSON.stringify(restNew) !== JSON.stringify(restOld)) this.emit('message.updated', { id, message: this.s.messageDto(m) });
+      if (JSON.stringify(restNew) !== JSON.stringify(restOld)) {
+        this.emit('message.updated', { id, message: this.s.messageDto(m) });
+        if (m.image) this.wantPhoto(m.image, true);   // 6.5.14：管理員換了附圖（裁白邊工具）→ 開著的頁面也下載新圖；已經有的不重複下載
+      }
       else if (JSON.stringify(lkNew || {}) !== JSON.stringify(lkOld || {})) {
         const d = this.s.messageDto(m);
         this.emit('reaction.changed', { id, like_count: d.like_count, likers: d.likers, liked_by_me: d.liked_by_me });
