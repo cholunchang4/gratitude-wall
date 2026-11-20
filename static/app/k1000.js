@@ -1,6 +1,8 @@
 // T100「一千道光」：留言破千的期間限定模板、一次性慶祝動畫、站內公告（game-design/千則里程碑.md 第 3、6 節；視覺 design/千光/，美術總監 2）。
 // 要不要顯示只看伺服器時間（bootstrap.events.k1000／k1000_theme，由 fb/store.js 依規則常數算好），不看使用者電腦的時間。
-// - 千光模板：k1000_theme 期間（11/03～12/31；6.5.4 卓倫 11/04 由 11/30 延長）樣式選單「限定」區出現；不進自動預設（app.js pickAutoTheme 只挑基本款）。
+// - 千光模板：k1000_theme 期間（11/03～12/31；6.5.4 卓倫 11/04 由 11/30 延長）樣式選單「限定」區出現。
+//   6.5.15（T111，卓倫 2026-11-20）起是「活動模板」：期間內沒手動選的人（含管理員）預設千光——addSwatch 第 5 個參數傳期間，
+//   app.js addLimitedSwatch／markEventTheme 登記；規則（活動模板 → Lv.9 以上最高級獎勵模板 → 基本款）寫在 app.js addLimitedSwatch 前。
 // - 動畫：k1000 期間（11/03～11/09）每次打開網站（新分頁／視窗）都播，同一個分頁重新整理不重播（sessionStorage，6.4.2 卓倫回饋）；
 //   整段約 4.5 秒（時間軸見 k1000.css B 段）；系統開了「減少動態」就不播。點畫面、按「略過」或 Esc 跳過。
 // - 公告：放在萬聖謝幕公告同一個位置（標題下方）；動畫播完（或跳過、不播）才出現；按 ✕（或說明書／先去寫卡）後這台裝置「當天」不再顯示，
@@ -57,8 +59,8 @@ const NOTICE_HTML = ICON_DEFS
 
 /**
  * deps = {
- *   addSwatch(theme, cls, name, capHtml) → HTMLElement   // app.js addLimitedSwatch
- *   removeSwatch(btn)                                     // 拿掉色票；正在用千光就改回自動預設
+ *   addSwatch(theme, cls, name, capHtml, win) → HTMLElement   // app.js addLimitedSwatch；win＝{start,end} 活動期間（T111：期間內當預設）
+ *   removeSwatch(btn)                                     // 拿掉色票；正在用千光就改回自動預設（T111：落到 Lv.9 以上獎勵模板或基本款）
  *   openManual()                                          // 開自己的資料卡編輯（PUI.openEditor）
  *   focusComposer()                                       // 游標到撰寫區
  *   nowMs()                                               // 伺服器時間
@@ -73,7 +75,7 @@ export function createK1000(deps) {
     const now = deps.nowMs();
     const on = !!(win && now <= win.end);
     if (on && !swatch) {
-      swatch = deps.addSwatch('theme-k1000', 'theme-k1000-btn', '千光', '<b>千光</b><span class="k1000-until">到 12/31</span>');
+      swatch = deps.addSwatch('theme-k1000', 'theme-k1000-btn', '千光', '<b>千光</b><span class="k1000-until">到 12/31</span>', { start: win.start, end: win.end });
       const cap = swatch && swatch.closest('.sw-cell') && swatch.closest('.sw-cell').querySelector('.swatch-cap');
       if (cap) cap.classList.add('k1000-swatch-cap');
     }

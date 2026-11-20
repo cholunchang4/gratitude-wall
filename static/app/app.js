@@ -21,7 +21,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.14";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）；6.5.14 管理員卡縮小、照片依原比例不留白邊
+        const CURRENT_APP_VERSION = "6.5.15";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）；6.5.14 管理員卡縮小、照片依原比例不留白邊；6.5.15 自動預設模板（活動模板優先、Lv.9 以上最高級獎勵模板）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -115,9 +115,11 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 hwTheme = addLimitedSwatch('theme-halloween', 'theme-hw-btn', '萬聖卡', !IS_HALLOWEEN ? '<b>萬聖卡</b><br>變身獎勵' : isCurrentUserVampire ? '<b>萬聖卡</b><br>已變身 ✓' : '<b>萬聖卡</b><br>管理員');
             } else if (!show && hwTheme) {
                 hwTheme.closest('.sw-cell').remove();
-                if (currentTheme === 'theme-halloween') { currentTheme = 'theme-classic'; themeManuallySelected = false; }
+                if (currentTheme === 'theme-halloween') { currentTheme = 'theme-classic'; themeManuallySelected = false; if (ME) pickAutoTheme(getValidMessages()); }
             }
             if (show && hwTheme) { hwTheme.title = title; hwTheme.setAttribute('aria-label', title); }
+            // T111：活動期間萬聖卡是活動模板（吸血鬼才預設；管理員還是人類時看得到但不預設）；活動結束後的獎勵延長使用不是活動模板，不預設
+            if (show && hwTheme) markEventTheme(hwTheme, IS_HALLOWEEN ? { start: HW_EVENT_START, end: HW_EVENT_END, eligible: () => !!currentUser && isCurrentUserVampire } : null);
             syncPickerState();
         }
         const HW_STAGES = [ { min: 150, cls: 'hw-stage-3', name: '血月降臨' }, { min: 50, cls: 'hw-stage-2', name: '亡靈甦醒' }, { min: 0, cls: 'hw-stage-1', name: '幽暗之夜' } ];
@@ -129,7 +131,57 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             b.style.display = '';
             const cell = b.closest('.sw-cell'); if (cell) cell.hidden = !show;
         }
-        function addLimitedSwatch(theme, extraClass, name, cap) {
+        // ================= T111 自動預設模板（卓倫 2026-11-20）=================
+        // 使用者沒有手動選樣式（而且不是「我的回憶」篩選）時，pickAutoTheme 依序決定預設：
+        //   ① 活動預設：「活動期間限定」的模板，在期間內、這個人選得到，就是預設（卓倫：未來所有活動期間有特殊模板，一律變成預設）。
+        //      同時兩個以上有效 → 活動開始時間最晚的優先（新活動比較需要推廣）；開始時間一樣 → 後登記的優先。
+        //      現有：萬聖期間吸血鬼→萬聖卡、中秋期間→中秋月光、千光期間（伺服器 k1000_theme）所有人（含管理員）→千光。
+        //   ② Lv.9 以上（非管理員）：自己擁有的最高級獎勵模板（ultimate > cosmic > gold > holo > neon）。管理員不套。
+        //   ③ 其他：自己可用的基本款裡，本月牆上用得最少的（平手隨機）。
+        // 手動選的保留到送出；送出後回到這套規則。
+        // ▶ 新增活動模板怎麼登記（不用改 pickAutoTheme）：
+        //   addLimitedSwatch(theme, cls, name, cap, { start, end, eligible })   // start／end＝伺服器給的活動期間（ms）；eligible＝() => 這個人能不能用（省略＝人人可用）
+        //   或對已經在選單裡的色票呼叫 markEventTheme(btn, { start, end, eligible })；期間結束拿掉色票或 markEventTheme(btn, null)，預設自動落到 ②／③。
+        //   期間判斷用 nowMs()（伺服器時間），所以就算色票忘了拿掉，過了 end 也不會再當預設。
+        // ▶ 不要登記成活動模板：等級獎勵（neon～ultimate）、管理員模板、星夜（點亮星空獎勵）、活動結束後的「獎勵延長使用」（例如萬聖模板用到 11/30）。
+        const EVENT_THEME_META = new WeakMap();   // 色票按鈕 → { start, end, eligible, seq }
+        let eventThemeSeq = 0;
+        function markEventTheme(btn, opts) {
+            if (!btn) return;
+            const had = EVENT_THEME_META.get(btn);
+            if (opts) {
+                const end = Number(opts.end);
+                EVENT_THEME_META.set(btn, { start: Number(opts.start) || 0, end: Number.isFinite(end) && end > 0 ? end : Infinity,
+                    eligible: typeof opts.eligible === 'function' ? opts.eligible : null, seq: had ? had.seq : ++eventThemeSeq });
+            } else EVENT_THEME_META.delete(btn);
+            if (!!had !== !!opts && !themeManuallySelected && ME) pickAutoTheme(getValidMessages());   // 有活動模板加入／退出：沒手動選的人立刻換預設
+        }
+        // ① 目前有效的活動模板（沒有就回傳 null）：色票在選單上、沒被藏起來或鎖住、在期間內、這個人選得到
+        function eventDefaultTheme() {
+            const now = nowMs(); let best = null, bestMeta = null;
+            document.querySelectorAll('#pickLimited .theme-btn').forEach(btn => {
+                const m = EVENT_THEME_META.get(btn); if (!m) return;
+                const cell = btn.closest('.sw-cell');
+                if ((cell && cell.hidden) || btn.classList.contains('locked') || btn.classList.contains('sn-locked')) return;
+                if (now < m.start || now > m.end) return;
+                try { if (m.eligible && !m.eligible()) return; } catch (e) { return; }
+                if (!bestMeta || m.start > bestMeta.start || (m.start === bestMeta.start && m.seq > bestMeta.seq)) { best = btn.getAttribute('data-theme'); bestMeta = m; }
+            });
+            return best;
+        }
+        // ② Lv.9 以上：自己擁有的最高級獎勵模板（只看伺服器給的 me.unlocks.reward_themes，沒解鎖的不會出現；管理員不套）
+        const REWARD_RANK = ['theme-ultimate', 'theme-cosmic', 'theme-gold', 'theme-holo', 'theme-neon'];
+        function rewardDefaultTheme() {
+            if (!ME || ME.is_admin) return null;
+            const owned = (ME.unlocks && Array.isArray(ME.unlocks.reward_themes)) ? ME.unlocks.reward_themes : [];
+            return REWARD_RANK.find(t => owned.includes(t)) || null;
+        }
+        if (USE_EMULATOR) window.__eventThemes = {   // 只有本機模擬器測試用：登記假的活動模板，驗證通用機制
+            add: (theme, name, opts) => addLimitedSwatch(theme, 'theme-test-evt', name, `<b>${escapeHtml(name)}</b>`, opts),
+            remove: (theme) => { const b = document.querySelector(`#pickLimited .theme-btn[data-theme="${CSS.escape(theme)}"]`); if (b) { markEventTheme(b, null); b.closest('.sw-cell').remove(); syncPickerState(); } },
+            current: () => currentTheme, manual: () => themeManuallySelected,
+        };
+        function addLimitedSwatch(theme, extraClass, name, cap, eventOpts) {
             const cell = document.createElement('div'); cell.className = 'sw-cell swatch-item';
             const btn = document.createElement('button'); btn.type = 'button';
             btn.className = `theme-btn swatch card ${themeClassOf(theme)} ${extraClass}`;
@@ -146,11 +198,20 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             cell.appendChild(btn); cell.appendChild(ring); cell.appendChild(capEl);
             const grid = document.getElementById('pickLimited');
             if (theme === 'theme-admin') grid.insertBefore(cell, grid.firstChild); else grid.appendChild(cell);
+            if (eventOpts) markEventTheme(btn, eventOpts);   // T111：活動期間限定模板＝期間內的預設
             return btn;
         }
         function updateStyleButton() {
             const sw = document.getElementById('styleSwatch'); if (!sw) return;
             sw.className = `sw card ${themeClassOf(currentTheme)}`;
+            // 6.5.15（T111）：撰寫區 26px 小樣本的底色只吃 --c-bg；獎勵款 holo～ultimate、管理員模板的底色寫在 background，小樣本原本會是白的
+            // （Lv.9 以上預設獎勵模板後很常見）→ 小樣本沒有底圖、顏色又和選單裡同一款色票不同時，借色票算好的底色
+            sw.style.backgroundColor = ''; sw.style.backgroundImage = '';
+            const src = document.querySelector(`#themePicker .theme-btn[data-theme="${CSS.escape(currentTheme)}"]`);
+            if (src) {
+                const a = getComputedStyle(sw), b = getComputedStyle(src);
+                if (a.backgroundImage === 'none' && (a.backgroundColor !== b.backgroundColor || b.backgroundImage !== 'none')) { sw.style.backgroundColor = b.backgroundColor; sw.style.backgroundImage = b.backgroundImage; }
+            }
             const name = THEME_NAMES[currentTheme] || '純淨白';
             styleBtn.setAttribute('aria-label', `卡片樣式：${name}`);
             document.getElementById('pickerNow').textContent = name;
@@ -385,6 +446,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         // 活動模式由伺服器決定（bootstrap.events.active），不看使用者電腦的時間
         let IS_MID_AUTUMN = false;
+        let lastEvents = {};      // T111：最近一次伺服器給的 events（取活動期間用）
+        const eventWindow = (key) => { const w = lastEvents && lastEvents[key]; return (w && typeof w === 'object' && Number(w.start) > 0) ? { start: Number(w.start), end: Number(w.end) } : null; };
         let IS_HALLOWEEN = false;
         // 先套萬聖背景（上次看到的階段），避免開頁先閃粉紅色；資料到齊後若不是活動期間會自動拿掉
         { const last = localStorage.getItem('hw_last_stage'); if (/^hw-stage-[123]$/.test(last || '')) document.body.classList.add('hw', last); }
@@ -411,6 +474,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             IS_MID_AUTUMN = active.includes('midautumn2026');
             hwInfo = (ev && ev.hw2026) || null;
             hwEpilogue = (ev && ev.hw2026_epilogue && typeof ev.hw2026_epilogue === 'object') ? ev.hw2026_epilogue : null;
+            lastEvents = ev || {};   // T111：活動模板的期間（midautumn2026、k1000_theme 的 start／end）
             if (hwInfo) {
                 if (hwInfo.start) HW_EVENT_START = hwInfo.start;
                 if (hwInfo.end) HW_EVENT_END = hwInfo.end;
@@ -432,7 +496,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 document.getElementById('subTitle').innerHTML = '送上一顆月餅，表達你最真摯的感謝';
                 document.getElementById('subTitle').style.color = '#ffd700';
 
-                if(!document.querySelector('.theme-moonlight-btn')) addLimitedSwatch('theme-moonlight', 'theme-moonlight-btn', '中秋月光', '<b>中秋月光</b><br>活動限定');
+                // T111：中秋月光是活動模板，期間內開頁就預設（以前只有送出後才換成月光）
+                if(!document.querySelector('.theme-moonlight-btn')) addLimitedSwatch('theme-moonlight', 'theme-moonlight-btn', '中秋月光', '<b>中秋月光</b><br>活動限定', eventWindow('midautumn2026') || { start: 1, end: Infinity });
             }
 
             // 處理萬聖節 UI 隱藏與顯示
@@ -483,7 +548,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                     isCurrentUserVampire = !!ME.hw.infected || ME.hw.role === 'vampire' || isCurrentUserProgenitor || isCurrentUserElite;
                     // 管理員還是人類時也能寫萬聖卡（伺服器本來就允許）：名冊的「寫萬聖卡給他」才會真的選到萬聖卡
                     syncHwThemeButton(isCurrentUserVampire || !!ME.is_admin, '🎃 萬聖卡（用它寫卡，收件人送出當下就會變身）');
-                    applyHwDefaultTheme();
+                    if (!themeManuallySelected) pickAutoTheme(getValidMessages());   // T111：中途變身也立刻套用活動預設（萬聖卡）
                 }
             } else if (hwInfectedLoaded) { // 資料到齊、確定不是活動期間：收起萬聖外觀（資料到之前保留上次的畫面，避免閃爍）
                 if (currentUser && ME && ME.hw) { isCurrentUserProgenitor = ME.hw.role === 'progenitor'; isCurrentUserElite = !!ME.hw.elite; } // 只用來顯示紀念稱號
@@ -540,7 +605,8 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         });
         // T100「一千道光」（k1000.js）：期間由伺服器時間決定，applyEventState 每次拿到 events 都會呼叫 K1K.update
         K1K = createK1000({
-            addSwatch: (theme, cls, name, cap) => { const btn = addLimitedSwatch(theme, cls, name, cap); syncPickerState(); return btn; },
+            // T111：千光是活動模板，期間內（伺服器 k1000_theme）所有人（含管理員）預設千光；k1000.js 6.5.15 起會傳期間，舊檔快取時用 events 裡的期間
+            addSwatch: (theme, cls, name, cap, win) => { const btn = addLimitedSwatch(theme, cls, name, cap, win || eventWindow('k1000_theme') || { start: 1, end: Infinity }); syncPickerState(); return btn; },
             removeSwatch: (btn) => {
                 const cell = btn.closest('.sw-cell'); if (cell) cell.remove();
                 if (currentTheme === 'theme-k1000') { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); }
@@ -577,12 +643,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         };
         const INFECT_ROSTER_LINE = '\n\n夜巡名冊已經交給你了，就在進度條旁邊。';   // GDD T0：接在變身提示最後
         // 4.8.4：活動期間，吸血鬼（始祖、精銳、一般）沒有自己選過樣式時，預設選中萬聖卡；活動結束後不強制。
-        function applyHwDefaultTheme() {
-            if (!IS_HALLOWEEN || !currentUser || !isCurrentUserVampire || themeManuallySelected) return false;
-            if (!document.querySelector('.theme-hw-btn')) return false;
-            if (currentTheme !== 'theme-halloween') { currentTheme = 'theme-halloween'; syncPickerState(); updateStyleButton(); }
-            return true;
-        }
+        // T111 起併進通用的活動模板預設（syncHwThemeButton 呼叫 markEventTheme；規則見 addLimitedSwatch 前的說明），原本的 applyHwDefaultTheme 拿掉。
 
         // reveal：在線當下被萬聖卡帶走的人，動畫播完直接顯示「你被找到了」揭曉畫面（取代文字提示）
         function triggerInfection(message, reveal) {
@@ -1082,13 +1143,9 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 receiverInput.value = ''; anonCheck.checked = false; acClose(); clearAllCanvas();
                 NR.pressed = null; if (NR.panel) NR.panel.querySelectorAll('.roster-write[aria-pressed]').forEach(b => b.removeAttribute('aria-pressed'));
 
-                if (IS_HALLOWEEN && isCurrentUserVampire) {
-                    // 4.8.4：送出後回到預設（萬聖卡），和開頁、中途變身用同一套規則
-                    themeManuallySelected = false; applyHwDefaultTheme();
-                } else if (IS_MID_AUTUMN) {
-                    const maBtn = document.querySelector('.theme-moonlight-btn');
-                    if(maBtn) { document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active')); maBtn.classList.add('active'); currentTheme = 'theme-moonlight'; themeManuallySelected = true; }
-                } else { themeManuallySelected = false; }
+                // T111：送出後回到自動預設（活動模板 → Lv.9 以上最高級獎勵模板 → 基本款），和開頁、中途變身用同一套規則
+                // （以前：萬聖吸血鬼回萬聖卡、中秋固定月光並當作手動選、其他等下次重畫才重挑）
+                themeManuallySelected = false; pickAutoTheme(getValidMessages());
 
                 playSound('send'); updateStyleButton(); scheduleTagPreview(0);
                 if (IS_HALLOWEEN && sentTheme === 'theme-halloween' && res && res.hw) onHwSent(res.hw, stampsAtSend);   // T7
@@ -2200,7 +2257,9 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         function pickAutoTheme(validMessages) {
             if (themeManuallySelected || isFilterMeOnly) return;
-            if (applyHwDefaultTheme()) return; // 4.8.4：活動期間吸血鬼預設萬聖卡
+            // T111（卓倫 2026-11-20）：① 活動模板 ② Lv.9 以上最高級獎勵模板 ③ 基本款本月最少用（規則與登記方式見 addLimitedSwatch 前的說明）
+            const preset = eventDefaultTheme() || rewardDefaultTheme();
+            if (preset) { currentTheme = preset; syncPickerState(); return; }
             const availableThemes = unlockOf('themes_basic') ? themeList.slice(0, 10) : themeList.slice(0, 3);
             // 本月牆面還沒有卡（每月 1 號清空後）：全部款式都算 0 次，等於從可用款式隨機挑（卓倫 2026-11-01）
             const themeCounts = {}; availableThemes.forEach(t => themeCounts[t] = 0);
