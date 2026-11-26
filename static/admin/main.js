@@ -9,7 +9,12 @@ import { adaptBootstrap } from './model.js';
 import { renderAll, resetPage, calculateRangeCount, fillSettings } from './views.js';
 import { resetArchive } from './archive.js';
 import { actions } from './actions-registry.js';
+import { toast, actionModal } from './util.js';   // T102
 import './actions.js';
+import { makeCallable } from '../app/shop/shop-api.js';   // T102
+import { auditEntry } from '../app/fb/writes.js';   // T102
+import { createShopAdmin } from './shop-admin.js';   // T102 拾光小舖、光點帳本、光效
+import { ref, onValue, update } from '../vendor/firebase-sdk.js';   // T102
 
 // ---------- 登入閘門（只有確認是管理員，才顯示後台） ----------
 function showGate(text, msg, { retry = false, back = false } = {}) {
@@ -118,6 +123,18 @@ $('auditRefreshBtn').addEventListener('click', () => loadAudit());
 $('sysRefreshBtn').addEventListener('click', () => loadHealth());
 $('retryBtn').addEventListener('click', () => start());
 
+// ---------- T102 拾光小舖、光點帳本、光效（第一次進到後台時建立；資料直接監聽 Firebase，寫入走 bankAdmin） ----------
+let SHOP_ADMIN = null;
+function mountShopAdmin() {
+  if (SHOP_ADMIN) return;
+  const sess = BACKEND.session, db = BACKEND.db;
+  const call = makeCallable({ user: sess.user, emulator: USE_EMULATOR });
+  const people = () => ((st.data && st.data.contacts) || []).filter(c => c.id).map(c => ({ uid: c.id, name: c.name }));
+  const watch = (path, cb) => onValue(ref(db, path), (s) => cb(s.val()), () => cb(null, true));
+  const writeFx = async (next, reason) => { const [k, v] = auditEntry(Date.now(), { actor: BACKEND.meId || 'admin', action: 'admin.fx.settings', targetType: 'settings', targetId: 'fx', detail: { next, reason } }); await update(ref(db), { 'settings/fx': next, [k]: v }); };
+  SHOP_ADMIN = ['shop', 'bank', 'fx'].map(which => createShopAdmin({ root: $('panel-' + which), which, watch, call, writeFx, nowMs: () => Date.now() + st.offset, toast, modal: actionModal, people }));
+  SHOP_ADMIN.forEach(a => a.start());
+}
 // ---------- 啟動 ----------
 let started = false;
 let LIVE = null;
@@ -135,6 +152,7 @@ async function start() {
     return showGate('暫時打不開後台', e.message || '請稍後再試。', { retry: true });
   }
   $('gate').hidden = true; $('app').hidden = false;
+  mountShopAdmin();   // T102
   fillSettings(true);
   selectTab(location.hash.replace('#', '') || 'overview', false);
   renderAll();

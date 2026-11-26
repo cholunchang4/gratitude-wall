@@ -11,6 +11,7 @@ import { ref, onValue, update as dbUpdate } from '../../vendor/firebase-sdk.js';
 import * as L from './sky-logic.js';
 import { createBank } from './sky-bank.js';
 import { createLantern } from './lantern.js';
+import { slot } from '../popup-slot.js';   // T113（6.6.1）一次開頁最多一個自己跳出來的東西（優先 2）
 import { SKY_DEFS, ic, star4, dot, heroSVG, cstSVG, cstFinal, scopeArt } from './sky-icons.js';
 
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -228,16 +229,22 @@ export function createSky(deps) {
   }
 
   // ------------------------------------------------------------------ 活動彈窗、換幕彈窗、門檻通知（每人每個只自動跳一次）
+  // T113：開站說明／換幕／謝幕改成向 popup-slot 要名額（優先 2）。名額給了別人：這次不跳、不記看過，下次開頁再排；
+  // 自己的彈窗關掉後，同一次開頁也不再接下一個（原本開站說明關掉會接著跳幕次彈窗）。
+  const blocked = () => !!(S.open || document.querySelector('.ln-scene, .pc-overlay, .lab-drawer') || (deps.canShowPopup && !deps.canShowPopup()));
+  const askSlot = (show) => slot.request('sky', 2, () => { if (blocked()) return false; show(); return true; });
   function maybePopups(tierUp) {
     const ph = S.phase; if (!ph || !(ph.live || ph.epilogue)) return;
+    slot.expect('sky', 2);                                           // 還在等資料（謝幕人數）或別的視窗：比我後面的先等我決定
     if (S.open || document.querySelector('.ln-scene, .pc-overlay, .lab-drawer')) { setTimeout(() => maybePopups(false), 1500); return; }
     if (deps.canShowPopup && !deps.canShowPopup()) { setTimeout(() => maybePopups(false), 1500); return; }
     const sn = seen();
     if (ph.epilogue && !bank.st.starsOk && (S.epiWait = (S.epiWait || 0) + 1) <= 6) { setTimeout(() => maybePopups(false), 1500); return; }   // 等最終人數讀進來（最多約 9 秒）
-    if (ph.epilogue) { if (!sn.epi) { markSeen('epi'); markSeen('epiDay', L.tpeDay(deps.nowMs())); openEpilogue(); } return; }
-    if (!sn.main) { markSeen('main'); if (ph.act >= 2) markSeen('a2'); if (ph.act >= 3) markSeen('a3'); return openIntro(null, true); }
-    if (ph.act >= 3 && !sn.a3) { markSeen('a3'); markSeen('a2'); return openAct(3); }
-    if (ph.act >= 2 && !sn.a2) { markSeen('a2'); return openAct(2); }
+    if (ph.epilogue) { if (!sn.epi) askSlot(() => { markSeen('epi'); markSeen('epiDay', L.tpeDay(deps.nowMs())); openEpilogue(); }); else slot.pass('sky'); return; }
+    if (!sn.main) { askSlot(() => { markSeen('main'); if (ph.act >= 2) markSeen('a2'); if (ph.act >= 3) markSeen('a3'); openIntro(null, true); }); return; }
+    if (ph.act >= 3 && !sn.a3) { askSlot(() => { markSeen('a3'); markSeen('a2'); openAct(3); }); return; }
+    if (ph.act >= 2 && !sn.a2) { askSlot(() => { markSeen('a2'); openAct(2); }); return; }
+    slot.pass('sky');
     if (S.tier > (Number(sn.tier) || 0)) { markSeen('tier', S.tier); tierToast(S.tier); }
     void tierUp;
   }

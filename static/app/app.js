@@ -6,12 +6,19 @@ import { ProfileService } from './fb/profile.js';      // T098 個人資料卡�
 import { createProfileUI } from './profile-ui.js';     // T098 個人資料卡畫面（檢視、編輯、裁切、自己的頭像選單）
 import { createPeopleSearch } from './people-search.js';   // 6.6 版頭「找同事」
 import { createK1000 } from './k1000.js';             // T100「一千道光」：千光模板、慶祝動畫、公告
+import { createComposeIdea } from './compose-idea.js';   // 6.6 撰寫區「給我一點靈感」（寫卡靈感包）
+import { createShopApp } from './shop/shop-app.js';   // T102 拾光小舖＋留言光效
 import { countWords } from './fb/wordcount.js';      // T107 字數（英文以單字計）；新檔，不會和快取裡的舊 logic.js 對不上
+import { createNudge } from './nudge.js';             // T113（6.6.1）說明書／頭像／換模板 使用率提醒
+import { slot } from './popup-slot.js';              // T113 一次開頁最多一個自己跳出來的東西
+import { K as WALL_K } from './fb/constants.js';      // T113：點亮星空結束時間（小卡的星空那一行只到 11/30）
 // 資料改由 Firebase Realtime Database 提供（fb/backend.js 把 5.5 的 api/... 對應到資料庫的讀寫與即時監聽）。
 // 等級、配額、解鎖、萬聖變身的判斷在 fb/logic.js，資料庫規則（database.rules.json）在伺服器端再強制檢查一次。
 let SESSION = null, BACKEND = null;
 let PROFILE = null, PUI = null, K1K = null;
 let YP26 = null;                            // T108「手心的光」活動頁（yp26/yp26.js）：startApp 裡動態載入，出錯不影響主牆
+let SHOP = null, FX = null;   // T102：startApp 裡建立（FX＝留言光效顯示 shop/fx.js）
+let NUDGE = null;                           // T113：startApp 裡建立（nudge.js）；出錯不影響主牆
 let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EXT 是給資料卡畫面的掛勾（建立後填入）     // T098：startApp 裡建立
 
         let currentUser = null;   // { uid, displayName }：由 me 轉出，維持 4.8 程式碼原本用的形狀
@@ -21,7 +28,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         let themeManuallySelected = false; let isFilterMeOnly = false;
 
         // 版號：伺服器（後台設定）的版號比這個新，就會要求使用者重新整理。改前台檔案時只能往上加。
-        const CURRENT_APP_VERSION = "6.5.15";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.5.13 手心的光推廣加強（入口個人進度、每日邀請浮卡、放大卡「帶到派對」）；6.5.14 管理員卡縮小、照片依原比例不留白邊；6.5.15 自動預設模板（活動模板優先、Lv.9 以上最高級獎勵模板）
+        const CURRENT_APP_VERSION = "6.6.1";   // T101；6.5.1 千光公告每天一次；6.5.2 千光模板 v2；6.5.3 星空拿掉防衛式字句；6.5.4 千光模板延到 12/31、星空門檻 25／50／85；6.5.6 字數英文以單字計（T107）；6.5.8 手心的光（T108）；6.5.9 牆面密度（T106；原定 6.5.5／6.5.7）；6.5.11 版頭「找同事」（6.6 提早單獨上線；6.5.10 保留不上線）；6.5.12 手心的光入口讓位進度條；6.6 拾光小舖（T102）＋寫卡靈感包；6.6.1 說明書／頭像／換模板 使用率提醒（T113）
 
         // ================= 4.8 共用小工具 =================
         // 把使用者輸入的文字轉成純文字再放進 HTML，防止有人在留言或名字裡塞程式碼
@@ -214,6 +221,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             }
             const name = THEME_NAMES[currentTheme] || '純淨白';
             styleBtn.setAttribute('aria-label', `卡片樣式：${name}`);
+            if (NUDGE) NUDGE.paintStyle(name);   // T113：沒打開過樣式選單 → 按鈕右上小光點＋「（可以換樣式）」
             document.getElementById('pickerNow').textContent = name;
         }
         function syncPickerState() {
@@ -239,8 +247,9 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             document.getElementById('pickLimitedGroup').hidden = !anyVisible('pickLimited');
             updateStyleButton();
         }
-        function onThemeChosen() { syncPickerState(); closePicker(true); scheduleTagPreview(0); }
+        function onThemeChosen() { syncPickerState(); closePicker(true); scheduleTagPreview(0); if (SHOP) SHOP.onComposerChange(); }   // T102：至尊模板時藏起光效入口
         function openPicker() {
+            if (NUDGE) NUDGE.onPickerOpened();   // T113：打開過一次（從哪裡打開都算）就記 prefs.tpl_seen，光點與樣式小提示永遠不再出現
             syncPickerState();
             themePicker.hidden = false; styleBtn.setAttribute('aria-expanded', 'true');
             const cur = themePicker.querySelector('.theme-btn[aria-checked="true"]') || themePicker.querySelector('.sw-cell:not([hidden]) .theme-btn');
@@ -784,7 +793,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         const focusOverlay = document.getElementById('focusOverlay');
         let currentFocusedCard = null;
-        function closeFocus() { if (currentFocusedCard) { disarmImage(currentFocusedCard); if (YP26 && YP26.undecorate) YP26.undecorate(currentFocusedCard); /* 6.5.13 */ currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); } }
+        function closeFocus() { if (currentFocusedCard) { disarmImage(currentFocusedCard); if (YP26 && YP26.undecorate) YP26.undecorate(currentFocusedCard); /* 6.5.13 */ if (FX) FX.unfocus(currentFocusedCard); /* T102 */ currentFocusedCard.classList.remove('focused'); focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; playSound('click'); if (NUDGE) NUDGE.onFocusClosed(); } }
         focusOverlay.addEventListener('click', closeFocus);
 
         const themeList = ['theme-classic', 'theme-sage', 'theme-lemon', 'theme-midnight', 'theme-wine', 'theme-slate', 'theme-lavender', 'theme-matcha', 'theme-terracotta', 'theme-ice', 'theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon'];
@@ -1132,11 +1141,14 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                 // 作者名稱、匿名稱號、等級、額度桶都由伺服器決定；這裡只告訴伺服器「要不要匿名」
                 const sendBody = { receiver, text, theme: currentTheme, anonymous: anonCheck.checked, image_data_url: attachedImageBase64 || null };
                 if (SKY) { try { SKY.decorateSend(sendBody); } catch (e) { console.error('[sky]', e); delete sendBody.sky; } }   // T101：從說明書寫的卡帶上星光卡標記
+                if (SHOP) Object.assign(sendBody, SHOP.sendFields());   // T102：光效、模板次數（backend.js 交給 writes.js）
                 const res = await apiWrite('api/messages', sendBody);
                 if (SKY) Promise.resolve().then(() => SKY.afterSend(res, sendBody)).catch(e => console.error('[sky]', e));   // T101：星線、星座、流星
                 if (YP26) { try { YP26.afterSend(res); } catch (e) { console.error('[yp26]', e); } }   // T108：活動期間多一句「也可以帶到年終派對 →」
                 if (res && res.message) { upsertMessage(res.message); }
                 if (res && res.me) applyMe(res.me);
+                if (SHOP) SHOP.afterSend(res);   // T102：撰寫區光效回到「不用」
+                if (NUDGE) NUDGE.afterSend(res, sendBody);   // T113：送出後小卡（匿名／假面不出現；等送出提示收起才出現）
                 refreshNow();
 
                 msgInput.value = ''; msgInput.style.height = '38px'; msgInput.style.overflowY = 'hidden'; syncLenHint();
@@ -1206,11 +1218,11 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         const THEME_CLASS = { 'theme-classic': 't-classic', 'theme-sage': 't-sage', 'theme-lemon': 't-lemon', 'theme-slate': 't-slate', 'theme-lavender': 't-lavender',
             'theme-matcha': 't-matcha', 'theme-ice': 't-ice', 'theme-midnight': 't-midnight', 'theme-wine': 't-wine', 'theme-terracotta': 't-terracotta',
             'theme-neon': 't-r-neon', 'theme-holo': 't-r-holo', 'theme-gold': 't-r-gold', 'theme-cosmic': 't-r-cosmic', 'theme-ultimate': 't-r-ultimate',
-            'theme-admin': 't-admin', 'theme-admin-neon': 't-admin-neon', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon', 'theme-k1000': 'k1000-card' };
+            'theme-admin': 't-admin', 'theme-admin-neon': 't-admin-neon', 'theme-halloween': 't-halloween', 'theme-moonlight': 't-moon', 'theme-k1000': 'k1000-card', 'theme-lamp': 't-lamp', 'theme-snowlantern': 't-snowlantern' };   // T102 商店模板
         const THEME_NAMES = { 'theme-classic': '純淨白', 'theme-sage': '鼠尾草綠', 'theme-lemon': '檸檬霜', 'theme-slate': '迷霧灰', 'theme-lavender': '薰衣草紫',
             'theme-matcha': '抹茶青', 'theme-ice': '冰川藍', 'theme-midnight': '星空黑', 'theme-wine': '勃根地紅', 'theme-terracotta': '陶土橘',
             'theme-neon': '霓虹幻影', 'theme-holo': '極光幻境', 'theme-gold': '璀璨鑽金', 'theme-cosmic': '星際領航', 'theme-ultimate': '傳說之神',
-            'theme-admin': '金鑽星冕', 'theme-admin-neon': '霓虹流光', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光', 'theme-k1000': '千光' };
+            'theme-admin': '金鑽星冕', 'theme-admin-neon': '霓虹流光', 'theme-halloween': '萬聖卡', 'theme-moonlight': '中秋月光', 'theme-k1000': '千光', 'theme-lamp': '燈下手寫信', 'theme-snowlantern': '雪夜燈籠' };   // T102
         const THEME_PIPS = { 'theme-neon': 1, 'theme-holo': 2, 'theme-gold': 3, 'theme-cosmic': 4, 'theme-ultimate': 5 };
         const FX_THEMES = new Set(['theme-neon', 'theme-holo', 'theme-gold', 'theme-cosmic', 'theme-ultimate', 'theme-admin', 'theme-admin-neon', 'theme-halloween', 'theme-moonlight', 'theme-k1000']);
         // 管理員模板兩款：至尊 v3「金鑽星冕」（theme-admin）、原版「霓虹流光」（theme-admin-neon，T097）。固定上牆、最上層景深兩款都適用
@@ -1334,7 +1346,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
         // 套用卡片外觀與內容（保留拖曳、放大、漂浮等狀態）
         function applyCardContent(card, msg, maxLikes) {
-            const keep = ['floating', 'dragging', 'focused', 'card-enter', 'fx-paused'].filter(c => card.classList.contains(c));
+            const keep = ['floating', 'dragging', 'focused', 'card-enter', 'fx-paused', 'nd-dock'].filter(c => card.classList.contains(c));   // T113 nd-dock：放大卡讓位給下方小卡
             const isTopLiked = likeCountOf(msg) === maxLikes && maxLikes > 0;
             card.className = `message-card card ${themeClassOf(displayThemeOf(msg))}${isTopLiked ? ' top-liked' : ''}${isAdminMessage(msg) ? ' is-admin' : ''}${safeImageUrl(msg.image) ? ' has-image' : ''}`;
             card.style.boxShadow = '';
@@ -1349,6 +1361,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             card.innerHTML = generateCardHTML(msg, maxLikes);
             card._sig = cardSignature(msg, maxLikes);
             bindCardEvents(card, msg);
+            if (SHOP) SHOP.decorate(card, msg);   // T102：光框、進場、動態名額；作者旁的稱號、徽章、頭像光環（equip 變了由 shop-app 自己重套，不用進卡片指紋）
         }
 
         // 4.8：卡片本身的事件只綁一次，處理時讀 card._msg（最新資料）；按鈕在每次重畫內容後重新綁定
@@ -1376,9 +1389,9 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
 
             if (currentFocusedCard === card) { closeFocus(); return; }
             if (currentFocusedCard) currentFocusedCard.classList.remove('focused');
-            playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); document.body.classList.add('card-open'); currentFocusedCard = card;
-            if (YP26 && YP26.decorateFocused) YP26.decorateFocused(card, msg && msg.id);   // 6.5.13：自己的卡多一顆「帶到派對」（yp26 插入，不進卡片指紋）
+            playSound('click'); card.classList.add('focused'); focusOverlay.classList.add('active'); document.body.classList.add('card-open'); currentFocusedCard = card; if (YP26 && YP26.decorateFocused) YP26.decorateFocused(card, msg && msg.id); /* 6.5.13 帶到派對（yp26 插入，不進卡片指紋） */ if (FX) FX.focus(card);   // T102
             armFocusedImage(card);
+            if (NUDGE) NUDGE.onFocusCard(card, msg);   // T113：寫給我的卡 → 下方「讓同事認得你」小卡
         }
 
         // ================= T068（卓倫 2026-10-28）：放大卡的照片／塗鴉跟著放大；點圖再開全螢幕檢視 =================
@@ -1584,6 +1597,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         function adaptMessage(d) {
             const a = d.author || {};
             return {
+                fx: typeof d.fx === 'string' ? d.fx : '',   // T102 留言光效（商品 g，例如 fx_firefly）
                 id: d.id, text: d.text || '', receiver: d.receiver || '', theme: d.theme, image: d.image_url || null,
                 timestamp: Number(d.created_at) || 0, author: a.name || '匿名', anonymous: !!a.anonymous, avatarUrl: a.avatar_url || null, authorKey: a.user_id || '', avatarColor: a.avatar_color, initials: a.initials || '',
                 authorLevel: Number(d.author_level) || 0, likeCount: Number(d.like_count) || 0, likers: Array.isArray(d.likers) ? d.likers.slice() : [],
@@ -1612,11 +1626,31 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         // ---- 我的狀態 ----
         let meStamp = 0, meDay = 0;
         // T098：寬度 <400（小手機）時提示字不帶「(上限 N 字)」，避免斷兩行被切掉；轉向或縮放視窗時跟著換
+        // 6.6r：1280 以上原本用長版；T102 撰寫區多了「光效」鈕（輸入框 320→240px），T107 長版「（上限 N 字，英文以單字計）」放不進一行、第二行被切掉。
+        // 改成量量看：1280 以上依序試 長版 → 去掉「，英文以單字計」的中版 → 短版，用第一個放得進一行的（輸入框寬度變了也重新判斷）；超過上限時的提示仍會寫「英文以單字計」
+        let phCanvas = null;
+        function phFits(t) {
+            const cs = getComputedStyle(msgInput), avail = msgInput.clientWidth - parseFloat(cs.paddingLeft || 0) - parseFloat(cs.paddingRight || 0);
+            if (!(avail > 0)) return true;   // 還沒排版（看不到）：先放長版，排好後 ResizeObserver 會再判斷
+            phCanvas = phCanvas || document.createElement('canvas').getContext('2d');
+            phCanvas.font = cs.font;
+            return phCanvas.measureText(t).width <= avail;
+        }
+        function pickPlaceholder() {
+            const full = msgInput.dataset.phFull, short = msgInput.dataset.phShort;
+            if (!full) return;
+            const mid = full.replace('，英文以單字計', '');
+            if (msgInput.placeholder !== full && msgInput.placeholder !== short && msgInput.placeholder !== mid) return;   // 額度用完等其他提示字：不動
+            // 6.6r 小修（卓倫 11/14）：1279 以下原本一律短版，1000 寬就看不到字數上限；改成 400 以上都量量看，放得進一行就帶上限（量過才放，不會換行被切）
+            const want = window.innerWidth < 400 ? short : [full, mid].find(phFits) || short;
+            if (msgInput.placeholder !== want) msgInput.placeholder = want;
+        }
         function setMsgPlaceholder(full, short) {
             msgInput.dataset.phFull = full; msgInput.dataset.phShort = short;
-            msgInput.placeholder = window.innerWidth < 400 ? short : full;
+            msgInput.placeholder = full; pickPlaceholder();
         }
-        window.addEventListener('resize', () => { if (msgInput.dataset.phFull && msgInput.placeholder === (window.innerWidth < 400 ? msgInput.dataset.phFull : msgInput.dataset.phShort)) msgInput.placeholder = window.innerWidth < 400 ? msgInput.dataset.phShort : msgInput.dataset.phFull; });
+        window.addEventListener('resize', pickPlaceholder);
+        if (typeof ResizeObserver === 'function') new ResizeObserver(() => pickPlaceholder()).observe(msgInput);
         function renderMyAvatar() {
             if (PUI) return PUI.paintMyAvatar();   // T098：有頭像放照片＋選單小紅點
             const name = ME.name || '';
@@ -1625,10 +1659,11 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         }
         function applyMe(me, opts) {
             if (!me) return;
-            ME = me; meStamp++; meDay = taipeiDay(nowMs());
+            ME = me; meStamp++; meDay = taipeiDay(nowMs()); if (SHOP) SHOP.syncPrefs(); /* T102 只看靜態 */
             currentUser = { uid: me.user_id, displayName: me.name };
             userLevel = Number(me.level) || 1; userLifetimeMessageCount = Number(me.exp) || 0;
             renderMyAvatar();
+            if (NUDGE) { try { NUDGE.onMe(); } catch (e) { console.error('[nudge]', e); } }   // T113
             inputPanel.style.display = 'block';
             if (!(opts && opts.silent)) updateFestivalUI();
             const ji = me.hw && me.hw.just_infected;
@@ -1655,12 +1690,13 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             applySettings(d.settings);
             applyMe(d.me, { silent: true });
             messagesLoaded = true;
+            if (NUDGE) { try { NUDGE.onMe(); } catch (e) { console.error('[nudge]', e); } }   // T113：留言讀到了才知道是不是「不寫卡也沒收過卡」（備援）
             wallLoadingEl.classList.remove('error'); document.getElementById('wallLoadingRetry').hidden = true;
-            if (first) hideWallLoading();
+            if (first) { hideWallLoading(); slot.ready(); }   // T113：牆面第一次載入完成，開頁名額 3 秒後決定（popup-slot.js）
             updateFestivalUI();
             if (first) {
                 restoreDraft();
-                if (!prefGet('onboarding_seen')) document.getElementById('onboardingOverlay').classList.add('active');
+                if (!prefGet('onboarding_seen')) slot.request('onboarding', 1, () => { document.getElementById('onboardingOverlay').classList.add('active'); });   // 優先 1：一登記就給
                 bootEventKey = eventKeyByTime(); scheduleEventBoundaryTimers();
                 if (IS_HALLOWEEN) setTimeout(showHalloweenStory, 1500);
                 setTimeout(maybeShowReveal, 600);
@@ -1669,6 +1705,20 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             if (first) { mbShowShell(); fetchMonthBoard(); scheduleMonthRollover(); } else scheduleMonthBoard(800);   // 面板先佔好位置，牆面再發牌
             updateLitCount();   // 先撐開版頭膠囊，牆面發牌時才會避開
             refreshWall(); refreshListView(); scheduleLeaderboard();
+        }
+        // T113 樣式小提示的內容：目前樣式名稱、是不是活動款、還有幾款可以挑（看得到、沒上鎖、不是現在這款）
+        const K_EVENTS_SKY_END = () => { try { return Number(WALL_K.EVENTS.sky2026.end) || 0; } catch (e) { return 0; } };
+        function nudgeTipInfo() {
+            const visible = (b) => { for (let el = b; el && el !== themePicker; el = el.parentElement) if (el.hidden) return false; return true; };
+            const n = Array.from(themePicker.querySelectorAll('.theme-btn')).filter(b => visible(b) && !b.classList.contains('locked') && !b.classList.contains('sn-locked') && b.getAttribute('data-theme') !== currentTheme).length;
+            const ev = eventDefaultTheme();
+            return { name: THEME_NAMES[currentTheme] || '', isEvent: !!ev && ev === currentTheme, n };
+        }
+        // T113 備援小卡的對象：從沒寫過卡、也沒收過卡（牆上、清單都找不到寫給我的卡）
+        function nudgeQuiet() {
+            if (!ME || (Number(ME.total) || 0) > 0 || (Number(ME.exp) || 0) > 0) return false;
+            for (const m of messageById.values()) if (m.isMine || m.toMe) return false;
+            return messagesLoaded;
         }
         async function startApp() {
             // 先登入、確認在通訊錄名單上（登入卡、不在名單上的畫面都由 fb/session.js 處理），再開始讀資料
@@ -1680,9 +1730,21 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             PUI = createProfileUI({ profile: PROFILE, meId: SESSION.meId, isAdmin: !!SESSION.isAdmin,
                 meName: () => (ME && ME.name) || BACKEND.s.nameOf(SESSION.meId), nameOf: (u) => BACKEND.s.nameOf(u), isActive: isActiveUid, uidByName,
                 avatarColor: (u, n) => avatarColorOf(u, n), initials: initialsOf, logout: doLogout, avatarBtn: userAvatar, ext: SKY_EXT,
-                writeTo: (name, o) => (SKY && o && o.uid ? SKY.composeFrom({ ...o, name }) : writeThanksTo(name)) });   // T101：從說明書寫卡＝星光卡
+                writeTo: (name, o) => (SKY && o && o.uid ? SKY.composeFrom({ ...o, name }) : writeThanksTo(name)),   // T101：從說明書寫卡＝星光卡
+                nudgeState: () => (NUDGE ? NUDGE.state() : null), onCardSaved: (c) => { if (NUDGE) NUDGE.onCardSaved(c); } });   // T113
             PROFILE.on(() => { scheduleRefresh(); mbRender(); if (ME) renderMyAvatar(); });   // 頭像下載好、有人換頭像：只重畫有變的卡（卡片指紋含頭像）
             PROFILE.start();
+            // T113 說明書／頭像／換模板 使用率提醒（nudge.js）：原地提示、送出後與收到卡的小卡、樣式小提示、開頁備援。出錯時主牆照常
+            try {
+                NUDGE = createNudge({ meId: SESSION.meId, profile: PROFILE, pui: PUI, nowMs: () => nowMs(), meReady: () => !!ME,
+                    meName: () => (ME && ME.name) || BACKEND.s.nameOf(SESSION.meId), initials: initialsOf, avatarColor: (u, n) => avatarColorOf(u, n),
+                    prefs: () => (ME && ME.prefs) || null,
+                    savePref: (k, v) => api('POST', 'api/me/prefs', { key: k, value: v }).then(r => { if (r && r.prefs && ME) ME.prefs = r.prefs; return r; }),
+                    skyEnd: (K_EVENTS_SKY_END()), openPicker: () => { document.getElementById('composer').classList.add('expanded'); openPicker(); },
+                    tipInfo: nudgeTipInfo, quiet: nudgeQuiet, closeFocus: () => { closeFocus(); closeListFocus(); },
+                    els: { avatar: userAvatar, styleBtn, composer: document.getElementById('composer'), composerWrap: document.getElementById('composerWrap'), msgInput, receiverInput } });
+                if (USE_EMULATOR) window.__nudge = NUDGE;
+            } catch (e) { NUDGE = null; console.error('[nudge] 使用率提醒沒有載入，主牆照常運作', e); }
             // T101 點亮星空 2.0（sky/sky.js）：動態載入，活動模組載入失敗或出錯時主牆照常可用。期間、門檻只看伺服器時間與 ev/stars；銀行沒上線時會自己降級
             try {
                 const { createSky } = await import('./sky/sky.js');
@@ -1692,7 +1754,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                     writeTo: writeThanksTo, setPref: (k, v) => api('POST', 'api/me/prefs', { key: k, value: v }).then(r => { if (r && r.prefs && ME) ME.prefs = r.prefs; return r; }),
                     avatar: skyAvatar, themeClass: (t) => themeClassOf(t), nowMs: () => nowMs(), toast: (t) => showToast(t, 5000),
                     isPaused: () => !imgViewer.hidden,
-                    canShowPopup: () => !document.getElementById('onboardingOverlay').classList.contains('active') && !document.querySelector('.pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim'),
+                    canShowPopup: () => !document.getElementById('onboardingOverlay').classList.contains('active') && !document.querySelector('.pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim, .sh-overlay'),   /* T102：小舖開著時，點亮星空的謝幕等彈窗先等（I1） */
                     selectTheme: (t) => { playSound('click'); themeManuallySelected = true; currentTheme = t; onThemeChosen(); },
                     currentTheme: () => currentTheme,
                     resetTheme: () => { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); syncPickerState(); updateStyleButton(); },
@@ -1723,6 +1785,32 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
                     isBlocked: () => !!document.querySelector('#yp26Page:not([hidden]), .yp-modal, .pc-overlay, .me-menu, .focus-overlay.active, .message-card.focused, .lm-focus:not([hidden]), .sh-overlay, .tr-ov, .sk-overlay, .k1000-sky, .lxp, #luScrim, #imgViewer:not([hidden]), #themePicker:not([hidden])') });
                 if (USE_EMULATOR) window.__ps = PS;
             } catch (e) { console.error('[ps] 找同事沒有載入，主牆照常運作', e); }
+            // T102 拾光小舖＋留言光效（shop/）：入口 12/1 開店後才出現；銀行或規則還沒上線時自己降級（小舖顯示暫停、撰寫區只有季節免費光效）
+            SHOP = createShopApp({ session: SESSION, emulator: USE_EMULATOR, nowMs: () => nowMs(), wall: document.getElementById('wall'),
+                anonCheck, pickerBefore: document.getElementById('emojiPicker'), tools: document.querySelector('.tools'), mobileBar: document.querySelector('.switch-bar'),
+                getTheme: () => currentTheme,
+                setTheme: (t) => { const b = document.querySelector(`.theme-btn[data-theme="${t}"]`); if (b) b.click(); },
+                addSwatch: (theme, cls, name, cap) => { const btn = addLimitedSwatch(theme, cls, name, cap); syncPickerState(); return btn; },
+                removeSwatch: (btn) => { const c = btn.closest('.sw-cell'); if (c) c.remove(); if (currentTheme === btn.getAttribute('data-theme')) { currentTheme = 'theme-classic'; themeManuallySelected = false; pickAutoTheme(getValidMessages()); } syncPickerState(); },
+                prefs: () => (ME && ME.prefs) || {},
+                savePref: (k, v) => api('POST', 'api/me/prefs', { key: k, value: v }).then(r => { if (r && r.prefs && ME) ME.prefs = r.prefs; return r; }),
+                toast: (t) => showToast(t, 5000), focusComposer: () => focusComposerNow(),
+                meName: () => (ME && ME.name) || '', meInitial: () => initialsOf((ME && ME.name) || ''), meColor: () => avatarColorOf(ME && ME.user_id, ME && ME.name, ME && ME.avatar_color),
+                recentCard: () => { let b = null; for (const m of messageById.values()) if (m.isMine && (!b || m.timestamp > b.timestamp)) b = m; return b ? { text: b.text, receiver: b.receiver, theme: b.theme } : null; },
+                msgOf: (mid) => { const m = messageById.get(mid); return m ? { r: m.receiver, x: m.text, anon: m.anonymous, author: m.author } : null; },
+                msgExists: (mid) => messageById.has(mid), themeClass: (t) => themeClassOf(t), eventOn: () => IS_HALLOWEEN || IS_MID_AUTUMN,
+                relayout: () => { if (messagesLoaded && window.innerWidth > 768) renderWall(); },   // 第一次讀到 equip：重排一次（卡寬要算進稱號）
+                skyOpensBank: () => typeof SKY !== 'undefined' && !!SKY,   // 點亮星空開站時已經呼叫 bankOpen：小舖不重複呼叫（I7）
+                canPopup: () => !document.getElementById('onboardingOverlay').classList.contains('active') && !document.querySelector('#yp26Page:not([hidden]), .yp-modal, .pc-overlay, .k1000-sky, .sk-overlay, .focus-overlay.active, #luScrim') });   // 6.6r：手心的光活動頁／說明開著時也先等
+            FX = SHOP.fx;
+            if (typeof SKY_EXT === 'object' && SKY_EXT) Object.assign(SKY_EXT, { menuExtra: SHOP.menuExtra, viewerDecor: SHOP.viewerDecor });   // T102：頭像選單「別人的光效」、資料卡的說明書背景與頭像光環（profile-ui.js 讀 ext）
+            SHOP.start();
+            if (USE_EMULATOR) window.__shop = SHOP;
+            // 6.6 撰寫區「給我一點靈感」：只有抽屜裡有寫卡靈感包的人看得到；只是寫字輔助，不寫資料、不記錄誰用了
+            try {
+                const idea = createComposeIdea({ db: SESSION.db, meId: SESSION.meId, nowMs: () => nowMs(), input: msgInput, composer: document.getElementById('composer'), maxWords: () => wordLimit() });   // T107
+                if (USE_EMULATOR) window.__idea = idea;
+            } catch (e) { console.error('[idea] 靈感包入口沒有載入，撰寫區照常運作', e); }
             for (let attempt = 1; ; attempt++) {
                 try { await BACKEND.start(); applyBootstrap(await api('GET', 'api/bootstrap')); startStream(); return; }
                 catch (e) {
@@ -2345,7 +2433,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             currentRenderGen++;
             const myGen = currentRenderGen;
             stopWallTimers();
-            if (currentFocusedCard) { focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; }
+            if (currentFocusedCard) { focusOverlay.classList.remove('active'); document.body.classList.remove('card-open'); currentFocusedCard = null; if (NUDGE) NUDGE.onFocusClosed(); }
             activeDragCard = null;
             if (mobileRO) mobileRO.disconnect();   // var：renderWall 可能比這行先被呼叫（那時是 undefined）
             wall.innerHTML = ''; wall.classList.remove('is-solo'); removeMonthEmpty(); document.getElementById('wallMore').replaceChildren();
@@ -2585,10 +2673,11 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const text = String(m.text || ''), L = [...text].length, theme = displayThemeOf(m);
             const fs = 15 * f, lines = L <= 9 ? 1 : L <= 22 ? 2 : L <= 36 ? 3 : 4;
             const tw = scTextW(text, fs, 700) / lines * 1.12 + 4;
-            const footW = scTextW(m.author || '匿名', 12 * f, 600) * 1.08 + 100 * f + (theme === 'theme-admin' ? scTextW('系統管理員', 11 * s, 600) + 10 : 0);
+            const eqW = SHOP ? SHOP.equipWidth(m, s) : 0;   // T102：作者旁有稱號時卡寬多 min(稱號＋徽章＋間距, 56)，最大卡寬也放寬同樣多
+            const footW = scTextW(m.author || '匿名', 12 * f, 600) * 1.08 + 100 * f + eqW + (theme === 'theme-admin' ? scTextW('系統管理員', 11 * s, 600) + 10 : 0);
             const toW = m.receiver ? scTextW('To: ' + m.receiver, 12 * f, 700) * 1.1 + 6 + (THEME_PIPS[theme] ? 62 * s : 0) : 0;
             const pad = (ADMIN_THEMES.has(theme) ? 40 : 30) * s;
-            return Math.min(Math.max(tw, footW, toW, 140 * s, m.image ? 200 * s : 0), 300 * Math.max(s, f)) + pad;
+            return Math.min(Math.max(tw, footW, toW, 140 * s, m.image ? 200 * s : 0), 300 * Math.max(s, f) + eqW) + pad;
         }
         // 估計卡片面積只用字數（不量字、不碰版面），只拿來決定放置順序
         function scEstimateArea(m, s) {
@@ -2750,8 +2839,9 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const rectOf = (sel, pad = 8) => { const e = document.querySelector(sel); if (!e || !e.offsetParent && getComputedStyle(e).position !== 'fixed') return null; const b = e.getBoundingClientRect(); if (!b.width) return null; return { left: b.left - pad, top: b.top - pad, right: b.right + pad, bottom: b.bottom + pad }; };
             const pad = 8;
             // 上月感謝榜小條也是保護區；留白 12（卡片上緣的稱號徽章「感謝大師」會凸出卡片外框，8 時旋轉後會貼到小條）
-            const obstacles = [rectOf('.brand'), rectOf('.tools'), rectOf('.signature'), rectOf('.mboard', 12), rectOf('#skBar.is-top', 12),
-                rectOf('#k1000Note:not([hidden])', 12), rectOf('#hwEpilogue:not([hidden])', 12), rectOf('.yp-ent:not([hidden])', 12)].filter(Boolean);   // 感謝榜整合：桌機公告改成 fixed，不在 .brand 外框裡，要另外避開   // T101：桌機星空進度條也是保護區
+            const obstacles = [rectOf('.ent:not([hidden])', 24) /* T102：牆角燈籠（左下約 104×104）不放卡片 */, rectOf('.brand'), rectOf('.tools'), rectOf('.signature'), rectOf('.mboard', 12), rectOf('#skBar.is-top', 12),
+                rectOf('#k1000Note:not([hidden])', 12), rectOf('#hwEpilogue:not([hidden])', 12), rectOf('.yp-ent:not([hidden])', 12)].filter(Boolean);   // 感謝榜整合：桌機公告改成 fixed，不在 .brand 外框裡，要另外避開
+                // T101：桌機星空進度條也是保護區
             const comp = rectOf('#composerWrap');
             if (comp) obstacles.push({ left: comp.left, right: comp.right, top: Math.min(comp.top, innerHeight - 20 - 104 - pad), bottom: innerHeight });
             const R = { x: 12, y: 12, w: innerWidth - 24, h: innerHeight - 24, obstacles };
@@ -3189,7 +3279,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
         const LIST_PAGE = 30;
         const listState = { mode: 'wall', query: '', filter: 'all', sort: 'new', shown: LIST_PAGE, items: [], focusId: null, observer: null };
         const LIST_BAR_CLASS = { 'theme-classic': 'lt-classic', 'theme-sage': 'lt-sage', 'theme-lemon': 'lt-lemon', 'theme-slate': 'lt-slate', 'theme-lavender': 'lt-lavender',
-            'theme-matcha': 'lt-matcha', 'theme-ice': 'lt-ice', 'theme-midnight': 'lt-midnight', 'theme-wine': 'lt-wine', 'theme-terracotta': 'lt-terracotta', 'theme-moonlight': 'lt-moon', 'theme-k1000': 'k1000-lt',
+            'theme-matcha': 'lt-matcha', 'theme-ice': 'lt-ice', 'theme-midnight': 'lt-midnight', 'theme-wine': 'lt-wine', 'theme-terracotta': 'lt-terracotta', 'theme-moonlight': 'lt-moon', 'theme-k1000': 'k1000-lt', 'theme-lamp': 'lt-lamp', 'theme-snowlantern': 'lt-snowlantern',
             'theme-halloween': 'lt-halloween', 'theme-neon': 'lt-r-neon', 'theme-holo': 'lt-r-holo', 'theme-gold': 'lt-r-gold', 'theme-cosmic': 'lt-r-cosmic', 'theme-ultimate': 'lt-r-ultimate', 'theme-admin': 'lt-admin', 'theme-admin-neon': 'lt-admin-neon' };
         function setViewMode(mode) {
             if (mode === listState.mode) return;
@@ -3268,7 +3358,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             const pcAttr = pcUidAttr(m);
             return (avPhoto ? `<img class="lr-av" src="${escapeHtml(avPhoto)}" alt="" aria-hidden="true" decoding="async"${pcAttr}>`
                     : `<div class="lr-av${mask ? ' is-mask' : ''}" ${avColor} aria-hidden="true"${pcAttr}>${escapeHtml(mask ? '?' : (m.initials || initialsOf(author)))}</div>`)
-                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 ${pcAttr ? `<button type="button" class="pc-link"${pcAttr} aria-label="看 ${escapeHtml(author)} 的使用說明書"><b>${markFirst(author, q)}</b></button>` : `<b>${markFirst(author, q)}</b>`}${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${SKY ? SKY.markHtml(m.src) : ''}${tier}${crown}</div>`   /* T101 */
+                + `<div class="lr-main"><div class="lr-head">${m.receiver ? `<span class="lr-to">To: ${markFirst(m.receiver, q)}</span>　` : ''}來自 ${pcAttr ? `<button type="button" class="pc-link"${pcAttr} aria-label="看 ${escapeHtml(author)} 的使用說明書"><b>${markFirst(author, q)}</b></button>` : `<b>${markFirst(author, q)}</b>`}${isMineMsg(m) ? '<span class="lr-mine">我</span>' : ''}${SKY ? SKY.markHtml(m.src) : ''}${SHOP ? SHOP.listExtra(m) : ''}${tier}${crown}</div>`   /* T101 */
                 + `<p class="lr-text">${markFirst(m.text || '', q)}</p>${img ? `<img class="lr-thumb" src="${escapeHtml(img)}" alt="附圖" loading="lazy">` : ''}</div>`
                 + `<div class="lr-side"><time>${time}</time><button type="button" class="like card-likes${hasLiked ? ' on liked' : ''}" aria-label="${likeWord}，目前 ${likes}" aria-pressed="${hasLiked ? 'true' : 'false'}">${icon}${likes || likeWord}</button></div>`;
         }
@@ -3405,7 +3495,7 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             playSound('click');
             listState.focusId = msg.id; listState.focusReturn = row || null;
             const card = createCard(msg, computeMaxLikes(listSourceMessages()), 1, 1);
-            card.classList.add('focused'); armFocusedImage(card);
+            card.classList.add('focused'); armFocusedImage(card); if (FX) FX.focus(card);   // T102
             const d = new Date(msg.timestamp || 0);
             const own = isMineMsg(msg);
             lmFocus.innerHTML = '';
@@ -3426,11 +3516,13 @@ let SKY = null; const SKY_EXT = {};        // T101：startApp 裡建立；SKY_EX
             infectFromCard(msg);
             updatePauseState();
             setTimeout(() => { const c = bar.querySelector('[data-act="close"]'); if (c) c.focus({ preventScroll: true }); }, 60);
+            if (NUDGE) NUDGE.onFocusCard(card, msg, { list: true, stage });   // T113
         }
         lmFocus.addEventListener('click', (e) => { if (e.target === lmFocus) closeListFocus(); });
         function closeListFocus() {
             if (lmFocus.hidden) return;
             lmFocus.hidden = true; lmFocus.innerHTML = '';
+            if (NUDGE) NUDGE.onFocusClosed();   // T113
             const id = listState.focusId; listState.focusId = null;
             updatePauseState();
             const row = id && document.querySelector(`.list-row[data-id="${CSS.escape(id)}"]`);

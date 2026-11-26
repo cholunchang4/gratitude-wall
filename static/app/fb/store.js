@@ -13,7 +13,7 @@ export function normalizeMessage(id, v, { authorOf } = {}) {
   return {
     id, created_at: Number(v.t) || 0, author_id: v.a || (authorOf ? authorOf(id) : '') || '', author_name: v.an || '',
     mode: v.md || 'named', mask: v.mk || '', receiver: v.r || '', receiver_ids: Object.keys(v.ri || {}), text: v.x || '',
-    theme: v.th || 'theme-classic', image: v.im || '', level: Number(v.lv) || 1, bucket: v.b || 'regular', event_id: v.ev || '',
+    theme: v.th || 'theme-classic', fx: typeof v.fx === 'string' ? v.fx : '', image: v.im || '', level: Number(v.lv) || 1, bucket: v.b || 'regular', event_id: v.ev || '',
     mooncake: !!(v.lg && v.lg.mc), mooncake_opened: !!(v.lg && v.lg.mo), edited: !!v.ed, likes,
     deleted: !!v.del, deleted_by: v.del ? v.del.by || '' : '', deleted_reason: v.del ? v.del.reason || '' : '',
     src: v.src === 'pc' || v.src === 'pc0' ? v.src : '', sto: typeof v.sto === 'string' ? v.sto : '',   // T101 星光卡標記
@@ -175,7 +175,7 @@ export class WallStore {
       likers: m.likes.map(u => (this.people[u] ? this.people[u].n : '某位同事')),
       liked_by_me: m.likes.includes(this.meId), is_mine: this.isMine(m),
       to_me: m.receiver_ids.includes(this.meId) || (!!myName && R.splitReceivers(m.receiver).includes(myName)),
-      is_admin_card: !anon && m.level >= K.ADMIN_LEVEL, edited: m.edited, src: m.src || '',
+      is_admin_card: !anon && m.level >= K.ADMIN_LEVEL, edited: m.edited, fx: m.fx || '', src: m.src || '',
       legacy: { mooncake: m.mooncake, mooncake_opened: m.mooncake_opened },
     };
   }

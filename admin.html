@@ -8,6 +8,8 @@
 <title>感謝牆後台管理</title>
 <link rel="icon" type="image/svg+xml" href="static/admin/favicon.svg">
 <link rel="stylesheet" href="static/admin/admin.css">
+<link rel="stylesheet" href="static/app/shop.css">
+<link rel="stylesheet" href="static/admin/shop-admin.css">
 <link rel="stylesheet" href="static/app/fb/login.css">
 </head>
 <body>
@@ -43,6 +45,9 @@
       <button class="tab" role="tab" id="tab-contacts" aria-controls="panel-contacts" data-tab="contacts">通訊錄</button>
       <button class="tab" role="tab" id="tab-settings" aria-controls="panel-settings" data-tab="settings">設定</button>
       <button class="tab" role="tab" id="tab-audit" aria-controls="panel-audit" data-tab="audit">操作紀錄</button>
+      <button class="tab" role="tab" id="tab-shop" aria-controls="panel-shop" data-tab="shop">拾光小舖</button>
+      <button class="tab" role="tab" id="tab-bank" aria-controls="panel-bank" data-tab="bank">光點帳本</button>
+      <button class="tab" role="tab" id="tab-fx" aria-controls="panel-fx" data-tab="fx">光效</button>
       <button class="tab" role="tab" id="tab-archive" aria-controls="panel-archive" data-tab="archive">已結束活動</button>
       <button class="tab" role="tab" id="tab-system" aria-controls="panel-system" data-tab="system">系統狀態 <span class="count" id="sysBadge" hidden></span></button>
     </nav>
@@ -152,6 +157,9 @@
     </section>
 
     <!-- 已結束活動（內容由 static/admin/archive.js 依 ENDED_EVENTS 產生；以後活動結束照那裡的說明加一筆） -->
+    <section id="panel-shop" role="tabpanel" aria-labelledby="tab-shop" data-panel="shop" hidden></section>
+    <section id="panel-bank" role="tabpanel" aria-labelledby="tab-bank" data-panel="bank" hidden></section>
+    <section id="panel-fx" role="tabpanel" aria-labelledby="tab-fx" data-panel="fx" hidden></section>
     <section id="panel-archive" role="tabpanel" aria-labelledby="tab-archive" data-panel="archive" hidden>
       <div class="panel-head"><div><h2>已結束活動</h2><p>活動結束後的統計留在這裡備查。數字照樣即時從資料庫計算；最新結束的活動排在最上面。</p></div></div>
       <div id="archiveList"></div>

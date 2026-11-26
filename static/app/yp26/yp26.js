@@ -8,6 +8,7 @@
 import { K } from '../fb/constants.js';
 import * as Y from './yp26-logic.js';
 import { createYp26Api } from './yp26-api.js';
+import { slot } from '../popup-slot.js';   // T113（6.6.1）一次開頁最多一個自己跳出來的東西（手心的光＝優先 4）
 
 const CFG = K.YP26;
 const PAGE = 30;
@@ -347,14 +348,17 @@ export function createYp26(o) {
     const poll = () => {                                         // 等主牆第一次載入完（mine、messages 第一次到不會發事件）
       if (!ready()) { if ((waited += 500) < 120_000) setTimeout(poll, 500); return; }
       update(); refreshMine(); setTimeout(update, 3000);         // 入口改成個人進度（伺服器時間這時才確定：階段、倒數也重算）
+      if (inviteEligible()) slot.expect('yp26-inv', 4);          // T113：比我後面的（到期提醒、備援小卡）先等浮卡決定
       if (!invT.gone) invT.retry = setTimeout(() => attempt(Date.now()), 2500);
     };
     const attempt = (t0) => {
       update();                                                   // 階段用現在的伺服器時間重算（update 每 30 秒才跑一次）
-      if (!inviteEligible()) return;
+      if (!inviteEligible()) { slot.pass('yp26-inv'); return; }
       const introPending = !lsGet(LS.intro) && !invT.introSettled;   // 開站說明還可能跳：等它先決定
-      if (introPending || screenBusy()) { if (Date.now() - t0 < 60_000) invT.retry = setTimeout(() => attempt(t0), 2000); return; }
-      showInvite();
+      if (introPending || screenBusy()) { if (Date.now() - t0 < 60_000) invT.retry = setTimeout(() => attempt(t0), 2000); else slot.pass('yp26-inv'); return; }
+      // T113：向 popup-slot 要名額。名額給了別人（例如點亮星空換幕）＝這次開頁不再補跳（原本 60 秒內會重試、接在別的彈窗後面），也不記今天
+      const r = slot.request('yp26-inv', 4, () => { if (!inviteEligible() || screenBusy()) return false; showInvite(); return true; });
+      if (r !== true) clearTimeout(invT.retry);
     };
     poll();
   }
@@ -834,6 +838,13 @@ export function createYp26(o) {
     const busy = document.querySelector('#skIntro, #skAct, .pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim, #onboardingOverlay.active');
     if (busy) { if (busy.matches('#skIntro, #skAct')) skySeen = true; return; }
     if (skySeen || invOpen()) return;
+    // T113：向 popup-slot 要名額（優先 4）；名額給了別人就這次不跳、不記看過
+    slot.request('yp26', 4, () => {
+      if (st.phase !== 'open' || lsGet(LS.intro) || st.open || invOpen() || document.querySelector('#skIntro, #skAct, .pc-overlay, .k1000-sky, .focus-overlay.active, #luScrim, #onboardingOverlay.active')) return false;
+      showIntro(); return true;
+    });
+  }
+  function showIntro() {
     lsSet(LS.intro, '1');
     invT.introShown = true; lsSet(LS.invite, dayKey(o.nowMs())); hideInvite('intro');   // 6.5.13：說明跳出的那天，浮卡不再跳
     const el = openModal(`<div class="yp-modal" id="yp26Intro" role="dialog" aria-modal="true" aria-labelledby="ypIntroT"><div class="yp-intro">

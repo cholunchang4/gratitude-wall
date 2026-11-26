@@ -270,11 +270,14 @@ function renderSettingsInfo() {
 const ACTION_LABEL = {
   'admin.message.delete': '刪除留言', 'admin.message.restore': '復原留言', 'admin.contacts.preview': '預覽通訊錄', 'admin.contacts.apply': '更新通訊錄',
   'admin.contacts.bind': '綁定 Posit 帳號', 'admin.settings': '修改設定', 'admin.settings.update': '修改設定', 'admin.admins': '管理員變更', 'admin.export': '匯出名單',
-  'admin.hw.settle': '結算萬聖獎勵', 'admin.profile.clear': '清除資料卡', 'admin.avatar.clear': '移除頭像', 'message.create': '發文', 'message.edit': '編輯留言', 'message.delete': '刪除自己的留言',
+  'admin.hw.settle': '結算萬聖獎勵', 'admin.profile.clear': '清除資料卡', 'admin.avatar.clear': '移除頭像', 'admin.bank.view': '查帳', 'admin.bank.grant': '發放／扣除光點', 'admin.bank.revoke': '撤銷光點', 'admin.bank.reprocess': '補帳', 'admin.bank.pause': '暫停／恢復小舖或入帳', 'admin.bank.stars_recount': '重算點亮星空', 'admin.bank.pool_rebuild': '重建天燈池',
+  'admin.yp26.fill': '手心的光補卡', 'admin.yp26.unfill': '手心的光取消補卡', 'admin.yp26.recount': '校正手心的光總數',
+  'admin.shop.item': '修改商品', 'admin.shop.onoff': '商品上下架', 'admin.shop.give': '補發商品', 'admin.shop.refund': '退回光點', 'admin.shop.stats': '查看本月經濟', 'admin.fx.settings': '修改光效設定',
+  'message.create': '發文', 'message.edit': '編輯留言', 'message.delete': '刪除自己的留言',
 };
 const TARGET_LABEL = { message: '留言', contacts: '通訊錄', user: '同事', settings: '設定', export: '匯出', admins: '管理員', event: '活動', photo: '照片' };
-const DETAIL_KEY = { add: '新增', update: '更新', remove: '移出', reason: '原因', appVersion: '版號', mainTitle: '主標題', subTitle: '副標題', mode: '名單', count: '人數', user_id: '對象', role: '身分', action: '動作' };
-const DETAIL_VALUE = { mode: { none: '從未發文、也還沒變身', infected_only: '已變身、但從未發文', infectedOnly: '已變身、但從未發文' }, role: { admin: '管理員' } };
+const DETAIL_KEY = { add: '新增', update: '更新', remove: '移出', reason: '原因', appVersion: '版號', mainTitle: '主標題', subTitle: '副標題', mode: '名單', count: '人數', user_id: '對象', role: '身分', action: '動作', reasonCat: '類別', batch: '批次', limit: '筆數', mid: '卡片', nf: '不是寫給他的卡' };
+const DETAIL_VALUE = { nf: { true: '是' }, mode: { none: '從未發文、也還沒變身', infected_only: '已變身、但從未發文', infectedOnly: '已變身、但從未發文' }, role: { admin: '管理員' }, reasonCat: { ask: '同事詢問', fix: '系統補帳', comp: '補償' } };
 export function normAudit(e, usersById) {
   let detail = e.detail ?? e.detail_json ?? null;
   if (typeof detail === 'string') { try { detail = JSON.parse(detail); } catch (x) { /* 當成純文字 */ } }

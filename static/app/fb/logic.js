@@ -73,10 +73,12 @@ export function rewardThemes(exp) { return Object.entries(K.THEMES_REWARD).sort(
 export const THEME_STARNIGHT = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme) || 'theme-starnight';
 export const STARNIGHT_TIER = (K.EVENTS.sky2026 && K.EVENTS.sky2026.theme_tier) || 2;
 const STARNIGHT_AT = ((K.EVENTS.sky2026 && K.EVENTS.sky2026.tiers) || [25, 50, 85])[STARNIGHT_TIER - 1];   // 星夜解鎖要幾位（6.5.4 起跟著門檻常數走）
-const ALL_THEMES = new Set([...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000, THEME_STARNIGHT]);
+const SHOP_THEMES = (K.BANK && K.BANK.shop_themes) || { 'theme-lamp': 'tpl_lamp', 'theme-snowlantern': 'tpl_snow' };   // T102 商店模板（擁有與否由 shop/shop-writes.js＋規則判斷）
+const ALL_THEMES = new Set([...Object.keys(SHOP_THEMES), ...K.THEMES_FREE, ...K.THEMES_LV4, ...Object.keys(K.THEMES_REWARD), K.THEME_ADMIN, K.THEME_ADMIN_NEON, K.THEME_HW, K.THEME_MOON, K.THEME_K1000, THEME_STARNIGHT]);
 export function themeDenied(theme, { level, exp, isAdmin, hwOk, k1000Ok = false, starOk = false }) {
   if (!ALL_THEMES.has(theme)) return 'BAD_THEME';
   if (theme === K.THEME_MOON) return '這個主題已經結束囉，請換一個主題。';
+  if (SHOP_THEMES[theme]) return null;   // T102
   if (isAdmin) return null;
   if (K.THEMES_FREE.includes(theme)) return null;
   if (K.THEMES_LV4.includes(theme)) return level >= 4 ? null : '這個主題要升到 Lv.4 才能使用。';

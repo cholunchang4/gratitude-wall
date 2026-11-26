@@ -1,0 +1,30 @@
+/* 撰寫區「給我一點靈感」（compose-idea.js；樣式參考 design/拾光小舖-預覽 的 composerMini） */
+.ci-btn { flex: none; height: 40px; padding: 0 10px 0 8px; display: inline-flex; align-items: center; gap: 5px; border-radius: 12px; border: 0; background: #fff8e6; color: #6b4500; box-shadow: inset 0 0 0 1px #f3cf8a; font: 700 14px var(--font); cursor: pointer; white-space: nowrap; }
+.ci-btn:hover { background: #fdf0d2; }
+.ci-btn:focus-visible, .ci-opt:focus-visible { outline: 3px solid #b45309; outline-offset: 2px; }
+.ci-btn[hidden] { display: none !important; }
+.ci-btn[aria-expanded="true"] { background: #fde9c4; box-shadow: inset 0 0 0 1.5px #e9a23b; }
+.ci-ico { width: 17px; height: 17px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+/* 撰寫列很擠（最寬 880px）：按鈕上只寫「靈感」，完整名稱「給我一點靈感」放在 aria-label 與滑鼠提示 */
+
+.ci-pop { position: absolute; bottom: calc(100% + 10px); left: 0; z-index: 90006; width: 360px; max-height: min(70vh, 520px); overflow-y: auto; padding: 12px; border-radius: 16px; background: #fff; color: #3a2410;
+  box-shadow: 0 12px 28px -12px rgba(64,24,32,.45), 0 0 0 1px rgba(120,40,60,.1); animation: ci-in .16s ease-out; }
+@keyframes ci-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.ci-pop h4 { margin: 0 0 8px; display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 800; color: #6b3e00; }
+.ci-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ci-opt { width: 100%; min-height: 44px; padding: 8px 10px; border: 0; border-radius: 10px; background: #fff8ea; color: #3a2410; font: 700 14.5px/1.5 var(--font); text-align: left; cursor: pointer; }
+.ci-opt:hover { background: #fde9c4; box-shadow: inset 0 0 0 1.5px #e9a23b; }
+.ci-opt u { text-decoration: none; display: inline-block; min-width: 2.2em; border-bottom: 1.5px solid #a86a1c; margin: 0 2px; }
+.ci-opt[aria-disabled="true"] { background: #f6f3ef; color: #6f6a64; cursor: not-allowed; box-shadow: none; }
+.ci-opt[aria-disabled="true"] u { border-bottom-color: #9a948d; }
+.ci-note { margin: 8px 0 0; padding: 7px 10px; border-radius: 10px; background: #fff7e6; color: #6b4500; font-size: 13px; line-height: 1.5; }
+.ci-foot { margin: 8px 2px 0; font-size: 13px; font-weight: 700; color: #6b5b55; }
+body.hw .ci-btn { background: rgba(255,248,230,.1); color: #fde68a; box-shadow: inset 0 0 0 1px rgba(253,186,116,.4); }
+
+@media (max-width: 768px) {
+  .composer:not(.expanded) .ci-btn { display: none !important; }
+  .ci-pop { left: 0 !important; right: 0; width: auto; }   /* bottom、max-height 由 compose-idea.js 依撰寫區高度算（放在等級列上方） */
+  .ci-list { gap: 5px; }
+  .ci-opt { font-size: 15px; min-height: 44px; padding: 7px 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .ci-pop { animation: none; } }

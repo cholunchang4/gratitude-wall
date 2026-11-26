@@ -1832,6 +1832,21 @@ body.hw #hwOverlay .modal-box :focus-visible, body.hw #onboardingOverlay .modal-
 @media (max-width: 480px) { .lm-focus { padding: 16px; } #lmFocus .card.focused { width: calc(100vw - 32px) !important; } }   /* 手機：清單放大卡寬度扣掉左右留白，才會置中不超出 */
 .lm-focus { grid-template-columns: minmax(0, 1fr); } .lm-focus-stage { max-width: 100%; } .lm-focus-bar { box-sizing: border-box; max-width: 100%; }   /* 清單放大卡下方的時間列不超出留白（超出會把整組往右推、卡片沒置中） */
 
+/* ===== T102 版頭：769～1279 寬標題框、感謝榜、工具列互相至少 8px（美術總監 3 複查 A） ===== */
+@media (min-width: 769px) and (max-width: 1279px) {
+  .brand { min-width: 0; max-width: none; padding: 9px 18px; }
+  #mainTitle { font-size: 22px; letter-spacing: 2px; white-space: nowrap; }
+  #mainTitle .title-emoji { display: none; }
+  #subTitle { display: none; }
+  .tools .view-switch button { font-size: 0; gap: 0; padding: 0 12px; }   /* 只留圖示；名稱在 aria-label */
+  .tools .view-switch button svg { width: 18px; height: 18px; }
+}
+@media (min-width: 769px) and (max-width: 960px) {   /* 兩列：第一列標題置中；第二列左感謝榜、右工具列 */
+  .topbar { inset: 10px 16px auto 16px; }
+  .tools { top: 58px; }
+  .mboard { top: 66px; left: 16px; }
+}
+
 /* T107 字數超過上限的提示（英文以單字計）：平常不顯示，超過才出現。桌機在撰寫區上方，手機在送出鈕上方；編輯視窗在輸入框下方 */
 .len-hint { margin: 0 8px 8px; padding: 8px 14px; border-radius: var(--r-md); font-size: 14px; line-height: 1.55; font-weight: 600; color: #9f1239; background: #fff1f3; border: 1px solid #f4a3b4; box-shadow: var(--sh-1); }
 .len-hint::before { content: '!'; display: inline-grid; place-items: center; width: 18px; height: 18px; margin-right: 8px; border-radius: 50%; background: #c9184a; color: #fff; font-size: 12px; font-weight: 800; vertical-align: 1px; }

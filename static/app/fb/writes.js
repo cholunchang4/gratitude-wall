@@ -4,6 +4,7 @@
 import { K } from './constants.js';
 import * as R from './logic.js';
 import { countWords } from './wordcount.js';
+import { applyShopToCreate } from '../shop/shop-writes.js';   // T102 光效、商店模板
 
 export const TS = Object.freeze({ '.sv': 'timestamp' });       // 伺服器時間（規則裡的 now）
 
@@ -123,6 +124,8 @@ export function buildCreateMessage(store, input, ctx) {
       up[`qe/${me}/${qe}`] = { e: d.eventId, m: mid };
     }
   }
+  // T102 留言光效（fx、fxd／fxw 格子、付費款扣次數）＋商店模板（次數扣 1；沒有擁有就擋下）
+  const shop = applyShopToCreate({ msg, mine, up, me, mid, now, TS, anonymous, theme, fx: input.fx || '', fxCtx: input.fxCtx || null, isAdmin: store.isAdmin, exists: (m) => store.messages.has(m) });
   up[`messages/${mid}`] = msg;
   for (const [k, v] of Object.entries(skyMe)) up[`skyme/${me}/${k}`] = v;
   // Email 通知佇列：只放收件人和時間（通知程式讀不到 messages），不通知自己。沒有要通知的人就不寫。
@@ -140,7 +143,7 @@ export function buildCreateMessage(store, input, ctx) {
     for (const u of turnedIds) up[`hw/inf/${u}`] = { c: 'tagged', s: mid, t: TS, id: randomId('inf', now) };
     hw = { turned: turnedIds.map(u => store.nameOf(u)) };
   }
-  return { updates: up, mid, turnedIds, hw, bucket: d.bucket, text, receiver, theme, mode: d.mode, sky: msg.src ? { src: msg.src, sto: msg.sto, me: skyMe } : null };
+  return { updates: up, mid, turnedIds, hw, bucket: d.bucket, text, receiver, theme, mode: d.mode, sky: msg.src ? { src: msg.src, sto: msg.sto, me: skyMe } : null, shop };   // T102
 }
 
 export function buildEditMessage(store, mid, newText, now) {
@@ -189,6 +192,12 @@ export function buildPref(store, key, value) {
   }
   value = R.cleanText(String(value), false).slice(0, K.LIMITS.pref_value_max);
   if (key === 'lb_hidden' && !['1', '0', ''].includes(value)) throw new WallError(400, 'BAD_REQUEST', '送出的資料格式不正確，請重新整理頁面後再試一次。');
+  // T113 使用率提醒的紀錄（格式和 database.rules.json 一致；規則在伺服器端再檢查一次）
+  if ((key === 'tpl_seen' && !['1', ''].includes(value))
+      || (key === 'tpl_tip' && value !== '' && !/^[0-9]{1,3},[0-9]{8}$/.test(value))
+      || (key === 'nd_log' && value !== '' && !/^[0-9]{1,3},[0-9]{0,8},[0-9]{0,8},[0-9]{1,2},[0-9]{0,8}$/.test(value))) {
+    throw new WallError(400, 'BAD_REQUEST', '送出的資料格式不正確，請重新整理頁面後再試一次。');
+  }
   const me = store.meId;
   if ((store.prefs[key] ?? '') === value && key !== 'lb_hidden') return null;
   const up = { [`prefs/${me}/${key}`]: value };

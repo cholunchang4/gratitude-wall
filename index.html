@@ -17,8 +17,11 @@
     <link rel="stylesheet" href="static/app/profile-card.css">
     <link rel="stylesheet" href="static/app/k1000.css">
     <link rel="stylesheet" href="static/app/sky.css">
+    <link rel="stylesheet" href="static/app/shop.css">
     <link rel="stylesheet" href="static/app/thanks-board.css">
     <link rel="stylesheet" href="static/app/people-search.css">
+    <link rel="stylesheet" href="static/app/compose-idea.css">
+    <link rel="stylesheet" href="static/app/nudge.css">
     <!-- 特效函式庫放在同一個網站（CSP 只允許同網站的程式）；沒載入時不影響主要功能 -->
     <script src="static/vendor/confetti.browser.js"></script>
 </head>
@@ -143,7 +146,7 @@
                     <li style="margin-bottom: 8px;"><b>🤍 放心寫</b>：
                         <ul class="guide-sub">
                             <li>不想上榜，可以在感謝榜下方開啟「不在感謝榜上顯示我」，你的卡片照常顯示。</li>
-                            <li>匿名送出時，同事看不到你是誰，管理員仍看得到發文者。</li>
+                            <li>匿名卡同事看不到作者；網站管理員看得到。</li>
                         </ul>
                     </li>
                     <li style="margin-bottom: 8px;"><b>⏳ 送卡額度</b>：每人每天最多 10 張，過去 30 天內最多 30 張。</li>
@@ -297,7 +300,7 @@
                     <div id="autocompleteList" class="autocomplete-list" role="listbox"></div>
                 </div>
                 <textarea id="msgInput" class="field msg input-msg" placeholder="寫下感謝內容…（上限 20 字，英文以單字計）" autocomplete="off" maxlength="160" rows="1" aria-label="感謝內容"></textarea>
-                <label class="anon anon-label" id="anonWrapper" title="匿名送出：同事看不到你的名字和照片，管理員仍看得到發文者。"><input type="checkbox" id="anonCheck">匿名</label>
+                <label class="anon anon-label" id="anonWrapper" title="匿名送出：同事看不到你的名字和照片。"><input type="checkbox" id="anonCheck">匿名</label>
                 <button id="sendBtn" class="send send-btn" type="button">送出</button>
             </div>
         </div>

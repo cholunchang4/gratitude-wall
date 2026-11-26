@@ -1,0 +1,70 @@
+/* T102 後台：拾光小舖、光點帳本、光效（design/拾光小舖/shop.css 第 13 節的 .adm-* 改成沿用 admin.css 的 .card／.btn，這裡只放新增元件，前綴 sa-） */
+.sa-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.sa-row.nowrap { flex-wrap: nowrap; }
+.sa-kpi { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 12px 0 16px; }
+.sa-kpi > div { padding: 14px 16px; border-radius: 16px; background: #fff; box-shadow: 0 1px 2px rgba(64,24,32,.06); }
+.sa-kpi small { display: block; font-size: 12px; font-weight: 700; color: #5c5c68; }
+.sa-kpi b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; margin-top: 2px; }
+.sa-fld { height: 40px; padding: 0 12px; border-radius: 12px; border: 1px solid transparent; background: #f6eeee; font: 500 14px var(--font); color: #2b2b33; }
+textarea.sa-fld { height: auto; padding: 8px 12px; resize: vertical; }
+.sa-fld:focus { outline: 3px solid #9f1239; outline-offset: 1px; }
+.sa-fld[readonly] { color: #5c5c68; background: #f1eeee; }
+.sa-pills { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: #f6eeee; flex-wrap: wrap; }
+.sa-pills button { min-height: 32px; padding: 0 14px; border: 0; border-radius: 999px; background: none; font: 700 13px var(--font); color: #5c5c68; cursor: pointer; }
+.sa-pills button[aria-pressed="true"] { background: #fff; color: #9f1239; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+.sa-tbl { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+.sa-tbl th { text-align: left; font-size: 12px; font-weight: 700; color: #5c5c68; padding: 10px 12px; background: #fcf6f4; border-bottom: 1px solid #f0e2dd; white-space: nowrap; }
+.sa-tbl td { padding: 10px 12px; border-bottom: 1px solid #f5ecea; vertical-align: middle; }
+.sa-tbl tr:last-child td { border-bottom: 0; }
+.sa-tbl .num { text-align: right; font-variant-numeric: tabular-nums; }
+.sa-tbl .it { display: flex; align-items: center; gap: 10px; }
+.sa-tbl .it .th { position: relative; width: 44px; height: 34px; border-radius: 8px; overflow: hidden; display: grid; place-items: center; background: #fdf0dc; flex: none; }
+.sa-tbl .it small { display: block; color: #5c5c68; font-size: 12px; }
+.sa-tbl code { font-size: 12px; color: #5c5c68; background: #f6eeee; padding: 1px 6px; border-radius: 6px; }
+.st { display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.st::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.st.on { background: #e5f4ec; color: #1f7a4d; } .st.sch { background: #e8effc; color: #2a4f8f; } .st.off { background: #f1eeee; color: #5c5c68; }
+.sa-drawer-back { position: fixed; inset: 0; z-index: 1000; background: rgba(40,16,24,.3); }
+.sa-drawer { position: fixed; top: 0; right: 0; bottom: 0; width: 520px; max-width: 100%; background: #fff; box-shadow: -20px 0 60px rgba(40,10,20,.25); display: flex; flex-direction: column; }
+.sa-drawer header { padding: 18px 22px; border-bottom: 1px solid #f0e2dd; display: flex; align-items: center; gap: 10px; }
+.sa-drawer header h3 { margin: 0; font-size: 18px; }
+.sa-drawer .bd { flex: 1; overflow-y: auto; padding: 18px 22px; display: grid; gap: 12px; align-content: start; }
+.sa-drawer footer { padding: 14px 22px; border-top: 1px solid #f0e2dd; display: flex; gap: 10px; justify-content: flex-end; }
+.sa-f { display: grid; gap: 6px; font-size: 13px; font-weight: 700; }
+.sa-f .sa-fld { width: 100%; }
+.sa-f2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sa-f4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.sa-chk { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; }
+.sa-note { margin: 0; padding: 10px 12px; border-radius: 12px; background: #fff3d6; color: #6b4500; font-size: 13px; }
+.sa-sw { position: relative; display: inline-block; width: 44px; height: 26px; border-radius: 999px; border: 0; background: #c9bfc3; flex: none; cursor: pointer; }
+.sa-sw::after { content: ''; position: absolute; top: 4px; left: 4px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: left .15s; }
+.sa-sw.on { background: #1f7a4d; } .sa-sw.on::after { left: 22px; }
+.sa-sw:focus-visible { outline: 3px solid #9f1239; outline-offset: 2px; }
+.sa-em { border: 1.5px solid #f3c3bd; }
+.sa-cal-wrap { overflow-x: auto; }
+.sa-cal { min-width: 860px; display: grid; grid-template-columns: 140px repeat(13, 1fr); font-size: 12px; border-radius: 12px; overflow: hidden; border: 1px solid #f0e2dd; }
+.sa-cal > div { padding: 6px 8px; border-bottom: 1px solid #f5ecea; min-height: 30px; }
+.sa-cal .h { background: #fcf6f4; font-weight: 700; color: #5c5c68; }
+.sa-cal .bar { margin: 2px 0; border-radius: 6px; font-weight: 700; padding: 3px 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lx-li { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #fff7e0; box-shadow: inset 0 0 0 1px rgba(232,160,32,.5); }
+.lx-li svg { width: 12px; height: 12px; }
+.lx-li.is-snow, .lx-li.is-frost { background: #eef5ff; box-shadow: inset 0 0 0 1px rgba(140,180,235,.7); }
+@media (max-width: 900px) { .sa-kpi, .sa-f4 { grid-template-columns: 1fr 1fr; } .sa-f2 { grid-template-columns: 1fr; } }
+
+/* 美術總監 T102 小修：手機上表格可以左右捲動（表寬至少 880）、背景不接縫、光效欄位頂端對齊 */
+.sa-wide-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.sa-tbl.sa-wide { min-width: 880px; }
+html { min-height: 100%; }
+body { min-height: 100vh; background-attachment: fixed; }
+.sa-f4 { align-items: start; }
+/* 表格可以往右滑時，右緣（和左緣）出現淡淡的陰影提示；滑到底就消失 */
+.sa-wide-wrap {
+  background:
+    linear-gradient(to right, #fff 30%, rgba(255,255,255,0)) left / 40px 100% no-repeat local,
+    linear-gradient(to left, #fff 30%, rgba(255,255,255,0)) right / 40px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(64,24,32,.2), transparent) left / 14px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(64,24,32,.2), transparent) right / 14px 100% no-repeat scroll;
+}
+/* 美術總監 3 複查 F：分頁內容和白色頁首之間多留 12px，接縫不會穿過說明文字；G：手機上篩選膠囊不換行、可以左右滑 */
+[data-panel="shop"], [data-panel="bank"], [data-panel="fx"] { padding-top: 12px; }
+@media (max-width: 600px) { .sa-pills { flex-wrap: nowrap; overflow-x: auto; max-width: 100%; scrollbar-width: none; } .sa-pills button { flex: none; white-space: nowrap; } }

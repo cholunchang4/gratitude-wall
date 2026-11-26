@@ -63,7 +63,7 @@ export function actionModal({ title, body, confirmText = '確定', danger = true
     const onKey = (e) => {
       if (e.key === 'Escape' && !busy) { e.stopPropagation(); close({ ok: false }); }
       if (e.key === 'Tab') { // 焦點留在視窗裡
-        const f = [...modal.querySelectorAll('button:not([disabled]), textarea, input')];
+        const f = [...modal.querySelectorAll('button:not([disabled]), textarea, input:not([type=hidden]), select')];
         if (!f.length) return;
         const first = f[0], last = f[f.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }

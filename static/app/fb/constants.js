@@ -181,7 +181,11 @@ export const K = Object.freeze({
     "hw2026_reveal_seen",
     "hw2026_roster_seen",
     "lb_hidden",
-    "pc_pool"
+    "pc_pool",
+    "fx_static",
+    "tpl_seen",
+    "tpl_tip",
+    "nd_log"
   ],
   "PHOTO_PREFIXES": [
     "data:image/webp;base64,",
@@ -359,10 +363,117 @@ export const K = Object.freeze({
         }
       }
     },
+    "fx": {
+      "free": {
+        "fx_frost": {
+          "start": 1796054400000,
+          "end": 1803830399999
+        }
+      },
+      "per_day": 1,
+      "per_week": 4,
+      "window_days": 7
+    },
+    "shop_themes": {
+      "theme-lamp": "tpl_lamp",
+      "theme-snowlantern": "tpl_snow"
+    },
+    "shop": {
+      "openAt": 1796054400000,
+      "previewAt": 1795536000000,
+      "types": {
+        "fx": {
+          "k": [
+            "pack"
+          ],
+          "pre": "fx_"
+        },
+        "tpl": {
+          "k": [
+            "perm",
+            "rent",
+            "pack"
+          ],
+          "pre": "tpl_"
+        },
+        "bg": {
+          "k": [
+            "perm",
+            "rent"
+          ],
+          "pre": "bg_",
+          "slot": "bg"
+        },
+        "badge": {
+          "k": [
+            "rent",
+            "perm"
+          ],
+          "pre": "bd_",
+          "slot": "bd"
+        },
+        "halo": {
+          "k": [
+            "perm"
+          ],
+          "pre": "halo_",
+          "slot": "ha"
+        },
+        "title": {
+          "k": [
+            "perm"
+          ],
+          "pre": "ttl_",
+          "slot": "tt"
+        },
+        "seal": {
+          "k": [
+            "perm"
+          ],
+          "pre": "st_"
+        },
+        "idea": {
+          "k": [
+            "perm"
+          ],
+          "pre": ""
+        },
+        "gift": {
+          "k": [
+            "pack"
+          ],
+          "pre": "gf_"
+        }
+      },
+      "equip": {
+        "bd": "bd_",
+        "ha": "halo_",
+        "bg": "bg_",
+        "tt": "ttl_"
+      },
+      "shelves": [
+        "try",
+        "home",
+        "season"
+      ],
+      "max_price": 2000,
+      "max_rent_days": 90,
+      "max_pack": 20,
+      "max_stock": 100000,
+      "max_lim": 1000,
+      "title_variants": 10,
+      "name_max": 40,
+      "note_max": 80,
+      "story_max": 200,
+      "give_batch_max": 50
+    },
     "labels": {
       "currency": "光點",
       "wallet": "光瓶",
       "shop": "拾光小舖",
+      "fx": {
+        "fx_frost": "冬夜小燈"
+      },
       "reasons": {
         "write": "寫了一張感謝卡",
         "daily": "今天的第一張",
@@ -387,6 +498,8 @@ export const K = Object.freeze({
         "ev26.t3": "全公司點亮「銀河傳說」",
         "admin": "補發的光點",
         "buy": "換了東西",
+        "refund": "退回的光點",
+        "give": "補發的東西",
         "x_del": "這張卡的光收回了",
         "x_adm": "這筆光點收回了"
       }

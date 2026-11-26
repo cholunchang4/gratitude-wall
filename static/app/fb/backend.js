@@ -235,6 +235,7 @@ export class WallBackend {
       throw new W.WallError(400, 'BAD_REQUEST', '送出的資料格式不正確，請重新整理頁面後再試一次。');
     }
     const input = { text: body.text, receiver: body.receiver, theme, anonymous, photo: null, sky: body.sky && typeof body.sky === 'object' ? body.sky : null };
+    input.fx = typeof body.fx === 'string' ? body.fx : ''; input.fxCtx = body.fxCtx && typeof body.fxCtx === 'object' ? body.fxCtx : null;   // T102
     // 先用目前狀態檢查（不通過就不用處理照片）
     W.validateNewMessage(s, { text: R.cleanText(body.text), receiver: R.cleanText(body.receiver, false), theme, anonymous, hasImage: !!image }, this.now());
     if (image) {
@@ -242,12 +243,14 @@ export class WallBackend {
       input.photo = { id: W.randomId('p', this.now()), dataUrl: c.dataUrl, w: c.w, h: c.h };
     }
     const mid = W.randomId('m', this.now());
-    let plan;
+    let plan, fxDropped = false;   // T102
     for (let attempt = 0; ; ) {
       plan = W.buildCreateMessage(s, input, { now: this.now(), mid, slots: this.slots });
       try { await this.write(plan.updates); break; }
       catch (e) {
         if (e.code !== 'DENIED') throw e;
+        // T102：光效被拒（規則還沒上線、格子剛被另一個分頁用掉）：拿掉光效、卡片照樣送出
+        if (input.fx && plan.shop && plan.shop.fx) { input.fx = ''; fxDropped = true; console.warn('[shop] 光效被拒，改成不帶'); continue; }
         // T101：星光卡的欄位被拒（規則還沒部署、對方剛離開通訊錄…）：先拿掉 skyme、再拿掉 src，卡片照樣送出去（不用等）
         if (input.sky && input.sky.me && Object.keys(plan.sky ? plan.sky.me : {}).length) { input.sky = { ...input.sky, me: null }; console.warn('[sky] skyme 被拒，改成不帶'); continue; }
         if (input.sky && plan.sky) { input.sky = null; console.warn('[sky] 星光卡標記被拒，改成一般卡'); continue; }
@@ -259,7 +262,7 @@ export class WallBackend {
     }
     if (input.photo) { this.s.photos.set(input.photo.id, input.photo.dataUrl); photoCache.put(input.photo.id, input.photo.dataUrl); }
     const m = s.messages.get(mid);
-    return { message: m ? s.messageDto(m) : null, me: s.meDto(this.now()), hw: plan.hw, sky: plan.sky };
+    return { message: m ? s.messageDto(m) : null, me: s.meDto(this.now()), hw: plan.hw, sky: plan.sky, fx_dropped: fxDropped || !!(plan.shop && plan.shop.fxDropped) };   // T102
   }
 
   async write(updates) {

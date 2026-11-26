@@ -1,0 +1,244 @@
+/* ==========================================================================
+   填寫與模板提醒（美術總監 2026-11-20）— 交付樣式
+   接在 app.css、profile-card.css 之後載入。只新增 class，不覆寫既有元件的版面。
+   元件：
+     A. 原地提示：撰寫區頭像 .user-avatar.nd-av / .nd-pc、樣式按鈕 .style-btn.nd-new、頭像選單標籤 .nd-tag
+     B. 「讓同事認得你」小卡 .mn（after-send／received(docked)／fallback 三種時機共用）
+     C. 樣式小提示 .tn（錨在「樣式」按鈕上方）
+   ========================================================================== */
+
+:root {
+  --nd-paper: #fffaf6;          /* 小卡底色 */
+  --nd-paper-2: #fff1ea;        /* 小卡預覽區／列 hover */
+  --nd-ink: #2b2b33;            /* 標題：在 paper 上 14.3:1 */
+  --nd-muted: #5b5b66;          /* 內文：在 paper 上 6.6:1 */
+  --nd-brand: #c9184a;          /* 主按鈕底（白字 5.9:1） */
+  --nd-brand-ink: #9f1239;      /* 小標、標籤字（在 paper 上 8.0:1，在 tag 底上 6.9:1） */
+  --nd-tag-bg: #fde8ec;
+  --nd-gold: #b45309;           /* 樣式小光點（在白底按鈕上 5.0:1，非文字也照文字標準） */
+  --nd-gold-2: #f5b942;
+  --nd-line: rgba(120,40,60,.14);
+  --nd-shadow: 0 2px 4px rgba(64,24,32,.06), 0 18px 44px -12px rgba(64,24,32,.34);
+  --nd-r: 20px;
+  --nd-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* --------------------------------------------------------------------------
+   A. 原地提示（一直在，直到做完；不動、不閃）
+   -------------------------------------------------------------------------- */
+/* 1. 還沒放頭像：撰寫區頭像外圈虛線＋右下「＋」 */
+.user-avatar.nd-av { position: relative; overflow: visible; }
+.user-avatar.nd-av::before {
+  content: ""; position: absolute; inset: -4px; border-radius: 50%;
+  border: 2px dashed var(--nd-brand-ink); opacity: .75; pointer-events: none;
+}
+.user-avatar.nd-av::after {
+  content: "+"; position: absolute; right: -5px; bottom: -5px; width: 18px; height: 18px; border-radius: 50%;
+  display: grid; place-items: center; background: var(--nd-brand); color: #fff;
+  font: 800 14px/1 var(--font, sans-serif); box-shadow: 0 0 0 2px #fff; pointer-events: none;
+}
+/* 2. 有頭像、說明書還空著：右上小圓點（形狀＋位置提示，不靠顏色辨識） */
+.user-avatar.nd-pc { position: relative; overflow: visible; }
+.user-avatar.nd-pc::after {
+  content: ""; position: absolute; right: -2px; top: -2px; width: 11px; height: 11px; border-radius: 50%;
+  background: var(--nd-brand); box-shadow: 0 0 0 2px #fff; pointer-events: none;
+}
+/* 頭像有照片時 avatar 本身是 img 或含 img：照片會被 overflow 裁圓，::before/::after 在外面照常顯示 */
+.user-avatar.nd-av img, .user-avatar.nd-pc img { border-radius: 50%; width: 100%; height: 100%; object-fit: cover; }
+
+/* 3. 頭像選單（.me-menu）裡的「還沒放／還沒寫」標籤 */
+.me-menu .nd-tag {
+  margin-left: auto; flex: none; padding: 2px 8px; border-radius: 999px;
+  background: var(--nd-tag-bg); color: var(--nd-brand-ink); font: 700 12px/18px var(--font, sans-serif);
+}
+
+/* 4. 從沒打開過樣式選單：「樣式」按鈕右上小光點（四芒星形狀，色盲也看得出是「新的」） */
+.style-btn.nd-new { position: relative; }
+.style-btn.nd-new::after {
+  content: ""; position: absolute; right: -5px; top: -5px; width: 14px; height: 14px;
+  background: var(--nd-gold);
+  clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%);
+  filter: drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 1.5px #fff); pointer-events: none;
+}
+
+/* --------------------------------------------------------------------------
+   B. 「讓同事認得你」小卡 .mn
+   定位：fixed，錨在撰寫區上方（JS 設 --mn-bottom、left）。docked＝放大卡下方。
+   -------------------------------------------------------------------------- */
+.mn {
+  position: fixed; z-index: 90005; width: 392px; max-width: calc(100vw - 24px);
+  bottom: var(--mn-bottom, 104px); left: var(--mn-left, 24px);
+  padding: 18px 18px 14px; border-radius: var(--nd-r);
+  background: var(--nd-paper); color: var(--nd-ink);
+  border: 1px solid var(--nd-line); box-shadow: var(--nd-shadow);
+  font-family: var(--font, sans-serif);
+}
+.mn:focus { outline: none; }
+/* 美術比對 M1：開頁移焦點到小卡本身（tabindex=-1）時 Chrome 判成 focus-visible → 整張深紅框像出錯；小卡本身不畫框，Tab 到裡面的 ✕／列／按鈕照樣有框（下方） */
+.mn:focus-visible { outline: none; }
+/* 指向撰寫區頭像的小尖角（JS 設 --mn-notch＝距左邊 px） */
+.mn::after {
+  content: ""; position: absolute; bottom: -8px; left: var(--mn-notch, 28px); width: 16px; height: 16px;
+  background: var(--nd-paper); border-right: 1px solid var(--nd-line); border-bottom: 1px solid var(--nd-line);
+  transform: rotate(45deg); border-bottom-right-radius: 4px;
+}
+.mn.no-notch::after, .mn.is-docked::after { display: none; }
+
+.mn-x {
+  position: absolute; top: 6px; right: 6px; width: 44px; height: 44px; border: 0; border-radius: 50%;
+  background: transparent; color: var(--nd-muted); display: grid; place-items: center; cursor: pointer;
+}
+.mn-x svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; }
+.mn-x:hover { background: rgba(120,40,60,.07); color: var(--nd-ink); }
+.mn-x:focus-visible, .mn-row:focus-visible, .mn-go:focus-visible, .mn-later:focus-visible { outline: 3px solid var(--nd-brand-ink); outline-offset: 2px; }
+
+.mn-kicker { display: flex; align-items: center; gap: 6px; margin: 0 44px 6px 0; font: 700 13px/1.4 var(--font, sans-serif); color: var(--nd-brand-ink); letter-spacing: .02em; }
+.mn-kicker svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+.mn-head { display: grid; grid-template-columns: 76px 1fr; gap: 14px; align-items: center; }
+.mn h2 { margin: 0 0 4px; font: 800 18px/1.35 var(--font, sans-serif); color: var(--nd-ink); letter-spacing: .01em; }
+.mn-d { margin: 0; font: 500 14px/1.6 var(--font, sans-serif); color: var(--nd-muted); }
+.mn-d b { color: var(--nd-ink); font-weight: 700; }
+.mn-sky { margin: 10px 0 0; padding: 8px 10px; border-radius: 12px; background: #f1eefb; color: #3f3a6b; font: 600 13px/1.55 var(--font, sans-serif); display: flex; gap: 8px; }
+.mn-sky svg { width: 16px; height: 16px; flex: none; margin-top: 2px; fill: #5b4fb3; }
+
+/* 左側小插圖：名字牌預覽（縮寫 → 你的照片）／說明書小冊 */
+.mn-art { position: relative; width: 76px; height: 76px; border-radius: 18px; background: var(--nd-paper-2); display: grid; place-items: center; }
+.mn-art svg { width: 64px; height: 64px; }
+.mn-art .ini { position: absolute; left: 10px; top: 12px; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 700 12px/1 var(--font, sans-serif); box-shadow: 0 0 0 2px #fff; }
+.mn-art .ph { position: absolute; right: 9px; bottom: 10px; width: 38px; height: 38px; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px dashed var(--nd-brand-ink); color: var(--nd-brand-ink); }
+.mn-art .ph svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mn-art .arrow { position: absolute; left: 34px; top: 38px; width: 16px; height: 16px; fill: none; stroke: var(--nd-muted); stroke-width: 2.2; stroke-linecap: round; }
+
+/* 送出後的「你的署名」預覽列（只在 after-send＋缺頭像） */
+.mn-sig { margin: 12px 0 0; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 12px; background: #fff; border: 1px dashed var(--nd-line); font: 600 13px/1.3 var(--font, sans-serif); color: var(--nd-muted); min-width: 0; }
+.mn-sig .av { flex: none; width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #fff; font: 700 11px/1 var(--font, sans-serif); }
+.mn-sig .nm { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--nd-ink); }
+.mn-sig .lbl { margin-left: auto; flex: none; color: var(--nd-muted); font-weight: 600; }
+
+/* 兩件事都還沒做：兩列，各自一鍵 */
+.mn-rows { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 8px; }
+.mn-row {
+  width: 100%; min-height: 56px; display: grid; grid-template-columns: 40px 1fr 20px; align-items: center; gap: 12px;
+  padding: 8px 12px 8px 8px; border-radius: 14px; border: 1px solid var(--nd-line); background: #fff;
+  text-align: left; cursor: pointer; font-family: inherit; color: var(--nd-ink);
+  transition: background-color .15s, border-color .15s, transform .15s var(--nd-ease);
+}
+.mn-row:hover { background: var(--nd-paper-2); border-color: rgba(159,18,57,.35); }
+.mn-row:active { transform: scale(.99); }
+.mn-row .ic { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--nd-tag-bg); color: var(--nd-brand-ink); }
+.mn-row .ic svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.mn-row b { display: block; font: 700 15px/1.35 var(--font, sans-serif); }
+.mn-row small { display: block; font: 500 13px/1.4 var(--font, sans-serif); color: var(--nd-muted); }
+.mn-row .go { width: 20px; height: 20px; fill: none; stroke: var(--nd-muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.mn-act { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+.mn-rows + .mn-act { margin-top: 8px; }
+.mn-later { min-height: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: transparent; color: var(--nd-muted); font: 600 14px var(--font, sans-serif); cursor: pointer; }
+.mn-later:hover { background: rgba(120,40,60,.07); color: var(--nd-ink); }
+.mn-go {
+  min-height: 44px; padding: 0 18px; border: 0; border-radius: 12px; display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(180deg, #d62f45, var(--nd-brand)); color: #fff; font: 700 15px var(--font, sans-serif); cursor: pointer;
+  box-shadow: 0 6px 16px -8px rgba(201,24,74,.7);
+}
+.mn-go svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.mn-go:hover { filter: brightness(1.05); }
+
+/* docked：放大檢視「寫給我的卡」時，接在卡片下方（不蓋卡片、不擋關閉） */
+.mn.is-docked { position: absolute; left: 50%; top: calc(100% + 16px); bottom: auto; transform: translateX(-50%); width: min(440px, calc(100vw - 24px)); }
+
+/* 進場／退場（減少動態時直接出現） */
+.mn, .tn { transition: opacity .26s var(--nd-ease), transform .32s var(--nd-ease); }
+.mn.is-pre, .tn.is-pre { opacity: 0; transform: translateY(10px); }
+.mn.is-docked.is-pre { transform: translate(-50%, 10px); }
+
+/* --------------------------------------------------------------------------
+   C. 樣式小提示 .tn（錨在「樣式」按鈕上方，尖角對準按鈕）
+   -------------------------------------------------------------------------- */
+.tn {
+  position: fixed; z-index: 90004; width: 316px; max-width: calc(100vw - 24px);
+  bottom: var(--tn-bottom, 100px); left: var(--tn-left, 24px);
+  padding: 14px 14px 12px 14px; border-radius: 18px;
+  background: #2b2540; color: #fff; box-shadow: 0 18px 40px -14px rgba(20,8,30,.55);
+  font-family: var(--font, sans-serif);
+}
+.tn::after {
+  content: ""; position: absolute; bottom: -7px; left: var(--tn-notch, 40px); width: 14px; height: 14px;
+  background: #2b2540; transform: rotate(45deg); border-bottom-right-radius: 3px;
+}
+.tn-in { display: grid; grid-template-columns: 64px 1fr; gap: 12px; align-items: center; padding-right: 30px; }
+.tn-fan { position: relative; width: 64px; height: 54px; }
+.tn-fan i { position: absolute; top: 6px; width: 34px; height: 44px; border-radius: 7px; box-shadow: 0 2px 6px rgba(0,0,0,.35), inset 0 0 0 1px rgba(255,255,255,.25); }
+.tn-fan i:nth-child(1) { left: 0; transform: rotate(-14deg); background: #e3eee5; }
+.tn-fan i:nth-child(2) { left: 28px; transform: rotate(12deg); background: linear-gradient(165deg, #353d5c, #2b3249); }
+.tn-fan i:nth-child(3) { left: 14px; top: 2px; z-index: 1; background: radial-gradient(circle at 70% 25%, #fff6d6 0 6%, transparent 7%), radial-gradient(circle at 30% 60%, #ffe7a3 0 4%, transparent 5%), linear-gradient(170deg, #fff4dc, #ffd68a 70%, #f5b942); }
+.tn h2 { margin: 0 0 2px; font: 800 15px/1.4 var(--font, sans-serif); color: #fff; }
+.tn p { margin: 0; font: 500 13px/1.55 var(--font, sans-serif); color: #e4def5; }   /* 在 #2b2540 上 11.6:1 */
+.tn p b { color: #ffd98a; font-weight: 700; }                                           /* 在 #2b2540 上 10.9:1 */
+.tn-x { position: absolute; top: 4px; right: 4px; width: 44px; height: 44px; border: 0; border-radius: 50%; background: transparent; color: #cfc8e6; display: grid; place-items: center; cursor: pointer; }
+.tn-x svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; fill: none; stroke-linecap: round; }
+.tn-x:hover { background: rgba(255,255,255,.1); color: #fff; }
+.tn-act { display: flex; justify-content: flex-end; margin-top: 10px; }
+.tn-go { min-height: 44px; padding: 0 16px; border: 0; border-radius: 12px; background: #ffd98a; color: #3a2606; font: 800 14px var(--font, sans-serif); cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }   /* 字 11.5:1 */
+.tn-go svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.tn-go:hover { background: #ffe4a8; }
+.tn-x:focus-visible, .tn-go:focus-visible { outline: 3px solid #ffd98a; outline-offset: 2px; }
+
+/* --------------------------------------------------------------------------
+   手機（≤768）：小卡變成撰寫區上方的滿版卡；樣式提示一樣錨在按鈕上
+   -------------------------------------------------------------------------- */
+@media (max-width: 768px) {
+  .mn { left: 12px !important; right: 12px; width: auto; max-width: none; padding: 16px 16px 12px; }
+  .mn-head { grid-template-columns: 60px 1fr; gap: 12px; }
+  .mn-art { width: 60px; height: 60px; border-radius: 16px; }
+  .mn-art .ini { left: 6px; top: 8px; width: 26px; height: 26px; font-size: 11px; }
+  .mn-art .ph { right: 6px; bottom: 7px; width: 32px; height: 32px; }
+  .mn-art .arrow { left: 26px; top: 30px; width: 13px; height: 13px; }
+  .mn-art > svg { width: 50px; height: 50px; }
+  .mn h2 { font-size: 17px; }
+  .mn-act { margin-top: 10px; }
+  .mn-act .mn-go { flex: 1; justify-content: center; }
+  .mn.is-docked { position: fixed; top: auto; bottom: var(--mn-bottom, 16px); transform: none; width: auto; }
+  .mn.is-docked.is-pre { transform: translateY(10px); }
+  /* 手機：撰寫區展開、鍵盤可能在，所以提示縮成一列：拿掉扇形小卡，按鈕放右邊 */
+  .tn { left: 12px !important; right: 12px; width: auto; max-width: none; padding: 10px 10px 10px 14px; display: flex; align-items: center; gap: 8px; }
+  .tn-in { display: block; padding-right: 0; flex: 1; min-width: 0; }
+  .tn-fan { display: none; }
+  .tn h2 { font-size: 14px; }
+  .tn p { font-size: 13px; }
+  .tn-act { margin: 0; flex: none; }
+  .tn-go { padding: 0 12px; }
+  .tn-x { position: static; flex: none; order: 3; }
+}
+@media (max-width: 380px) {
+  .mn-head { grid-template-columns: 1fr; }
+  .mn-art { display: none; }
+}
+
+/* 減少動態：不位移、不淡入 */
+@media (prefers-reduced-motion: reduce) {
+  .mn, .tn, .mn-row { transition: none; }
+  .mn.is-pre, .tn.is-pre { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) and (min-width: 769px) { .mn.is-docked.is-pre { transform: translateX(-50%); } }
+
+/* 平板直式（481～768）：不要拉成整排，維持閱讀寬度、靠左對齊撰寫區 */
+@media (min-width: 481px) and (max-width: 768px) {
+  .mn { right: auto; width: 460px; }
+  .mn-act .mn-go { flex: 0 1 auto; }
+  .tn { right: auto; width: 460px; }
+}
+
+/* --------------------------------------------------------------------------
+   實作補充（程式設計 T113，6.6.1）：設計稿裡由佈景處理、正式站要另外補的三件事
+   -------------------------------------------------------------------------- */
+/* 收到卡：放大卡下方放不下小卡時，放大卡往上移（nudge.js 設 --nd-top＝放大卡中心的 px） */
+.message-card.focused.nd-dock { top: var(--nd-top, 50%) !important; }
+/* 頭像選單：長英文名單行省略（全名在 title） */
+.me-menu .me-head > div { min-width: 0; }
+.me-menu .me-head b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 清單模式的放大卡：小卡排在時間列下方、跟著捲動（不用 fixed） */
+.lm-focus-stage .mn.is-docked { position: relative !important; left: auto; top: auto; bottom: auto; transform: none; }
+.lm-focus-stage .mn.is-docked.is-pre { transform: translateY(10px); }
+/* 美術比對 S2：頭像已有「＋」或小圓點時，不再疊舊的選單新功能紅點（一個記號就好） */
+.user-avatar.nd-av .me-dot, .user-avatar.nd-pc .me-dot { display: none; }

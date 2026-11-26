@@ -20,6 +20,7 @@ const MENU_SEEN_KEY = 'pc_menu_seen_v1';
  *     viewerCell(uid, fieldKey, self) → html、viewerExtra(uid, self) → { body, foot }、onViewerClick(e, uid, name) → 處理了回 true、
  *     editorHead() → html、stressHelp() → 字串、onEditorChange(e)、afterSave(舊卡, 新卡) → 自己出了提示回 true
  * }
+ * T113（6.6.1，選填）：nudgeState() → { hasCard, hasAvatar } 或 null（還沒讀到）；onCardSaved(card 或 null) 儲存說明書後通知。
  * writeTo(name, { uid, filled }) 的第二個參數：從資料卡按「寫感謝卡給他」時帶上（filled＝對方說明書寫了幾格），給星光卡用。
  */
 export function createProfileUI(deps) {
@@ -146,6 +147,7 @@ export function createProfileUI(deps) {
       entry.el.className = `pc-overlay ${v.wrap}${preview ? ' is-top' : ''}`;
       entry.el.innerHTML = v.html;
       entry.data = { card, photo };
+      if (X.viewerDecor) X.viewerDecor(entry.el, uid);   // T102 說明書背景、頭像光環
       const c = entry.el.querySelector('[data-pc="close"]'); if (c) c.focus({ preventScroll: true });
     };
     entry.repaint = () => entry.data && paint(entry.data.card, entry.data.photo);
@@ -301,6 +303,7 @@ export function createProfileUI(deps) {
         closeOverlay(entry, { restoreFocus: false });
         openViewer(uid, entry.returnTo);
         const saved = PL.buildCardValue(S.draft);
+        try { if (deps.onCardSaved) deps.onCardSaved(saved ? PL.normalizeCard(saved) : null); } catch (e2) { console.error(e2); }   // T113：寫了一格以上就拿掉提醒
         let shown = false;
         try { shown = !!(X.afterSave && saved && X.afterSave(S.orig, PL.normalizeCard(saved))); } catch (e2) { console.error(e2); }
         if (!shown) toast(saved ? '已儲存，同事現在看得到了' : '已儲存，資料卡已清空');
@@ -479,9 +482,12 @@ export function createProfileUI(deps) {
     const uid = deps.meId, name = deps.meName(), photo = profile.smallOf(uid);
     menu = document.createElement('div');
     menu.className = 'me-menu'; menu.setAttribute('role', 'menu'); menu.setAttribute('aria-label', '我的帳號'); menu.id = 'pcMenu';
-    menu.innerHTML = `<div class="me-head">${pav(uid, name, 36, photo).replace('role="img"', 'aria-hidden="true"').replace(/ alt="[^"]*"/, ' alt=""')}<div><b>${esc(name)}</b><span>我的帳號</span></div></div>`
-      + `<button type="button" role="menuitem" data-pc="me-card">${ic('book')}我的使用說明書</button>`
-      + `<button type="button" role="menuitem" data-pc="me-photo">${ic('camera')}${photo ? '更換頭像' : '上傳頭像'}</button>`
+    // T113：說明書還空著／還沒放頭像時，選單項目後面加「還沒寫」「還沒放」（資料還沒讀到就不加）
+    const nd = deps.nudgeState ? deps.nudgeState() : null;
+    const tag = (t) => `<span class="nd-tag">${t}</span>`;
+    menu.innerHTML = `<div class="me-head">${pav(uid, name, 36, photo).replace('role="img"', 'aria-hidden="true"').replace(/ alt="[^"]*"/, ' alt=""')}<div><b title="${esc(name)}">${esc(name)}</b><span>我的帳號</span></div></div>`
+      + `<button type="button" role="menuitem" data-pc="me-card">${ic('book')}我的使用說明書${nd && !nd.hasCard ? tag('還沒寫') : ''}</button>`
+      + `<button type="button" role="menuitem" data-pc="me-photo">${ic('camera')}${photo || (nd && nd.hasAvatar) ? '更換頭像' : '上傳頭像'}${nd && !nd.hasAvatar ? tag('還沒放') : ''}</button>`
       + (X.menuExtra ? '<div data-pc-ext></div>' : '')   // T102：別人的光效（只看靜態）
       + `<hr><button type="button" role="menuitem" class="is-quiet" data-pc="me-logout">${ic('logout')}登出</button>`;
     document.body.appendChild(menu);
@@ -492,7 +498,7 @@ export function createProfileUI(deps) {
     btn.setAttribute('aria-expanded', 'true');
     try { localStorage.setItem(MENU_SEEN_KEY, '1'); } catch (e) { /* 略 */ }
     const dot = btn.querySelector('.me-dot'); if (dot) dot.remove();
-    const items = () => [...menu.querySelectorAll('[role="menuitem"]')];
+    const items = () => [...menu.querySelectorAll('[role="menuitem"], [role="menuitemradio"]:not([disabled])')];   // T102
     items()[0].focus();
     menu.addEventListener('keydown', (e) => {
       const list = items(), i = list.indexOf(document.activeElement);
@@ -506,7 +512,7 @@ export function createProfileUI(deps) {
       const b = e.target.closest('[data-pc]'); if (!b) return;
       const act = b.dataset.pc;
       closeMenu(false);
-      if (act === 'me-card') openViewer(uid, btn);
+      if (act === 'me-card') { const st = deps.nudgeState ? deps.nudgeState() : null; if (st && !st.hasCard) openEditor(btn); else openViewer(uid, btn); }   // T113：還空著就直接開編輯（少一步）
       else if (act === 'me-photo') pickAvatar({ editor: false });
       else if (act === 'me-logout') deps.logout();
     });
